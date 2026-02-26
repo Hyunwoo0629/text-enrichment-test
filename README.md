@@ -87,40 +87,10 @@ Go to: **http://localhost:5001**
 2. **Select Text**: Click and drag to select text in the document
 3. **Style Applied**: The style is automatically applied when you release the mouse
 
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+B` | Bold tool |
-| `Ctrl+I` | Italic tool |
-| `Ctrl+U` | Underline tool |
-| `H` | Highlight tool |
-| `T` | Text color tool |
-| `R` | Rectangle border tool |
-| `C` | Circle border tool |
-| `Ctrl+Z` | Undo |
-| `Ctrl+S` | Save styles |
-| `Escape` | Deselect tool |
-
-### Managing Styles
-
-- View all applied styles in the right panel
-- Click the X button on any style to delete it
-- Use "Clear All" to remove all styles
-- Use "Save" to persist styles to the server
-
 ## Technology Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **Backend**: Python Flask
 - **Document Parsing**: python-docx
 
-## Troubleshooting
 
-### "Module not found: docx"
-Run: `pip install python-docx`
-
-### Document not uploading
-- Ensure it's a .docx file (not .doc)
-- Check file isn't corrupted
-- Check terminal for error messages
