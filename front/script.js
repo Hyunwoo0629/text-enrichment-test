@@ -13,10 +13,14 @@ class DocumentTypography {
         this.borderColor = '#000000';
         this.fontSize = '16px';
         this.letterSpacing = '4px';
+        this.zoomLevel = 100;
+        this.ZOOM_MIN = 25;
+        this.ZOOM_MAX = 200;
+        this.ZOOM_STEP = 10;
         this.apiBase = '/api';
         this.COLOR_HISTORY_MAX = 6;
         this.colorHistoryKeys = { text: 'colorHistory_text', bg: 'colorHistory_bg', border: 'colorHistory_border' };
-        this.colorHistory = { text: this.loadColorHistory('text'), bg: this.loadColorHistory('bg'), border: this.loadColorHistory('border') };
+        this.colorHistory = { text: [], bg: [], border: [] };
         this.initElements();
         this.initEventListeners();
         this.renderColorSwatches('text');
@@ -25,7 +29,7 @@ class DocumentTypography {
     }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint pickerText pickerBg pickerBorder highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover swatchesText swatchesBg swatchesBorder previewText previewBg previewBorder floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint pickerText pickerBg pickerBorder highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover swatchesText swatchesBg swatchesBorder previewText previewBg previewBorder floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutBorderPicker calloutBgPicker calloutApplyBtn calloutSwatchesBorder calloutSwatchesBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomLevelDisplay ftExistingStyles'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.fontOptions = document.querySelectorAll('.font-option');
         this.scriptOptions = document.querySelectorAll('.script-option');
@@ -63,6 +67,17 @@ class DocumentTypography {
             }
         });
         this.letterSpacingBtn.addEventListener('click', () => this.toggleLetterSpacingPopover());
+        this.calloutBtn.addEventListener('click', () => this.toggleCalloutPopover());
+        this.calloutApplyBtn.addEventListener('click', () => this.applyCallout());
+        this.zoomInBtn.addEventListener('click', () => this.setZoom(this.zoomLevel + this.ZOOM_STEP));
+        this.zoomOutBtn.addEventListener('click', () => this.setZoom(this.zoomLevel - this.ZOOM_STEP));
+        this.zoomResetBtn.addEventListener('click', () => this.setZoom(100));
+        this.documentViewport.addEventListener('wheel', e => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+                this.setZoom(this.zoomLevel + (e.deltaY < 0 ? this.ZOOM_STEP : -this.ZOOM_STEP));
+            }
+        }, { passive: false });
         this.undoBtn.addEventListener('click', () => this.undo());
         this.redoBtn.addEventListener('click', () => this.redo());
         this.clearBtn.addEventListener('click', () => this.clearAllStyles());
@@ -92,31 +107,17 @@ class DocumentTypography {
                 const tool = btn.dataset.ftTool;
                 if (tool === 'fontfamily') { this.toggleFtPopover('ftFontFamilyPopover'); return; }
                 if (tool === 'scriptsize') { this.toggleFtPopover('ftScriptSizePopover'); return; }
-                if (tool === 'letterspacing') {
-                    this.closeFtPopovers();
-                    this.applyToolToSelection('letterspacing');
-                    this.hideFloatingToolbar();
-                    return;
-                }
+                if (tool === 'letterspacing') { this.toggleFtPopover('ftLetterSpacingPopover'); return; }
                 this.closeFtPopovers();
                 this.applyToolToSelection(tool);
                 this.hideFloatingToolbar();
             });
         });
-        this.ftFontFamilyPopover.querySelectorAll('[data-ft-font]').forEach(opt => {
+        this.floatingToolbar.querySelectorAll('[data-ft-font],[data-ft-script]').forEach(opt => {
             opt.addEventListener('mousedown', e => e.preventDefault());
             opt.addEventListener('click', e => {
                 e.stopPropagation();
-                this.applyToolToSelection(opt.dataset.ftFont);
-                this.closeFtPopovers();
-                this.hideFloatingToolbar();
-            });
-        });
-        this.ftScriptSizePopover.querySelectorAll('[data-ft-script]').forEach(opt => {
-            opt.addEventListener('mousedown', e => e.preventDefault());
-            opt.addEventListener('click', e => {
-                e.stopPropagation();
-                this.applyToolToSelection(opt.dataset.ftScript);
+                this.applyToolToSelection(opt.dataset.ftFont || opt.dataset.ftScript);
                 this.closeFtPopovers();
                 this.hideFloatingToolbar();
             });
@@ -134,6 +135,20 @@ class DocumentTypography {
                 this.fontSize = val + 'px';
                 this.fontSizeInput.value = val;
                 if (this.savedSelection) this.applyToolToSelection('fontsize', true);
+            }
+        });
+
+        this._setupStepper(this.ftLetterSpacingMinus, this.ftLetterSpacingPlus, this.ftLetterSpacingInput, 0, 100, val => {
+            this.letterSpacing = val + 'px';
+            this.letterSpacingInput.value = val;
+            if (this.savedSelection) this.applyToolToSelection('letterspacing', true);
+        });
+        this.ftLetterSpacingInput.addEventListener('change', e => {
+            const val = e.target.value;
+            if (val && parseInt(val) >= 0) {
+                this.letterSpacing = val + 'px';
+                this.letterSpacingInput.value = val;
+                if (this.savedSelection) this.applyToolToSelection('letterspacing', true);
             }
         });
     }
@@ -232,6 +247,17 @@ class DocumentTypography {
         plusBtn.addEventListener('mousedown', e => { e.preventDefault(); startHold(1); });
     }
 
+    setZoom(level) {
+        this.zoomLevel = Math.max(this.ZOOM_MIN, Math.min(this.ZOOM_MAX, level));
+        const scale = this.zoomLevel / 100;
+        this.documentContainer.style.transform = scale === 1 ? '' : `scale(${scale})`;
+        if (this.zoomLevel === 100) this.documentContainer.style.removeProperty('margin-bottom');
+        else this.documentContainer.style.marginBottom = `${(scale - 1) * this.documentContainer.offsetHeight}px`;
+        this.zoomLevelDisplay.textContent = `${this.zoomLevel}%`;
+        this.zoomOutBtn.disabled = this.zoomLevel <= this.ZOOM_MIN;
+        this.zoomInBtn.disabled = this.zoomLevel >= this.ZOOM_MAX;
+    }
+
     resetStepperDefaults() {
         this.fontSize = '16px';
         this.letterSpacing = '4px';
@@ -241,28 +267,63 @@ class DocumentTypography {
     }
 
     toggleLetterSpacingPopover() {
-        const isVisible = this.letterSpacingPopover.classList.contains('visible');
-        if (isVisible) {
-            this.letterSpacingPopover.classList.remove('visible');
-            this.letterSpacingBtn.classList.remove('active');
-        } else {
-            this.letterSpacingPopover.classList.add('visible');
-            this.letterSpacingBtn.classList.add('active');
+        this.letterSpacingPopover.classList.toggle('visible');
+        this.letterSpacingBtn.classList.toggle('active');
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    toggleCalloutPopover() {
+        const isVisible = this.calloutPopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+            this.calloutPopover.classList.add('visible');
+            this.calloutBtn.classList.add('active');
         }
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    applyCallout() {
+        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        const borderColor = this.calloutBorderPicker.value;
+        const bgColor = this.calloutBgPicker.value;
+        const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
+
+        const style = {
+            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            type: 'callout',
+            text,
+            color: borderColor,
+            bgColor,
+            paraIndex,
+            startOffset,
+            endOffset,
+            created_at: new Date().toISOString()
+        };
+
+        this.history.push({ action: 'add', style });
+        this.redoStack = [];
+        this.undoBtn.disabled = false;
+        this.redoBtn.disabled = true;
+        this.styles.push(style);
+        this.logAction('add', style);
+        this.addColorToHistory('border', borderColor);
+        this.addColorToHistory('bg', bgColor);
+        this.applyAllStyles();
+        this.updateStylesList();
+
+        this._closeToolPopovers();
+        this.savedSelection = null;
+        this.resetStepperDefaults();
+        window.getSelection().removeAllRanges();
+        this.selectionHint.textContent = 'Select text to apply styles';
+        this.hideFloatingToolbar();
+        this.promptApplyToAll(style);
     }
 
     selectTool(tool) {
         if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
-
-        this.currentTool = null;
-        this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        this.fontFamilyPopover.classList.remove('visible');
-        this.fontFamilyBtn.classList.remove('active');
-        this.fontOptions.forEach(o => o.classList.remove('active'));
-        this.scriptSizePopover.classList.remove('visible');
-        this.scriptSizeBtn.classList.remove('active');
-        this.letterSpacingPopover.classList.remove('visible');
-        this.letterSpacingBtn.classList.remove('active');
+        this._closeToolPopovers();
         this.hideFloatingToolbar();
         this.applyToolToSelection(tool);
     }
@@ -270,52 +331,29 @@ class DocumentTypography {
     toggleFontFamilyPopover() {
         const isVisible = this.fontFamilyPopover.classList.contains('visible');
         if (!isVisible && !this.savedSelection) { this.showToast('Select text first', 'error'); return; }
-        this.currentTool = null;
-        this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        this.scriptSizePopover.classList.remove('visible');
-        this.scriptSizeBtn.classList.remove('active');
-        this.letterSpacingPopover.classList.remove('visible');
-        this.letterSpacingBtn.classList.remove('active');
-        if (isVisible) {
-            this.fontFamilyPopover.classList.remove('visible');
-            this.fontFamilyBtn.classList.remove('active');
-            this.fontOptions.forEach(o => o.classList.remove('active'));
-        } else {
-            this.fontFamilyPopover.classList.add('visible');
-            this.fontFamilyBtn.classList.add('active');
-        }
+        this._closeToolPopovers();
+        if (!isVisible) { this.fontFamilyPopover.classList.add('visible'); this.fontFamilyBtn.classList.add('active'); }
+        this.adjustFloatingToolbarForPopovers();
     }
 
     selectFontFamily(font) {
-        this.fontOptions.forEach(o => o.classList.toggle('active', o.dataset.font === font));
         if (this.savedSelection) this.applyToolToSelection(font);
-        this.fontFamilyPopover.classList.remove('visible');
-        this.fontFamilyBtn.classList.remove('active');
-        this.fontOptions.forEach(o => o.classList.remove('active'));
+        this._closeToolPopovers();
+        this.adjustFloatingToolbarForPopovers();
     }
 
     toggleScriptSizePopover() {
         const isVisible = this.scriptSizePopover.classList.contains('visible');
         if (!isVisible && !this.savedSelection) { this.showToast('Select text first', 'error'); return; }
-        this.currentTool = null;
-        this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        this.fontFamilyPopover.classList.remove('visible');
-        this.fontFamilyBtn.classList.remove('active');
-        this.letterSpacingPopover.classList.remove('visible');
-        this.letterSpacingBtn.classList.remove('active');
-        if (isVisible) {
-            this.scriptSizePopover.classList.remove('visible');
-            this.scriptSizeBtn.classList.remove('active');
-        } else {
-            this.scriptSizePopover.classList.add('visible');
-            this.scriptSizeBtn.classList.add('active');
-        }
+        this._closeToolPopovers();
+        if (!isVisible) { this.scriptSizePopover.classList.add('visible'); this.scriptSizeBtn.classList.add('active'); }
+        this.adjustFloatingToolbarForPopovers();
     }
 
     selectScriptSize(type) {
         if (this.savedSelection) this.applyToolToSelection(type);
-        this.scriptSizePopover.classList.remove('visible');
-        this.scriptSizeBtn.classList.remove('active');
+        this._closeToolPopovers();
+        this.adjustFloatingToolbarForPopovers();
     }
 
     applyToolToSelection(tool, keepSelection = false) {
@@ -374,6 +412,7 @@ class DocumentTypography {
             this.resetStepperDefaults();
             window.getSelection().removeAllRanges();
             this.selectionHint.textContent = 'Select text to apply styles';
+            this.promptApplyToAll(style);
         }
     }
 
@@ -503,17 +542,9 @@ class DocumentTypography {
         if (e.target.closest('.toolbar') || e.target.closest('.styles-panel') || e.target.closest('.app-header') || e.target.closest('.modal-overlay') || e.target.closest('.floating-toolbar')) return;
 
         const selection = window.getSelection();
-        if (!selection.rangeCount || selection.isCollapsed) {
-            this.savedSelection = null;
-            this.resetStepperDefaults();
-            this.hideFloatingToolbar();
-            this.selectionHint.textContent = 'Select text to apply styles';
-            return;
-        }
-
-        const range = selection.getRangeAt(0);
-        const selectedText = selection.toString().trim();
-        if (!selectedText || !this.documentContent.contains(range.commonAncestorContainer)) {
+        const range = selection.rangeCount ? selection.getRangeAt(0) : null;
+        const selectedText = range ? selection.toString().trim() : '';
+        if (!range || selection.isCollapsed || !selectedText || !this.documentContent.contains(range.commonAncestorContainer)) {
             this.savedSelection = null;
             this.resetStepperDefaults();
             this.hideFloatingToolbar();
@@ -531,41 +562,107 @@ class DocumentTypography {
         this.savedSelection = { paraIndex, startOffset, endOffset, text: selectedText };
         this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}" selected`;
 
-        this.showFloatingToolbar(range);
-    }
-
-    showFloatingToolbar(range) {
-        const rect = range.getBoundingClientRect();
-        const toolbar = this.floatingToolbar;
-        // Sync floating toolbar colors with current state
-        const ftHighlight = toolbar.querySelector('.ft-highlight-icon');
-        const ftTextcolor = toolbar.querySelector('.ft-textcolor-icon');
-        if (ftHighlight) ftHighlight.style.background = this.bgColor;
-        if (ftTextcolor) ftTextcolor.style.color = this.textColor;
-        // Sync font size
-        this.ftFontSizeInput.value = parseInt(this.fontSize);
-
-        toolbar.classList.add('visible');
-        toolbar.classList.remove('above');
-
-        const tbRect = toolbar.getBoundingClientRect();
-        const gap = 10;
-        let left = rect.left + rect.width / 2 - tbRect.width / 2;
-        let top = rect.top - tbRect.height - gap;
-        let showAbove = true;
-
-        // If not enough space above, show below
-        if (top < 4) {
-            top = rect.bottom + gap;
-            showAbove = false;
+        const fontSizeStyle = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
+        if (fontSizeStyle) {
+            const size = parseInt(fontSizeStyle.color);
+            if (size > 0) {
+                this.fontSize = fontSizeStyle.color;
+                this.fontSizeInput.value = size;
+            }
         }
 
-        // Clamp horizontal
-        left = Math.max(4, Math.min(left, window.innerWidth - tbRect.width - 4));
+        const letterSpacingStyle = this.styles.find(s => s.type === 'letterspacing' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
+        if (letterSpacingStyle) {
+            const spacing = parseInt(letterSpacingStyle.color);
+            if (spacing >= 0) {
+                this.letterSpacing = letterSpacingStyle.color;
+                this.letterSpacingInput.value = spacing;
+            }
+        }
 
-        toolbar.style.left = left + 'px';
-        toolbar.style.top = top + 'px';
-        toolbar.classList.toggle('above', !showAbove);
+        const overlapping = this.styles.filter(s =>
+            s.paraIndex === paraIndex && s.startOffset < endOffset && s.endOffset > startOffset
+        );
+        this.showFloatingToolbar(range, overlapping);
+    }
+
+    showFloatingToolbar(range, overlappingStyles = []) {
+        const rect = range.getBoundingClientRect();
+        const tb = this.floatingToolbar;
+        const ftH = tb.querySelector('.ft-highlight-icon');
+        const ftT = tb.querySelector('.ft-textcolor-icon');
+        if (ftH) ftH.style.background = this.bgColor;
+        if (ftT) ftT.style.color = this.textColor;
+        this.ftFontSizeInput.value = parseInt(this.fontSize);
+        this.ftLetterSpacingInput.value = parseInt(this.letterSpacing);
+        this.renderExistingStyleTags(overlappingStyles);
+        tb.classList.add('visible');
+        tb.classList.remove('above');
+        const tbRect = tb.getBoundingClientRect();
+        let left = rect.left + rect.width / 2 - tbRect.width / 2;
+        let top = rect.top - tbRect.height - 10;
+        if (top < 4) top = rect.bottom + 10;
+        left = Math.max(4, Math.min(left, window.innerWidth - tbRect.width - 4));
+        this._ftNaturalPos = { left, top, width: tbRect.width, height: tbRect.height };
+        tb.style.left = left + 'px';
+        tb.style.top = top + 'px';
+        tb.classList.toggle('above', top > rect.bottom);
+    }
+
+    renderExistingStyleTags(styles) {
+        const container = this.ftExistingStyles;
+        container.innerHTML = '';
+        if (!styles.length) {
+            container.classList.remove('has-styles');
+            return;
+        }
+        const typeLabels = {
+            bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough',
+            highlight: 'Highlight', textcolor: 'Text Color', border: 'Border', circle: 'Circle',
+            sansserif: 'Sans-Serif', mono: 'Monospace', rounded: 'Rounded', smallcaps: 'Small Caps',
+            fontsize: 'Font Size', letterspacing: 'Letter Spacing', superscript: 'Superscript',
+            subscript: 'Subscript', overline: 'Overline', wavyunderline: 'Wavy Underline',
+            dropcap: 'Drop Cap', callout: 'Callout', inlineicon: 'Icon'
+        };
+        styles.forEach(s => {
+            const tag = document.createElement('span');
+            tag.className = 'ft-style-tag';
+            let label = typeLabels[s.type] || s.type;
+            if (s.type === 'fontsize') label += ` (${parseInt(s.color)}px)`;
+            else if (s.type === 'letterspacing') label += ` (${parseInt(s.color)}px)`;
+            tag.innerHTML = `${label}<button class="ft-style-tag-remove" data-style-id="${s.id}" title="Remove">&times;</button>`;
+            tag.querySelector('.ft-style-tag-remove').addEventListener('mousedown', e => e.preventDefault());
+            tag.querySelector('.ft-style-tag-remove').addEventListener('click', e => {
+                e.stopPropagation();
+                this.deleteStyle(s.id);
+                tag.remove();
+                if (!container.children.length) container.classList.remove('has-styles');
+            });
+            container.appendChild(tag);
+        });
+        container.classList.add('has-styles');
+    }
+
+    adjustFloatingToolbarForPopovers() {
+        const tb = this.floatingToolbar;
+        if (!tb.classList.contains('visible') || !this._ftNaturalPos) return;
+        const { left: natLeft, top, width, height } = this._ftNaturalPos;
+        let left = natLeft;
+        const openPopovers = document.querySelectorAll('.toolbar .tool-popover.visible, .toolbar .color-picker-popover.visible');
+        openPopovers.forEach(popover => {
+            const pr = popover.getBoundingClientRect();
+            const tbBottom = top + height;
+            if (top < pr.bottom && tbBottom > pr.top && left < pr.right && left + width > pr.left) {
+                const shiftRight = pr.right + 8;
+                const shiftLeft = pr.left - width - 8;
+                if (shiftRight + width <= window.innerWidth - 4) {
+                    left = shiftRight;
+                } else if (shiftLeft >= 4) {
+                    left = shiftLeft;
+                }
+            }
+        });
+        tb.style.left = left + 'px';
     }
 
     hideFloatingToolbar() {
@@ -583,6 +680,16 @@ class DocumentTypography {
     closeFtPopovers() {
         this.ftFontFamilyPopover.classList.remove('visible');
         this.ftScriptSizePopover.classList.remove('visible');
+        this.ftLetterSpacingPopover.classList.remove('visible');
+    }
+
+    _closeToolPopovers() {
+        this.currentTool = null;
+        this.toolButtons.forEach(btn => btn.classList.remove('active'));
+        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.calloutPopover, this.calloutBtn]]) {
+            p.classList.remove('visible'); b.classList.remove('active');
+        }
+        this.fontOptions.forEach(o => o.classList.remove('active'));
     }
 
     getParentParagraph(node) {
@@ -606,11 +713,7 @@ class DocumentTypography {
     }
 
     getColorForTool(tool) {
-        if (tool === 'textcolor' || tool === 'dropcap') return this.textColor;
-        if (tool === 'highlight') return this.bgColor;
-        if (tool === 'fontsize') return this.fontSize;
-        if (tool === 'letterspacing') return this.letterSpacing;
-        return this.borderColor;
+        return { textcolor: this.textColor, dropcap: this.textColor, highlight: this.bgColor, fontsize: this.fontSize, letterspacing: this.letterSpacing }[tool] || this.borderColor;
     }
 
     applyAllStyles() {
@@ -715,6 +818,11 @@ class DocumentTypography {
             this.styles.push(last.style);
         } else if (last.action === 'clear') {
             this.styles = last.styles;
+        } else if (last.action === 'batch_add') {
+            last.styles.forEach(style => {
+                const idx = this.styles.findIndex(s => s.id === style.id);
+                if (idx !== -1) this.styles.splice(idx, 1);
+            });
         }
         this.redoStack.push(last);
         this.applyAllStyles();
@@ -733,6 +841,8 @@ class DocumentTypography {
             if (idx !== -1) this.styles.splice(idx, 1);
         } else if (last.action === 'clear') {
             this.styles = [];
+        } else if (last.action === 'batch_add') {
+            last.styles.forEach(style => this.styles.push(style));
         }
         this.history.push(last);
         this.applyAllStyles();
@@ -800,29 +910,20 @@ class DocumentTypography {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         const mod = e.ctrlKey || e.metaKey;
         const shortcuts = { z: () => this.undo(), y: () => this.redo(), s: () => this.saveStyles(), b: () => this.selectTool('bold'), i: () => this.selectTool('italic'), u: () => this.selectTool('underline') };
-        const keys = { h: 'highlight', t: 'textcolor', r: 'border', c: 'circle', o: 'overline', w: 'wavyunderline', q: 'callout', d: 'dropcap' };
+        const keys = { h: 'highlight', t: 'textcolor', r: 'border', c: 'circle', o: 'overline', w: 'wavyunderline', d: 'dropcap' };
 
+        if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); this.setZoom(this.zoomLevel + this.ZOOM_STEP); return; }
+        if (mod && e.key === '-') { e.preventDefault(); this.setZoom(this.zoomLevel - this.ZOOM_STEP); return; }
+        if (mod && e.key === '0') { e.preventDefault(); this.setZoom(100); return; }
         if (mod && shortcuts[e.key]) { e.preventDefault(); shortcuts[e.key](); }
+        else if (!mod && e.key?.toLowerCase() === 'q') this.toggleCalloutPopover();
         else if (!mod && keys[e.key?.toLowerCase()]) this.selectTool(keys[e.key.toLowerCase()]);
         else if (e.key === 'Escape') {
-            if (this.pendingIconData) {
-                this.exitIconPlacementMode();
-                return;
-            }
-            if (this.iconModal.style.display !== 'none') {
-                this.closeIconModal();
-                return;
-            }
-            this.currentTool = null;
+            if (this.pendingIconData) { this.exitIconPlacementMode(); return; }
+            if (this.iconModal.style.display !== 'none') { this.closeIconModal(); return; }
+            this._closeToolPopovers();
             this.savedSelection = null;
             this.resetStepperDefaults();
-            this.toolButtons.forEach(btn => btn.classList.remove('active'));
-            this.fontFamilyPopover.classList.remove('visible');
-            this.fontFamilyBtn.classList.remove('active');
-            this.scriptSizePopover.classList.remove('visible');
-            this.scriptSizeBtn.classList.remove('active');
-            this.letterSpacingPopover.classList.remove('visible');
-            this.letterSpacingBtn.classList.remove('active');
             this.closeAllColorPopovers();
             this.hideFloatingToolbar();
             this.selectionHint.textContent = 'Select text to apply styles';
@@ -852,43 +953,39 @@ class DocumentTypography {
     }
 
     getColorCategory(tool) {
-        if (tool === 'textcolor' || tool === 'dropcap') return 'text';
-        if (tool === 'highlight') return 'bg';
         if (tool === 'fontsize' || tool === 'letterspacing') return null;
-        return 'border';
+        return { textcolor: 'text', dropcap: 'text', highlight: 'bg' }[tool] || 'border';
     }
 
     renderColorSwatches(category) {
         const container = { text: this.swatchesText, bg: this.swatchesBg, border: this.swatchesBorder }[category];
         if (!container) return;
-        container.innerHTML = '';
-        this.colorHistory[category].forEach(color => {
-            const swatch = document.createElement('div');
-            swatch.className = 'color-swatch';
-            swatch.style.backgroundColor = color;
-            swatch.title = color;
-            swatch.addEventListener('click', () => this.selectSwatchColor(category, color));
-            container.appendChild(swatch);
-        });
+        const fillSwatches = (el, onClick) => {
+            el.innerHTML = '';
+            this.colorHistory[category].forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color;
+                swatch.title = color;
+                swatch.addEventListener('click', () => onClick(color));
+                el.appendChild(swatch);
+            });
+        };
+        fillSwatches(container, color => this.selectSwatchColor(category, color));
+        const calloutContainer = { bg: this.calloutSwatchesBg, border: this.calloutSwatchesBorder }[category];
+        if (calloutContainer) fillSwatches(calloutContainer, color => this.selectCalloutSwatchColor(category, color));
     }
 
     selectSwatchColor(category, color) {
-        if (category === 'text') {
-            this.textColor = color;
-            this.pickerText.value = color;
-            this.textcolorIcon.style.color = color;
-            this.previewText.style.backgroundColor = color;
-        } else if (category === 'bg') {
-            this.bgColor = color;
-            this.pickerBg.value = color;
-            this.highlightIcon.style.background = color;
-            this.previewBg.style.backgroundColor = color;
-        } else {
-            this.borderColor = color;
-            this.pickerBorder.value = color;
-            this.previewBorder.style.backgroundColor = color;
-        }
+        if (category === 'text') { this.textColor = color; this.pickerText.value = color; this.textcolorIcon.style.color = color; this.previewText.style.backgroundColor = color; }
+        else if (category === 'bg') { this.bgColor = color; this.pickerBg.value = color; this.highlightIcon.style.background = color; this.previewBg.style.backgroundColor = color; }
+        else { this.borderColor = color; this.pickerBorder.value = color; this.previewBorder.style.backgroundColor = color; }
         this.closeAllColorPopovers();
+    }
+
+    selectCalloutSwatchColor(category, color) {
+        if (category === 'border') { this.calloutBorderPicker.value = color; }
+        else if (category === 'bg') { this.calloutBgPicker.value = color; }
     }
 
     toggleColorPopover(picker) {
@@ -899,11 +996,13 @@ class DocumentTypography {
             popover.classList.add('visible');
             popover.closest('.color-picker-item').querySelector('.color-trigger').classList.add('active');
         }
+        this.adjustFloatingToolbarForPopovers();
     }
 
     closeAllColorPopovers() {
         Object.values(this.colorPopovers).forEach(p => p.classList.remove('visible'));
         this.colorTriggers.forEach(t => t.classList.remove('active'));
+        this.adjustFloatingToolbarForPopovers();
     }
 
     showToast(message, type = 'success') {
@@ -915,6 +1014,86 @@ class DocumentTypography {
         toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
         this.toastContainer.appendChild(toast);
         setTimeout(() => { toast.style.animation = 'slideIn 0.2s ease reverse forwards'; setTimeout(() => toast.remove(), 200); }, 3000);
+    }
+
+    showActionToast(message, actions = [], duration = 8000) {
+        const existing = this.toastContainer.querySelector('.toast-action');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-action';
+        const icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.5" r="0.5" fill="currentColor" stroke="none"/></svg>';
+        const buttonsHtml = actions.map(a =>
+            `<button class="toast-action-btn ${a.primary ? 'toast-action-btn-primary' : ''}">${a.label}</button>`
+        ).join('');
+        toast.innerHTML = `<div class="toast-header"><span class="toast-icon">${icon}</span><span class="toast-message">${message}</span></div><div class="toast-actions">${buttonsHtml}</div>`;
+        let dismissed = false;
+        const dismiss = () => {
+            if (dismissed) return;
+            dismissed = true;
+            toast.style.animation = 'slideIn 0.2s ease reverse forwards';
+            setTimeout(() => toast.remove(), 200);
+        };
+        toast.querySelectorAll('.toast-action-btn').forEach((btn, i) => {
+            btn.addEventListener('click', () => { if (actions[i].onClick) actions[i].onClick(); dismiss(); });
+        });
+        this.toastContainer.appendChild(toast);
+        setTimeout(dismiss, duration);
+    }
+
+    findOccurrences(text, excludeParaIndex, excludeStart, excludeEnd) {
+        const matches = [];
+        if (!text || text.length <= 1) return matches;
+        for (let i = 0; i < this.content.length; i++) {
+            const paraText = this.content[i].text;
+            let searchFrom = 0;
+            while (true) {
+                const idx = paraText.indexOf(text, searchFrom);
+                if (idx === -1) break;
+                if (!(i === excludeParaIndex && idx === excludeStart && idx + text.length === excludeEnd)) {
+                    matches.push({ paraIndex: i, startOffset: idx, endOffset: idx + text.length });
+                }
+                searchFrom = idx + 1;
+            }
+        }
+        return matches;
+    }
+
+    promptApplyToAll(style) {
+        if (!style.text || style.text.length <= 1) return;
+        if (style.type === 'inlineicon') return;
+        const matches = this.findOccurrences(style.text, style.paraIndex, style.startOffset, style.endOffset);
+        if (!matches.length) return;
+        const truncated = style.text.length > 15 ? style.text.substring(0, 15) + '...' : style.text;
+        const typeLabel = { fontsize: 'font size', letterspacing: 'letter spacing', textcolor: 'text color', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', dropcap: 'drop cap' }[style.type] || style.type;
+        this.showActionToast(
+            `Found ${matches.length} more "${truncated}" \u2014 apply ${typeLabel} to all?`,
+            [
+                { label: 'Skip', primary: false },
+                { label: `Apply to all (${matches.length})`, primary: true, onClick: () => this.applyStyleToAllOccurrences(style, matches) }
+            ]
+        );
+    }
+
+    applyStyleToAllOccurrences(originalStyle, matches) {
+        const newStyles = matches.map(match => ({
+            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            type: originalStyle.type,
+            text: originalStyle.text,
+            color: originalStyle.color,
+            paraIndex: match.paraIndex,
+            startOffset: match.startOffset,
+            endOffset: match.endOffset,
+            created_at: new Date().toISOString(),
+            ...(originalStyle.bgColor ? { bgColor: originalStyle.bgColor } : {})
+        }));
+        this.history.push({ action: 'batch_add', styles: newStyles });
+        this.redoStack = [];
+        this.undoBtn.disabled = false;
+        this.redoBtn.disabled = true;
+        newStyles.forEach(s => { this.styles.push(s); this.logAction('add', s); });
+        this.applyAllStyles();
+        this.updateStylesList();
+        this.showToast(`Applied ${originalStyle.type} to ${newStyles.length} more occurrence${newStyles.length > 1 ? 's' : ''}`, 'success');
     }
 }
 

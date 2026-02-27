@@ -63,6 +63,11 @@ _CSS_PROP = {
     'fontsize': 'font-size', 'letterspacing': 'letter-spacing'
 }
 
+def _export_info(doc_id, doc):
+    base = os.path.splitext(doc['original_filename'])[0]
+    name = f"{base}_enriched.png"
+    return name, os.path.join(EXPORT_FOLDER, f"{doc_id}_{name}")
+
 def _icon_html(s):
     if s.get('svgCode'):
         return f'<span class="inline-icon">{s["svgCode"]}</span>'
@@ -306,10 +311,8 @@ def export_document(doc_id):
     doc['styles'] = styles
     save_doc(doc_id, doc)
 
-    base_name = os.path.splitext(doc['original_filename'])[0]
+    export_filename, export_path = _export_info(doc_id, doc)
     html_path = os.path.join(EXPORT_FOLDER, f"{doc_id}_temp.html")
-    export_filename = f"{base_name}_enriched.png"
-    export_path = os.path.join(EXPORT_FOLDER, f"{doc_id}_{export_filename}")
 
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(build_styled_html(doc['content'], styles))
@@ -334,9 +337,7 @@ def download_document(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-    base_name = os.path.splitext(doc['original_filename'])[0]
-    export_filename = f"{base_name}_enriched.png"
-    export_path = os.path.join(EXPORT_FOLDER, f"{doc_id}_{export_filename}")
+    export_filename, export_path = _export_info(doc_id, doc)
     if not os.path.exists(export_path):
         return jsonify({"error": "Export not found. Please save the document first."}), 404
     return send_file(export_path, as_attachment=True, download_name=export_filename)
