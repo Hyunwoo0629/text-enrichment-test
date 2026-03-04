@@ -12,24 +12,38 @@ class DocumentTypography {
         this.bgColor = '#FFEB3B';
         this.borderColor = '#000000';
         this.fontSize = '16px';
-        this.letterSpacing = '4px';
+        this.letterSpacing = '0px';
         this.zoomLevel = 100;
         this.ZOOM_MIN = 25;
         this.ZOOM_MAX = 200;
         this.ZOOM_STEP = 10;
         this.apiBase = '/api';
-        this.COLOR_HISTORY_MAX = 6;
-        this.colorHistoryKeys = { text: 'colorHistory_text', bg: 'colorHistory_bg', border: 'colorHistory_border' };
-        this.colorHistory = { text: [], bg: [], border: [] };
+        this.recentColors = [];
+        this.RECENT_COLORS_MAX = 10;
+        this.TYPE_LABELS = { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' };
+        this.COLOR_PALETTE = [
+            ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
+            ['#980000','#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#4a86e8','#0000ff','#9900ff','#ff00ff'],
+            ['#e6b8af','#f4cccc','#fce5cd','#fff2cc','#d9ead3','#d0e0e3','#c9daf8','#cfe2f3','#d9d2e9','#ead1dc'],
+            ['#dd7e6b','#ea9999','#f9cb9c','#ffe599','#b6d7a8','#a2c4c9','#a4c2f4','#9fc5e8','#b4a7d6','#d5a6bd'],
+            ['#cc4125','#e06666','#f6b26b','#ffd966','#93c47d','#76a5af','#6d9eeb','#6fa8dc','#8e7cc3','#c27ba0'],
+            ['#a61c00','#cc0000','#e69138','#f1c232','#6aa84f','#45818e','#3c78d8','#3d85c6','#674ea7','#a64d79'],
+            ['#85200c','#990000','#b45f06','#bf9000','#38761d','#134f5c','#1155cc','#0b5394','#351c75','#741b47'],
+            ['#5b0f00','#660000','#783f04','#7f6000','#274e13','#0c343d','#1c4587','#073763','#20124d','#4c1130']
+        ];
         this.initElements();
         this.initEventListeners();
-        this.renderColorSwatches('text');
-        this.renderColorSwatches('bg');
-        this.renderColorSwatches('border');
+        this.initColorBoards();
+        this.initCustomColorPicker();
     }
 
+    _genId(prefix = 'style') { return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11); }
+    _pushHistory(entry) { this.history.push(entry); this.redoStack = []; this.undoBtn.disabled = false; this.redoBtn.disabled = true; }
+    _refreshViews() { this.applyAllStyles(); this.updateStylesList(); }
+    _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = 'Select text to apply styles'; }
+
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint pickerText pickerBg pickerBorder highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover swatchesText swatchesBg swatchesBorder previewText previewBg previewBorder floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutBorderPicker calloutBgPicker calloutApplyBtn calloutSwatchesBorder calloutSwatchesBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomLevelDisplay ftExistingStyles'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover previewText previewBg previewBorder floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomLevelDisplay ftExistingStyles'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.fontOptions = document.querySelectorAll('.font-option');
         this.scriptOptions = document.querySelectorAll('.script-option');
@@ -45,27 +59,10 @@ class DocumentTypography {
         this.documentViewport.addEventListener('dragleave', e => { e.preventDefault(); this.documentViewport.classList.remove('drag-over'); });
         this.documentViewport.addEventListener('drop', e => this.handleDrop(e));
         this.toolButtons.forEach(btn => { if (btn.dataset.tool) btn.addEventListener('click', () => this.selectTool(btn.dataset.tool)); });
-        this.pickerText.addEventListener('input', e => { this.textColor = e.target.value; this.textcolorIcon.style.color = e.target.value; this.previewText.style.backgroundColor = e.target.value; });
-        this.pickerBg.addEventListener('input', e => { this.bgColor = e.target.value; this.highlightIcon.style.background = e.target.value; this.previewBg.style.backgroundColor = e.target.value; });
-        this.pickerBorder.addEventListener('input', e => { this.borderColor = e.target.value; this.previewBorder.style.backgroundColor = e.target.value; });
         this.colorTriggers.forEach(trigger => trigger.addEventListener('click', e => { e.stopPropagation(); this.toggleColorPopover(trigger.dataset.picker); }));
         document.addEventListener('click', e => { if (!e.target.closest('.color-picker-item')) this.closeAllColorPopovers(); });
-        this._setupStepper(this.fontSizeMinus, this.fontSizePlus, this.fontSizeInput, 1, 200, val => { this.fontSize = val + 'px'; if (this.savedSelection) this.applyToolToSelection('fontsize', true); });
-        this.fontSizeInput.addEventListener('change', e => {
-            const val = e.target.value;
-            if (val && parseInt(val) > 0) {
-                this.fontSize = val + 'px';
-                if (this.savedSelection) this.applyToolToSelection('fontsize', true);
-            }
-        });
-        this._setupStepper(this.letterSpacingMinus, this.letterSpacingPlus, this.letterSpacingInput, 0, 100, val => { this.letterSpacing = val + 'px'; if (this.savedSelection) this.applyToolToSelection('letterspacing', true); });
-        this.letterSpacingInput.addEventListener('change', e => {
-            const val = e.target.value;
-            if (val && parseInt(val) >= 0) {
-                this.letterSpacing = val + 'px';
-                if (this.savedSelection) this.applyToolToSelection('letterspacing', true);
-            }
-        });
+        this._initStepperWithInput(this.fontSizeMinus, this.fontSizePlus, this.fontSizeInput, 1, 200, 'fontSize', 'fontsize', v => v > 0);
+        this._initStepperWithInput(this.letterSpacingMinus, this.letterSpacingPlus, this.letterSpacingInput, 0, 100, 'letterSpacing', 'letterspacing', v => v >= 0);
         this.letterSpacingBtn.addEventListener('click', () => this.toggleLetterSpacingPopover());
         this.calloutBtn.addEventListener('click', () => this.toggleCalloutPopover());
         this.calloutApplyBtn.addEventListener('click', () => this.applyCallout());
@@ -124,33 +121,8 @@ class DocumentTypography {
         });
         this.floatingToolbar.addEventListener('mousedown', e => e.preventDefault());
 
-        this._setupStepper(this.ftFontSizeMinus, this.ftFontSizePlus, this.ftFontSizeInput, 1, 200, val => {
-            this.fontSize = val + 'px';
-            this.fontSizeInput.value = val;
-            if (this.savedSelection) this.applyToolToSelection('fontsize', true);
-        });
-        this.ftFontSizeInput.addEventListener('change', e => {
-            const val = e.target.value;
-            if (val && parseInt(val) > 0) {
-                this.fontSize = val + 'px';
-                this.fontSizeInput.value = val;
-                if (this.savedSelection) this.applyToolToSelection('fontsize', true);
-            }
-        });
-
-        this._setupStepper(this.ftLetterSpacingMinus, this.ftLetterSpacingPlus, this.ftLetterSpacingInput, 0, 100, val => {
-            this.letterSpacing = val + 'px';
-            this.letterSpacingInput.value = val;
-            if (this.savedSelection) this.applyToolToSelection('letterspacing', true);
-        });
-        this.ftLetterSpacingInput.addEventListener('change', e => {
-            const val = e.target.value;
-            if (val && parseInt(val) >= 0) {
-                this.letterSpacing = val + 'px';
-                this.letterSpacingInput.value = val;
-                if (this.savedSelection) this.applyToolToSelection('letterspacing', true);
-            }
-        });
+        this._initStepperWithInput(this.ftFontSizeMinus, this.ftFontSizePlus, this.ftFontSizeInput, 1, 200, 'fontSize', 'fontsize', v => v > 0, this.fontSizeInput);
+        this._initStepperWithInput(this.ftLetterSpacingMinus, this.ftLetterSpacingPlus, this.ftLetterSpacingInput, 0, 100, 'letterSpacing', 'letterspacing', v => v >= 0, this.letterSpacingInput);
     }
 
     async handleFileUpload(e) {
@@ -225,6 +197,12 @@ class DocumentTypography {
             : `<img src="${s.iconData}" class="inline-icon" data-style-id="${s.id}" alt="">`;
     }
 
+    _initStepperWithInput(minusBtn, plusBtn, input, min, max, prop, tool, validate, syncInput) {
+        const apply = val => { this[prop] = val + 'px'; if (syncInput) syncInput.value = val; if (this.savedSelection) this.applyToolToSelection(tool, true); };
+        this._setupStepper(minusBtn, plusBtn, input, min, max, apply);
+        input.addEventListener('change', e => { const v = parseInt(e.target.value); if (v && validate(v)) apply(v); });
+    }
+
     _setupStepper(minusBtn, plusBtn, input, min, max, onChange) {
         const step = (dir) => {
             const val = Math.max(min, Math.min(max, parseInt(input.value) + dir));
@@ -260,9 +238,9 @@ class DocumentTypography {
 
     resetStepperDefaults() {
         this.fontSize = '16px';
-        this.letterSpacing = '4px';
+        this.letterSpacing = '0px';
         this.fontSizeInput.value = 16;
-        this.letterSpacingInput.value = 4;
+        this.letterSpacingInput.value = 0;
         this.ftFontSizeInput.value = 16;
     }
 
@@ -285,38 +263,14 @@ class DocumentTypography {
 
     applyCallout() {
         if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
-        const borderColor = this.calloutBorderPicker.value;
-        const bgColor = this.calloutBgPicker.value;
         const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
-
-        const style = {
-            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            type: 'callout',
-            text,
-            color: borderColor,
-            bgColor,
-            paraIndex,
-            startOffset,
-            endOffset,
-            created_at: new Date().toISOString()
-        };
-
-        this.history.push({ action: 'add', style });
-        this.redoStack = [];
-        this.undoBtn.disabled = false;
-        this.redoBtn.disabled = true;
+        const style = { id: this._genId(), type: 'callout', text, color: this.calloutBorderColor || '#000000', bgColor: this.calloutBgColor || '#ffffff', paraIndex, startOffset, endOffset, created_at: new Date().toISOString() };
+        this._pushHistory({ action: 'add', style });
         this.styles.push(style);
         this.logAction('add', style);
-        this.addColorToHistory('border', borderColor);
-        this.addColorToHistory('bg', bgColor);
-        this.applyAllStyles();
-        this.updateStylesList();
-
+        this._refreshViews();
         this._closeToolPopovers();
-        this.savedSelection = null;
-        this.resetStepperDefaults();
-        window.getSelection().removeAllRanges();
-        this.selectionHint.textContent = 'Select text to apply styles';
+        this._clearSelection();
         this.hideFloatingToolbar();
         this.promptApplyToAll(style);
     }
@@ -359,61 +313,20 @@ class DocumentTypography {
     applyToolToSelection(tool, keepSelection = false) {
         if (!this.savedSelection) return;
         const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
-
         const isDropcap = tool === 'dropcap';
-        const sOff = isDropcap ? 0 : startOffset;
-        const eOff = isDropcap ? 1 : endOffset;
-        const sText = isDropcap ? text.charAt(0) : text;
-
+        const sOff = isDropcap ? 0 : startOffset, eOff = isDropcap ? 1 : endOffset, sText = isDropcap ? text.charAt(0) : text;
         if (keepSelection) {
             const existing = this.styles.find(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
-            if (existing) {
-                existing.color = this.getColorForTool(tool);
-                this.applyAllStyles();
-                this.updateStylesList();
-                this.restoreSelection(paraIndex, sOff, eOff);
-                return;
-            }
+            if (existing) { existing.color = this.getColorForTool(tool); this._refreshViews(); this.restoreSelection(paraIndex, sOff, eOff); return; }
         }
-
-        const style = {
-            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            type: tool,
-            text: sText,
-            color: this.getColorForTool(tool),
-            paraIndex,
-            startOffset: sOff,
-            endOffset: eOff,
-            created_at: new Date().toISOString()
-        };
-
-        if (tool === 'callout') {
-            style.bgColor = this.bgColor;
-        }
-
-        this.history.push({ action: 'add', style });
-        this.redoStack = [];
-        this.undoBtn.disabled = false;
-        this.redoBtn.disabled = true;
+        const style = { id: this._genId(), type: tool, text: sText, color: this.getColorForTool(tool), paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
+        if (tool === 'callout') style.bgColor = this.bgColor;
+        this._pushHistory({ action: 'add', style });
         this.styles.push(style);
         this.logAction('add', style);
-
-        const colorCat = this.getColorCategory(tool);
-        if (colorCat) this.addColorToHistory(colorCat, style.color);
-        if (tool === 'callout') this.addColorToHistory('bg', this.bgColor);
-
-        this.applyAllStyles();
-        this.updateStylesList();
-
-        if (keepSelection) {
-            this.restoreSelection(paraIndex, sOff, eOff);
-        } else {
-            this.savedSelection = null;
-            this.resetStepperDefaults();
-            window.getSelection().removeAllRanges();
-            this.selectionHint.textContent = 'Select text to apply styles';
-            this.promptApplyToAll(style);
-        }
+        this._refreshViews();
+        if (keepSelection) { this.restoreSelection(paraIndex, sOff, eOff); }
+        else { this._clearSelection(); this.promptApplyToAll(style); }
     }
 
     restoreSelection(paraIndex, startOffset, endOffset) {
@@ -510,28 +423,12 @@ class DocumentTypography {
         const paraIndex = parseInt(para.dataset.para);
         const offset = this.getTextOffset(para, range.startContainer, range.startOffset);
 
-        const style = {
-            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            type: 'inlineicon',
-            text: this.pendingIconData.iconName,
-            color: '#000000',
-            paraIndex,
-            startOffset: offset,
-            endOffset: offset,
-            ...this.pendingIconData,
-            created_at: new Date().toISOString()
-        };
-
-        this.history.push({ action: 'add', style });
-        this.redoStack = [];
-        this.undoBtn.disabled = false;
-        this.redoBtn.disabled = true;
+        const style = { id: this._genId(), type: 'inlineicon', text: this.pendingIconData.iconName, color: '#000000', paraIndex, startOffset: offset, endOffset: offset, ...this.pendingIconData, created_at: new Date().toISOString() };
+        this._pushHistory({ action: 'add', style });
         this.styles.push(style);
         this.logAction('add', style);
-        this.applyAllStyles();
-        this.updateStylesList();
+        this._refreshViews();
         this.showToast(`Icon "${style.iconName}" placed`, 'success');
-
         this.exitIconPlacementMode();
         window.getSelection().removeAllRanges();
     }
@@ -545,10 +442,8 @@ class DocumentTypography {
         const range = selection.rangeCount ? selection.getRangeAt(0) : null;
         const selectedText = range ? selection.toString().trim() : '';
         if (!range || selection.isCollapsed || !selectedText || !this.documentContent.contains(range.commonAncestorContainer)) {
-            this.savedSelection = null;
-            this.resetStepperDefaults();
+            this._clearSelection();
             this.hideFloatingToolbar();
-            this.selectionHint.textContent = 'Select text to apply styles';
             return;
         }
 
@@ -616,18 +511,10 @@ class DocumentTypography {
             container.classList.remove('has-styles');
             return;
         }
-        const typeLabels = {
-            bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough',
-            highlight: 'Highlight', textcolor: 'Text Color', border: 'Border', circle: 'Circle',
-            sansserif: 'Sans-Serif', mono: 'Monospace', rounded: 'Rounded', smallcaps: 'Small Caps',
-            fontsize: 'Font Size', letterspacing: 'Letter Spacing', superscript: 'Superscript',
-            subscript: 'Subscript', overline: 'Overline', wavyunderline: 'Wavy Underline',
-            dropcap: 'Drop Cap', callout: 'Callout', inlineicon: 'Icon'
-        };
         styles.forEach(s => {
             const tag = document.createElement('span');
             tag.className = 'ft-style-tag';
-            let label = typeLabels[s.type] || s.type;
+            let label = this.TYPE_LABELS[s.type] || s.type;
             if (s.type === 'fontsize') label += ` (${parseInt(s.color)}px)`;
             else if (s.type === 'letterspacing') label += ` (${parseInt(s.color)}px)`;
             tag.innerHTML = `${label}<button class="ft-style-tag-remove" data-style-id="${s.id}" title="Remove">&times;</button>`;
@@ -771,13 +658,19 @@ class DocumentTypography {
             this.stylesList.innerHTML = '<div class="empty-styles"><p>No styles applied</p><small>Select text and apply styles</small></div>';
             return;
         }
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X\u00B2', subscript: 'X\u2082', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="6" y1="16" x2="14" y2="16"/></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
-        this.stylesList.innerHTML = this.styles.map(s => {
-            const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing'];
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X\u00B2', subscript: 'X\u2082', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing'];
+        const categories = [
+            ['Text Style', ['bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'superscript', 'subscript', 'sansserif', 'mono', 'rounded', 'smallcaps', 'fontsize']],
+            ['Color', ['highlight', 'textcolor']],
+            ['Border', ['border', 'circle']],
+            ['Layout', ['letterspacing', 'dropcap']],
+            ['Insert', ['callout', 'inlineicon']]
+        ];
+        const renderItem = s => {
             const iconStyle = noColorIcon.includes(s.type) ? '' : ` style="color:${s.color}"`;
-            const displayType = s.type === 'fontsize' ? `font size (${s.color})` : s.type === 'inlineicon' ? 'inline icon' : s.type === 'letterspacing' ? `letter spacing (${s.color})` : s.type === 'callout' ? 'callout' : s.type === 'dropcap' ? 'drop cap' : s.type === 'wavyunderline' ? 'wavy underline' : s.type;
-            return `
-            <div class="style-item" data-id="${s.id}">
+            const displayType = s.type === 'fontsize' ? `font size (${s.color})` : s.type === 'letterspacing' ? `letter spacing (${s.color})` : (this.TYPE_LABELS[s.type] || s.type);
+            return `<div class="style-item" data-id="${s.id}">
                 <div class="style-icon"${iconStyle}>${icons[s.type] || '•'}</div>
                 <div class="style-details">
                     <div class="style-type">${displayType}</div>
@@ -786,47 +679,100 @@ class DocumentTypography {
                 <button class="style-delete" title="Delete">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
-            </div>
-        `}).join('');
+            </div>`;
+        };
+
+        // Frequently used techniques (5+ uses)
+        const typeCounts = {};
+        this.styles.forEach(s => typeCounts[s.type] = (typeCounts[s.type] || 0) + 1);
+        const frequent = Object.entries(typeCounts).filter(([, c]) => c >= 5).sort((a, b) => b[1] - a[1]);
+        let html = '';
+        if (frequent.length) {
+            html += '<div class="frequent-section"><div class="frequent-header">Frequently Used</div><div class="frequent-tags">';
+            html += frequent.map(([type, cnt]) => {
+                const label = this.TYPE_LABELS[type] || type;
+                return `<span class="frequent-tag" data-tool="${type}" title="Click to apply"><span class="frequent-tag-icon">${icons[type] || '•'}</span>${label}<span class="frequent-tag-count">${cnt}</span></span>`;
+            }).join('');
+            html += '</div></div>';
+        }
+
+        // Categorized styles
+        categories.forEach(([catName, types]) => {
+            const catStyles = this.styles.filter(s => types.includes(s.type));
+            if (!catStyles.length) return;
+            html += `<div class="style-category"><div class="style-category-header">${catName}</div>`;
+            html += catStyles.map(renderItem).join('');
+            html += '</div>';
+        });
+
+        this.stylesList.innerHTML = html;
         this.stylesList.querySelectorAll('.style-delete').forEach(btn => {
             btn.addEventListener('click', e => { e.stopPropagation(); this.deleteStyle(e.currentTarget.closest('.style-item').dataset.id); });
+        });
+        this.stylesList.querySelectorAll('.frequent-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                if (this.savedSelection) this.applyToolToSelection(tag.dataset.tool);
+            });
         });
     }
 
     deleteStyle(id) {
         const index = this.styles.findIndex(s => s.id === id);
-        if (index !== -1) {
-            const style = this.styles[index];
-            this.history.push({ action: 'delete', style });
-            this.redoStack = [];
-            this.undoBtn.disabled = false;
-            this.redoBtn.disabled = true;
-            this.styles.splice(index, 1);
-            this.logAction('delete', style);
-            this.applyAllStyles();
-            this.updateStylesList();
+        if (index === -1) return;
+        const style = this.styles[index];
+        const duplicates = this.styles.filter(s => s.id !== id && s.type === style.type && s.text === style.text);
+        if (duplicates.length) {
+            this.promptRemoveAll(style, duplicates);
+        } else {
+            this._doDelete(id);
         }
     }
+
+    _doDelete(id) {
+        const index = this.styles.findIndex(s => s.id === id);
+        if (index === -1) return;
+        const style = this.styles[index];
+        this._pushHistory({ action: 'delete', style });
+        this.styles.splice(index, 1);
+        this.logAction('delete', style);
+        this._refreshViews();
+    }
+
+    promptRemoveAll(style, duplicates) {
+        const all = [style, ...duplicates];
+        const truncated = style.text.length > 15 ? style.text.substring(0, 15) + '...' : style.text;
+        const typeLabel = this.TYPE_LABELS[style.type] || style.type;
+        this.showActionToast(
+            `${all.length} "${truncated}" with ${typeLabel} found — remove all?`,
+            [
+                { label: 'This only', primary: false, onClick: () => this._doDelete(style.id) },
+                { label: `Remove all (${all.length})`, primary: true, onClick: () => this._doBatchDelete(all) }
+            ]
+        );
+    }
+
+    _doBatchDelete(styles) {
+        const removed = [];
+        styles.forEach(s => { const idx = this.styles.findIndex(st => st.id === s.id); if (idx !== -1) { removed.push(this.styles[idx]); this.styles.splice(idx, 1); this.logAction('delete', s); } });
+        if (!removed.length) return;
+        this._pushHistory({ action: 'batch_delete', styles: removed });
+        this._refreshViews();
+        this.showToast(`Removed ${removed.length} style${removed.length > 1 ? 's' : ''}`, 'success');
+    }
+
+    _removeById(id) { const idx = this.styles.findIndex(s => s.id === id); if (idx !== -1) this.styles.splice(idx, 1); }
 
     undo() {
         if (!this.history.length) return;
         const last = this.history.pop();
-        if (last.action === 'add') {
-            const idx = this.styles.findIndex(s => s.id === last.style.id);
-            if (idx !== -1) this.styles.splice(idx, 1);
-        } else if (last.action === 'delete') {
-            this.styles.push(last.style);
-        } else if (last.action === 'clear') {
-            this.styles = last.styles;
-        } else if (last.action === 'batch_add') {
-            last.styles.forEach(style => {
-                const idx = this.styles.findIndex(s => s.id === style.id);
-                if (idx !== -1) this.styles.splice(idx, 1);
-            });
-        }
+        const { action } = last;
+        if (action === 'add') this._removeById(last.style.id);
+        else if (action === 'delete') this.styles.push(last.style);
+        else if (action === 'clear') this.styles = last.styles;
+        else if (action === 'batch_add') last.styles.forEach(s => this._removeById(s.id));
+        else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
         this.redoStack.push(last);
-        this.applyAllStyles();
-        this.updateStylesList();
+        this._refreshViews();
         this.undoBtn.disabled = !this.history.length;
         this.redoBtn.disabled = false;
     }
@@ -834,19 +780,14 @@ class DocumentTypography {
     redo() {
         if (!this.redoStack.length) return;
         const last = this.redoStack.pop();
-        if (last.action === 'add') {
-            this.styles.push(last.style);
-        } else if (last.action === 'delete') {
-            const idx = this.styles.findIndex(s => s.id === last.style.id);
-            if (idx !== -1) this.styles.splice(idx, 1);
-        } else if (last.action === 'clear') {
-            this.styles = [];
-        } else if (last.action === 'batch_add') {
-            last.styles.forEach(style => this.styles.push(style));
-        }
+        const { action } = last;
+        if (action === 'add') this.styles.push(last.style);
+        else if (action === 'delete') this._removeById(last.style.id);
+        else if (action === 'clear') this.styles = [];
+        else if (action === 'batch_add') last.styles.forEach(s => this.styles.push(s));
+        else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
         this.history.push(last);
-        this.applyAllStyles();
-        this.updateStylesList();
+        this._refreshViews();
         this.undoBtn.disabled = false;
         this.redoBtn.disabled = !this.redoStack.length;
     }
@@ -854,15 +795,11 @@ class DocumentTypography {
     async clearAllStyles() {
         if (!this.styles.length) { this.showToast('No styles to clear', 'error'); return; }
         if (!confirm('Clear all styles?')) return;
-        this.history.push({ action: 'clear', styles: [...this.styles] });
-        this.redoStack = [];
-        this.undoBtn.disabled = false;
-        this.redoBtn.disabled = true;
+        this._pushHistory({ action: 'clear', styles: [...this.styles] });
         const count = this.styles.length;
         this.styles = [];
         this.logAction('clear', null, count);
-        this.applyAllStyles();
-        this.updateStylesList();
+        this._refreshViews();
         this.showToast('All styles cleared', 'success');
     }
 
@@ -893,17 +830,9 @@ class DocumentTypography {
 
     async logAction(action, style = null, stylesCleared = null) {
         if (!this.docId) return;
-        const entry = {
-            log_id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            action, timestamp: new Date().toISOString(),
-            style: style ? { id: style.id, type: style.type, text: style.text, color: style.color, paraIndex: style.paraIndex, startOffset: style.startOffset, endOffset: style.endOffset, ...(style.bgColor ? { bgColor: style.bgColor } : {}) } : null,
-            styles_cleared: stylesCleared
-        };
-        try {
-            await fetch(`${this.apiBase}/document/${this.docId}/log`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry)
-            });
-        } catch (e) { console.error('Failed to log action:', e); }
+        const entry = { log_id: this._genId('log'), action, timestamp: new Date().toISOString(), style: style ? { id: style.id, type: style.type, text: style.text, color: style.color, paraIndex: style.paraIndex, startOffset: style.startOffset, endOffset: style.endOffset, ...(style.bgColor ? { bgColor: style.bgColor } : {}) } : null, styles_cleared: stylesCleared };
+        try { await fetch(`${this.apiBase}/document/${this.docId}/log`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) }); }
+        catch (e) { console.error('Failed to log action:', e); }
     }
 
     handleKeyboard(e) {
@@ -922,70 +851,75 @@ class DocumentTypography {
             if (this.pendingIconData) { this.exitIconPlacementMode(); return; }
             if (this.iconModal.style.display !== 'none') { this.closeIconModal(); return; }
             this._closeToolPopovers();
-            this.savedSelection = null;
-            this.resetStepperDefaults();
             this.closeAllColorPopovers();
             this.hideFloatingToolbar();
-            this.selectionHint.textContent = 'Select text to apply styles';
-            window.getSelection().removeAllRanges();
+            this._clearSelection();
         }
     }
 
-    loadColorHistory(category) {
-        try { return (JSON.parse(localStorage.getItem(this.colorHistoryKeys[category]) || '[]')).filter(c => typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c)).slice(0, this.COLOR_HISTORY_MAX); }
-        catch (e) { return []; }
+    initColorBoards() {
+        document.querySelectorAll('.color-picker-popover .color-board').forEach(board => {
+            const picker = board.dataset.picker;
+            this.buildColorBoard(board, color => this.selectBoardColor(picker, color));
+            const current = { text: this.textColor, bg: this.bgColor, border: this.borderColor }[picker];
+            this._markBoardSelected(board, current);
+        });
+        this.buildColorBoard(this.calloutBoardBorder, color => { this.calloutBorderColor = color; this._markBoardSelected(this.calloutBoardBorder, color); });
+        this.buildColorBoard(this.calloutBoardBg, color => { this.calloutBgColor = color; this._markBoardSelected(this.calloutBoardBg, color); });
+        this.calloutBorderColor = '#000000';
+        this.calloutBgColor = '#ffffff';
+        this._markBoardSelected(this.calloutBoardBorder, '#000000');
+        this._markBoardSelected(this.calloutBoardBg, '#ffffff');
     }
 
-    saveColorHistory(category) {
-        try { localStorage.setItem(this.colorHistoryKeys[category], JSON.stringify(this.colorHistory[category])); } catch (e) { /* ignore */ }
+    _makeSwatch(color, onClick) {
+        const s = document.createElement('div');
+        s.className = 'color-board-swatch'; s.style.backgroundColor = color; s.title = color; s.dataset.color = color;
+        s.addEventListener('click', () => { this._addRecentColor(color); onClick(color); });
+        return s;
     }
 
-    addColorToHistory(category, color) {
-        if (!color || !/^#[0-9a-fA-F]{6}$/i.test(color)) return;
-        const normalized = color.toLowerCase();
-        const history = this.colorHistory[category];
-        const idx = history.indexOf(normalized);
-        if (idx !== -1) history.splice(idx, 1);
-        history.unshift(normalized);
-        if (history.length > this.COLOR_HISTORY_MAX) history.pop();
-        this.saveColorHistory(category);
-        this.renderColorSwatches(category);
+    buildColorBoard(container, onClick) {
+        container.innerHTML = '';
+        this.COLOR_PALETTE.forEach(row => row.forEach(color => container.appendChild(this._makeSwatch(color, onClick))));
+        const recentRow = document.createElement('div'); recentRow.className = 'color-board-recent';
+        container.appendChild(recentRow); this._renderRecentRow(recentRow, onClick);
+        const customBtn = document.createElement('div'); customBtn.className = 'color-board-custom'; customBtn.textContent = '+ Custom';
+        customBtn.addEventListener('click', () => this.openCustomColorPicker(color => { this._addRecentColor(color); onClick(color); }));
+        container.appendChild(customBtn);
     }
 
-    getColorCategory(tool) {
-        if (tool === 'fontsize' || tool === 'letterspacing') return null;
-        return { textcolor: 'text', dropcap: 'text', highlight: 'bg' }[tool] || 'border';
+    _addRecentColor(color) {
+        const c = color.toLowerCase();
+        this.recentColors = this.recentColors.filter(rc => rc !== c);
+        this.recentColors.unshift(c);
+        if (this.recentColors.length > this.RECENT_COLORS_MAX) this.recentColors.length = this.RECENT_COLORS_MAX;
+        document.querySelectorAll('.color-board-recent').forEach(row => { const board = row.closest('.color-board'); if (board?._boardOnClick) this._renderRecentRow(row, board._boardOnClick); });
     }
 
-    renderColorSwatches(category) {
-        const container = { text: this.swatchesText, bg: this.swatchesBg, border: this.swatchesBorder }[category];
-        if (!container) return;
-        const fillSwatches = (el, onClick) => {
-            el.innerHTML = '';
-            this.colorHistory[category].forEach(color => {
-                const swatch = document.createElement('div');
-                swatch.className = 'color-swatch';
-                swatch.style.backgroundColor = color;
-                swatch.title = color;
-                swatch.addEventListener('click', () => onClick(color));
-                el.appendChild(swatch);
-            });
-        };
-        fillSwatches(container, color => this.selectSwatchColor(category, color));
-        const calloutContainer = { bg: this.calloutSwatchesBg, border: this.calloutSwatchesBorder }[category];
-        if (calloutContainer) fillSwatches(calloutContainer, color => this.selectCalloutSwatchColor(category, color));
+    _renderRecentRow(row, onClick) {
+        const board = row.closest('.color-board'); if (board) board._boardOnClick = onClick;
+        row.innerHTML = '';
+        if (!this.recentColors.length) { row.style.display = 'none'; return; }
+        row.style.display = '';
+        const label = document.createElement('div'); label.className = 'color-board-recent-label'; label.textContent = 'Recent';
+        const swatches = document.createElement('div'); swatches.className = 'color-board-recent-swatches';
+        this.recentColors.forEach(color => swatches.appendChild(this._makeSwatch(color, onClick)));
+        row.appendChild(label); row.appendChild(swatches);
     }
 
-    selectSwatchColor(category, color) {
-        if (category === 'text') { this.textColor = color; this.pickerText.value = color; this.textcolorIcon.style.color = color; this.previewText.style.backgroundColor = color; }
-        else if (category === 'bg') { this.bgColor = color; this.pickerBg.value = color; this.highlightIcon.style.background = color; this.previewBg.style.backgroundColor = color; }
-        else { this.borderColor = color; this.pickerBorder.value = color; this.previewBorder.style.backgroundColor = color; }
+    _markBoardSelected(board, color) {
+        if (!board) return;
+        board.querySelectorAll('.color-board-swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color.toLowerCase()));
+    }
+
+    selectBoardColor(picker, color) {
+        if (picker === 'text') { this.textColor = color; this.textcolorIcon.style.color = color; this.previewText.style.backgroundColor = color; }
+        else if (picker === 'bg') { this.bgColor = color; this.highlightIcon.style.background = color; this.previewBg.style.backgroundColor = color; }
+        else { this.borderColor = color; this.previewBorder.style.backgroundColor = color; }
+        const board = this.colorPopovers[picker].querySelector('.color-board');
+        this._markBoardSelected(board, color);
         this.closeAllColorPopovers();
-    }
-
-    selectCalloutSwatchColor(category, color) {
-        if (category === 'border') { this.calloutBorderPicker.value = color; }
-        else if (category === 'bg') { this.calloutBgPicker.value = color; }
     }
 
     toggleColorPopover(picker) {
@@ -1003,6 +937,136 @@ class DocumentTypography {
         Object.values(this.colorPopovers).forEach(p => p.classList.remove('visible'));
         this.colorTriggers.forEach(t => t.classList.remove('active'));
         this.adjustFloatingToolbarForPopovers();
+    }
+
+    initCustomColorPicker() {
+        const $ = id => document.getElementById(id);
+        this._ccModal = $('customColorModal'); this._ccGradient = $('colorGradient'); this._ccHueStrip = $('colorHueStrip');
+        this._ccHexInput = $('customHexInput'); this._ccR = $('customR'); this._ccG = $('customG'); this._ccB = $('customB');
+        this._ccPreview = $('customColorPreview'); this._ccApplyBtn = $('customColorApply'); this._ccCancelBtn = $('customColorCancel');
+        this._ccHue = 0; this._ccSat = 1; this._ccVal = 1; this._customOnSelect = null;
+
+        this._drawHueStrip();
+        this._drawGradient(0);
+
+        this._setupCanvasDrag(this._ccGradient, e => this._pickGradient(e));
+        this._setupCanvasDrag(this._ccHueStrip, e => this._pickHue(e));
+
+        const hexRe = /^#[0-9a-fA-F]{6}$/;
+        const setHsv = (r, g, b) => { const [h, s, v] = this._rgbToHsv(r, g, b); this._ccHue = h; this._ccSat = s; this._ccVal = v; this._drawGradient(h); };
+        this._ccHexInput.addEventListener('input', () => {
+            const hex = this._ccHexInput.value.trim();
+            if (!hexRe.test(hex)) return;
+            const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+            this._ccR.value = r; this._ccG.value = g; this._ccB.value = b;
+            setHsv(r, g, b); this._ccPreview.style.backgroundColor = hex;
+        });
+        const onRgbChange = () => {
+            const clamp = v => Math.min(255, Math.max(0, parseInt(v) || 0));
+            const r = clamp(this._ccR.value), g = clamp(this._ccG.value), b = clamp(this._ccB.value);
+            const hex = '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+            this._ccHexInput.value = hex; setHsv(r, g, b); this._ccPreview.style.backgroundColor = hex;
+        };
+        [this._ccR, this._ccG, this._ccB].forEach(el => el.addEventListener('input', onRgbChange));
+        this._ccApplyBtn.addEventListener('click', () => { const hex = this._ccHexInput.value.trim(); if (this._customOnSelect && hexRe.test(hex)) this._customOnSelect(hex); this.closeCustomColorPicker(); });
+        this._ccCancelBtn.addEventListener('click', () => this.closeCustomColorPicker());
+        this._ccModal.addEventListener('click', e => { if (e.target === this._ccModal) this.closeCustomColorPicker(); });
+    }
+
+    openCustomColorPicker(onSelect) {
+        this._customOnSelect = onSelect;
+        this.closeAllColorPopovers();
+        this._closeToolPopovers();
+        this._ccModal.classList.add('visible');
+        // Initialize with current preview color
+        this._drawHueStrip();
+        this._drawGradient(this._ccHue);
+        this._updateCustomColorFromHsv();
+    }
+
+    closeCustomColorPicker() {
+        this._ccModal.classList.remove('visible');
+        this._customOnSelect = null;
+    }
+
+    _setupCanvasDrag(canvas, onMove) {
+        let dragging = false;
+        canvas.addEventListener('mousedown', e => { dragging = true; onMove(e); });
+        document.addEventListener('mousemove', e => { if (dragging) onMove(e); });
+        document.addEventListener('mouseup', () => { dragging = false; });
+    }
+
+    _pickGradient(e) {
+        const rect = this._ccGradient.getBoundingClientRect();
+        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+        this._ccSat = x / rect.width;
+        this._ccVal = 1 - y / rect.height;
+        this._updateCustomColorFromHsv();
+    }
+
+    _pickHue(e) {
+        const rect = this._ccHueStrip.getBoundingClientRect();
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+        this._ccHue = (y / rect.height) * 360;
+        this._drawGradient(this._ccHue);
+        this._updateCustomColorFromHsv();
+    }
+
+    _updateCustomColorFromHsv() {
+        const [r, g, b] = this._hsvToRgb(this._ccHue, this._ccSat, this._ccVal);
+        const hex = '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+        this._ccR.value = r; this._ccG.value = g; this._ccB.value = b;
+        this._ccHexInput.value = hex;
+        this._ccPreview.style.backgroundColor = hex;
+    }
+
+    _drawGradient(hue) {
+        const ctx = this._ccGradient.getContext('2d'), w = this._ccGradient.width, h = this._ccGradient.height;
+        const [r, g, b] = this._hsvToRgb(hue, 1, 1);
+        ctx.fillStyle = `rgb(${r},${g},${b})`; ctx.fillRect(0, 0, w, h);
+        const wg = ctx.createLinearGradient(0, 0, w, 0); wg.addColorStop(0, '#fff'); wg.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = wg; ctx.fillRect(0, 0, w, h);
+        const bg = ctx.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, '#000');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+    }
+
+    _drawHueStrip() {
+        const ctx = this._ccHueStrip.getContext('2d');
+        const w = this._ccHueStrip.width, h = this._ccHueStrip.height;
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        const stops = [0, 0.17, 0.33, 0.5, 0.67, 0.83, 1];
+        const colors = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ff0000'];
+        stops.forEach((s, i) => grad.addColorStop(s, colors[i]));
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+    }
+
+    _hsvToRgb(h, s, v) {
+        h = ((h % 360) + 360) % 360;
+        const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
+        let r1, g1, b1;
+        if (h < 60) { r1 = c; g1 = x; b1 = 0; }
+        else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
+        else if (h < 180) { r1 = 0; g1 = c; b1 = x; }
+        else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
+        else if (h < 300) { r1 = x; g1 = 0; b1 = c; }
+        else { r1 = c; g1 = 0; b1 = x; }
+        return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)];
+    }
+
+    _rgbToHsv(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+        let h = 0;
+        if (d !== 0) {
+            if (max === r) h = 60 * (((g - b) / d) % 6);
+            else if (max === g) h = 60 * ((b - r) / d + 2);
+            else h = 60 * ((r - g) / d + 4);
+        }
+        if (h < 0) h += 360;
+        const s = max === 0 ? 0 : d / max;
+        return [h, s, max];
     }
 
     showToast(message, type = 'success') {
@@ -1064,7 +1128,7 @@ class DocumentTypography {
         const matches = this.findOccurrences(style.text, style.paraIndex, style.startOffset, style.endOffset);
         if (!matches.length) return;
         const truncated = style.text.length > 15 ? style.text.substring(0, 15) + '...' : style.text;
-        const typeLabel = { fontsize: 'font size', letterspacing: 'letter spacing', textcolor: 'text color', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', dropcap: 'drop cap' }[style.type] || style.type;
+        const typeLabel = this.TYPE_LABELS[style.type] || style.type;
         this.showActionToast(
             `Found ${matches.length} more "${truncated}" \u2014 apply ${typeLabel} to all?`,
             [
@@ -1075,24 +1139,10 @@ class DocumentTypography {
     }
 
     applyStyleToAllOccurrences(originalStyle, matches) {
-        const newStyles = matches.map(match => ({
-            id: 'style-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            type: originalStyle.type,
-            text: originalStyle.text,
-            color: originalStyle.color,
-            paraIndex: match.paraIndex,
-            startOffset: match.startOffset,
-            endOffset: match.endOffset,
-            created_at: new Date().toISOString(),
-            ...(originalStyle.bgColor ? { bgColor: originalStyle.bgColor } : {})
-        }));
-        this.history.push({ action: 'batch_add', styles: newStyles });
-        this.redoStack = [];
-        this.undoBtn.disabled = false;
-        this.redoBtn.disabled = true;
+        const newStyles = matches.map(m => ({ id: this._genId(), type: originalStyle.type, text: originalStyle.text, color: originalStyle.color, paraIndex: m.paraIndex, startOffset: m.startOffset, endOffset: m.endOffset, created_at: new Date().toISOString(), ...(originalStyle.bgColor ? { bgColor: originalStyle.bgColor } : {}) }));
+        this._pushHistory({ action: 'batch_add', styles: newStyles });
         newStyles.forEach(s => { this.styles.push(s); this.logAction('add', s); });
-        this.applyAllStyles();
-        this.updateStylesList();
+        this._refreshViews();
         this.showToast(`Applied ${originalStyle.type} to ${newStyles.length} more occurrence${newStyles.length > 1 ? 's' : ''}`, 'success');
     }
 }

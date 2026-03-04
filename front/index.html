@@ -36,6 +36,26 @@
 
         <div class="main-content">
             <div class="toolbar" id="toolbar">
+                <div class="toolbar-group toolbar-undo">
+                    <span class="toolbar-label">History</span>
+                    <div class="toolbar-buttons">
+                        <button id="undoBtn" class="tool-btn" data-tooltip-title="Undo" data-tooltip="Ctrl+Z" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7v6h6"/>
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                            </svg>
+                        </button>
+                        <button id="redoBtn" class="tool-btn" data-tooltip-title="Redo" data-tooltip="Ctrl+Y" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 7v6h-6"/>
+                                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="toolbar-divider"></div>
+
                 <div class="toolbar-group toolbar-textstyle">
                     <span class="toolbar-label">Text Style</span>
                     <div class="toolbar-buttons">
@@ -116,7 +136,7 @@
                                 <div class="popover-label">Letter Spacing (px)</div>
                                 <div class="size-stepper">
                                     <button class="stepper-btn" id="letterSpacingMinus" title="Decrease Spacing">&minus;</button>
-                                    <input type="number" id="letterSpacingInput" class="stepper-input" min="0" max="100" value="4">
+                                    <input type="number" id="letterSpacingInput" class="stepper-input" min="0" max="100" value="0">
                                     <button class="stepper-btn" id="letterSpacingPlus" title="Increase Spacing">+</button>
                                 </div>
                             </div>
@@ -142,27 +162,17 @@
                             <button class="tool-btn" id="calloutBtn" data-tooltip-title="Callout" data-tooltip="Q">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="2" y="3" width="20" height="18" rx="3"/>
-                                    <line x1="6" y1="8" x2="18" y2="8"/>
-                                    <line x1="6" y1="12" x2="18" y2="12"/>
-                                    <line x1="6" y1="16" x2="14" y2="16"/>
+                                    <text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text>
                                 </svg>
                             </button>
                             <div class="tool-popover callout-popover" id="calloutPopover">
                                 <div class="callout-color-section">
                                     <div class="popover-label">Border</div>
-                                    <div class="color-history-swatches" id="calloutSwatchesBorder"></div>
-                                    <div class="callout-custom-row">
-                                        <input type="color" id="calloutBorderPicker" value="#000000">
-                                        <span>Custom</span>
-                                    </div>
+                                    <div class="color-board" id="calloutBoardBorder"></div>
                                 </div>
                                 <div class="callout-color-section">
                                     <div class="popover-label">Fill</div>
-                                    <div class="color-history-swatches" id="calloutSwatchesBg"></div>
-                                    <div class="callout-custom-row">
-                                        <input type="color" id="calloutBgPicker" value="#FFFFFF">
-                                        <span>Custom</span>
-                                    </div>
+                                    <div class="color-board" id="calloutBoardBg"></div>
                                 </div>
                                 <button class="callout-apply-btn" id="calloutApplyBtn">Apply</button>
                             </div>
@@ -188,12 +198,7 @@
                                 <span class="color-trigger-label">Text</span>
                             </button>
                             <div class="color-picker-popover" id="colorPopoverText">
-                                <div class="popover-label">Recent</div>
-                                <div class="color-history-swatches" id="swatchesText"></div>
-                                <div class="color-popover-custom">
-                                    <input type="color" id="pickerText" value="#E53935">
-                                    <span>Custom</span>
-                                </div>
+                                <div class="color-board" data-picker="text"></div>
                             </div>
                         </div>
                         <div class="color-picker-item">
@@ -202,12 +207,7 @@
                                 <span class="color-trigger-label">Fill</span>
                             </button>
                             <div class="color-picker-popover" id="colorPopoverBg">
-                                <div class="popover-label">Recent</div>
-                                <div class="color-history-swatches" id="swatchesBg"></div>
-                                <div class="color-popover-custom">
-                                    <input type="color" id="pickerBg" value="#FFEB3B">
-                                    <span>Custom</span>
-                                </div>
+                                <div class="color-board" data-picker="bg"></div>
                             </div>
                         </div>
                         <div class="color-picker-item">
@@ -216,12 +216,7 @@
                                 <span class="color-trigger-label">Line</span>
                             </button>
                             <div class="color-picker-popover" id="colorPopoverBorder">
-                                <div class="popover-label">Recent</div>
-                                <div class="color-history-swatches" id="swatchesBorder"></div>
-                                <div class="color-popover-custom">
-                                    <input type="color" id="pickerBorder" value="#000000">
-                                    <span>Custom</span>
-                                </div>
+                                <div class="color-board" data-picker="border"></div>
                             </div>
                         </div>
                     </div>
@@ -232,18 +227,6 @@
                 <div class="toolbar-group toolbar-actions">
                     <span class="toolbar-label">Actions</span>
                     <div class="toolbar-buttons">
-                        <button id="undoBtn" class="tool-btn" data-tooltip-title="Undo" data-tooltip="Ctrl+Z" disabled>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 7v6h6"/>
-                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-                            </svg>
-                        </button>
-                        <button id="redoBtn" class="tool-btn" data-tooltip-title="Redo" data-tooltip="Ctrl+Y" disabled>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 7v6h-6"/>
-                                <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>
-                            </svg>
-                        </button>
                         <button id="clearBtn" class="tool-btn" data-tooltip-title="Clear All">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"/>
@@ -405,7 +388,7 @@
                     <div class="ft-popover-label">Letter Spacing (px)</div>
                     <div class="ft-size-stepper">
                         <button class="ft-stepper-btn" id="ftLetterSpacingMinus">&minus;</button>
-                        <input type="number" id="ftLetterSpacingInput" class="ft-stepper-input" min="0" max="100" value="4">
+                        <input type="number" id="ftLetterSpacingInput" class="ft-stepper-input" min="0" max="100" value="0">
                         <button class="ft-stepper-btn" id="ftLetterSpacingPlus">+</button>
                     </div>
                 </div>
@@ -424,6 +407,43 @@
         </div>
 
         <div class="toast-container" id="toastContainer"></div>
+
+        <div class="custom-color-modal" id="customColorModal">
+            <div class="custom-color-content">
+                <div class="custom-color-header">Custom Color</div>
+                <div class="custom-color-body">
+                    <div class="custom-color-canvas-area">
+                        <canvas id="colorGradient" width="220" height="160"></canvas>
+                        <canvas id="colorHueStrip" width="20" height="160"></canvas>
+                    </div>
+                    <div class="custom-color-inputs">
+                        <div class="custom-color-preview-box" id="customColorPreview"></div>
+                        <div class="custom-color-field">
+                            <label>Hex</label>
+                            <input type="text" id="customHexInput" maxlength="7" placeholder="#000000">
+                        </div>
+                        <div class="custom-color-rgb">
+                            <div class="custom-color-field">
+                                <label>R</label>
+                                <input type="number" id="customR" min="0" max="255" value="0">
+                            </div>
+                            <div class="custom-color-field">
+                                <label>G</label>
+                                <input type="number" id="customG" min="0" max="255" value="0">
+                            </div>
+                            <div class="custom-color-field">
+                                <label>B</label>
+                                <input type="number" id="customB" min="0" max="255" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="custom-color-actions">
+                    <button id="customColorCancel" class="custom-color-btn cancel">Cancel</button>
+                    <button id="customColorApply" class="custom-color-btn apply">Apply</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
