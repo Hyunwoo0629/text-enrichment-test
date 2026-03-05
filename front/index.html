@@ -81,8 +81,8 @@
                         <button class="tool-btn" data-tool="bold" data-tooltip-title="Bold" data-tooltip="Ctrl+B"><strong>B</strong></button>
                         <button class="tool-btn" data-tool="italic" data-tooltip-title="Italic" data-tooltip="Ctrl+I"><em>I</em></button>
                         <button class="tool-btn" data-tool="underline" data-tooltip-title="Underline" data-tooltip="Ctrl+U"><u>U</u></button>
-                        <button class="tool-btn" data-tool="overline" data-tooltip-title="Overline" data-tooltip="O">O̅</button>
-                        <button class="tool-btn" data-tool="wavyunderline" data-tooltip-title="Wavy Underline" data-tooltip="W"><span style="text-decoration:underline wavy">W</span></button>
+                        <button class="tool-btn" data-tool="overline" data-tooltip-title="Overline" data-tooltip="Ctrl+O">O̅</button>
+                        <button class="tool-btn" data-tool="wavyunderline" data-tooltip-title="Wavy Underline" data-tooltip="Ctrl+W"><span style="text-decoration:underline wavy">W</span></button>
                         <button class="tool-btn" data-tool="strikethrough" data-tooltip-title="Strikethrough"><s>S</s></button>
                         <div class="tool-btn-wrapper">
                             <button class="tool-btn" id="scriptSizeBtn" data-tooltip-title="Script Size"><span style="font-size:13px;position:relative">X<span style="font-size:7px;position:absolute;top:-3px;right:-7px">2</span></span></button>
@@ -102,8 +102,8 @@
                 <div class="toolbar-group">
                     <span class="toolbar-label">Color</span>
                     <div class="toolbar-buttons">
-                        <button class="tool-btn" data-tool="highlight" data-tooltip-title="Highlight" data-tooltip="H"><span id="highlightIcon" style="background:#FFEB3B;padding:0 3px;border-radius:2px;line-height:1.1">A</span></button>
-                        <button class="tool-btn" data-tool="textcolor" data-tooltip-title="Text Color" data-tooltip="T"><span id="textcolorIcon" style="color:#E53935">A</span></button>
+                        <button class="tool-btn" data-tool="highlight" data-tooltip-title="Highlight"><span id="highlightIcon" style="background:#FFEB3B;padding:0 3px;border-radius:2px;line-height:1.1">A</span></button>
+                        <button class="tool-btn" data-tool="textcolor" data-tooltip-title="Text Color"><span id="textcolorIcon" style="color:#E53935">A</span></button>
                     </div>
                 </div>
 
@@ -112,8 +112,8 @@
                 <div class="toolbar-group">
                     <span class="toolbar-label">Border</span>
                     <div class="toolbar-buttons">
-                        <button class="tool-btn tool-btn-lg" data-tool="border" data-tooltip-title="Border" data-tooltip="R">□</button>
-                        <button class="tool-btn tool-btn-lg" data-tool="circle" data-tooltip-title="Circle" data-tooltip="C">○</button>
+                        <button class="tool-btn tool-btn-lg" data-tool="border" data-tooltip-title="Border">□</button>
+                        <button class="tool-btn tool-btn-lg" data-tool="circle" data-tooltip-title="Circle">○</button>
                     </div>
                 </div>
 
@@ -141,7 +141,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="tool-btn" data-tool="dropcap" data-tooltip-title="Drop Cap" data-tooltip="D">
+                        <button class="tool-btn" data-tool="dropcap" data-tooltip-title="Drop Cap">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text>
                                 <line x1="15" y1="5" x2="23" y2="5"/>
@@ -159,7 +159,7 @@
                     <span class="toolbar-label">Insert</span>
                     <div class="toolbar-buttons">
                         <div class="tool-btn-wrapper">
-                            <button class="tool-btn" id="calloutBtn" data-tooltip-title="Callout" data-tooltip="Q">
+                            <button class="tool-btn" id="calloutBtn" data-tooltip-title="Callout">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="2" y="3" width="20" height="18" rx="3"/>
                                     <text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text>
@@ -187,40 +187,6 @@
                     </div>
                 </div>
 
-                <div class="toolbar-divider"></div>
-
-                <div class="toolbar-group toolbar-colors">
-                    <span class="toolbar-label">Color Palette</span>
-                    <div class="toolbar-buttons">
-                        <div class="color-picker-item">
-                            <button class="color-trigger" data-picker="text">
-                                <span class="color-preview" id="previewText" style="background-color:#E53935"></span>
-                                <span class="color-trigger-label">Text</span>
-                            </button>
-                            <div class="color-picker-popover" id="colorPopoverText">
-                                <div class="color-board" data-picker="text"></div>
-                            </div>
-                        </div>
-                        <div class="color-picker-item">
-                            <button class="color-trigger" data-picker="bg">
-                                <span class="color-preview" id="previewBg" style="background-color:#FFEB3B"></span>
-                                <span class="color-trigger-label">Fill</span>
-                            </button>
-                            <div class="color-picker-popover" id="colorPopoverBg">
-                                <div class="color-board" data-picker="bg"></div>
-                            </div>
-                        </div>
-                        <div class="color-picker-item">
-                            <button class="color-trigger" data-picker="border">
-                                <span class="color-preview" id="previewBorder" style="background-color:#000000"></span>
-                                <span class="color-trigger-label">Line</span>
-                            </button>
-                            <div class="color-picker-popover" id="colorPopoverBorder">
-                                <div class="color-board" data-picker="border"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="toolbar-divider"></div>
 
@@ -443,6 +409,9 @@
                     <button id="customColorApply" class="custom-color-btn apply">Apply</button>
                 </div>
             </div>
+        </div>
+        <div class="shared-color-popover" id="sharedColorPopover">
+            <div class="color-board" id="sharedColorBoard"></div>
         </div>
     </div>
 

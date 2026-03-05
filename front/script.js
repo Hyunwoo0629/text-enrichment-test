@@ -20,6 +20,11 @@ class DocumentTypography {
         this.apiBase = '/api';
         this.recentColors = [];
         this.RECENT_COLORS_MAX = 10;
+        this.expandedTypeGroups = new Set();
+        this._activeColorTool = null;
+        this._activeColorAnchor = null;
+        this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'dropcap']);
+        this.TOOL_COLOR_MAP = { textcolor: 'text', dropcap: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
         this.TYPE_LABELS = { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' };
         this.COLOR_PALETTE = [
             ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
@@ -43,12 +48,10 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = 'Select text to apply styles'; }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover previewText previewBg previewBorder floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomLevelDisplay ftExistingStyles'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.fontOptions = document.querySelectorAll('.font-option');
         this.scriptOptions = document.querySelectorAll('.script-option');
-        this.colorPopovers = { text: document.getElementById('colorPopoverText'), bg: document.getElementById('colorPopoverBg'), border: document.getElementById('colorPopoverBorder') };
-        this.colorTriggers = document.querySelectorAll('.color-trigger');
     }
 
     initEventListeners() {
@@ -58,9 +61,9 @@ class DocumentTypography {
         this.documentViewport.addEventListener('dragover', e => { e.preventDefault(); this.documentViewport.classList.add('drag-over'); });
         this.documentViewport.addEventListener('dragleave', e => { e.preventDefault(); this.documentViewport.classList.remove('drag-over'); });
         this.documentViewport.addEventListener('drop', e => this.handleDrop(e));
-        this.toolButtons.forEach(btn => { if (btn.dataset.tool) btn.addEventListener('click', () => this.selectTool(btn.dataset.tool)); });
-        this.colorTriggers.forEach(trigger => trigger.addEventListener('click', e => { e.stopPropagation(); this.toggleColorPopover(trigger.dataset.picker); }));
-        document.addEventListener('click', e => { if (!e.target.closest('.color-picker-item')) this.closeAllColorPopovers(); });
+        this.toolButtons.forEach(btn => { if (btn.dataset.tool) btn.addEventListener('click', () => { if (this.COLOR_TOOLS.has(btn.dataset.tool)) { this.showSharedColorPopover(btn.dataset.tool, btn); } else { this.selectTool(btn.dataset.tool); } }); });
+        document.addEventListener('click', e => { if (!e.target.closest('.shared-color-popover') && !e.target.closest('.tool-btn') && !e.target.closest('.ft-btn')) this.closeSharedColorPopover(); });
+        this.sharedColorPopover.addEventListener('mousedown', e => e.preventDefault());
         this._initStepperWithInput(this.fontSizeMinus, this.fontSizePlus, this.fontSizeInput, 1, 200, 'fontSize', 'fontsize', v => v > 0);
         this._initStepperWithInput(this.letterSpacingMinus, this.letterSpacingPlus, this.letterSpacingInput, 0, 100, 'letterSpacing', 'letterspacing', v => v >= 0);
         this.letterSpacingBtn.addEventListener('click', () => this.toggleLetterSpacingPopover());
@@ -105,6 +108,7 @@ class DocumentTypography {
                 if (tool === 'fontfamily') { this.toggleFtPopover('ftFontFamilyPopover'); return; }
                 if (tool === 'scriptsize') { this.toggleFtPopover('ftScriptSizePopover'); return; }
                 if (tool === 'letterspacing') { this.toggleFtPopover('ftLetterSpacingPopover'); return; }
+                if (this.COLOR_TOOLS.has(tool)) { this.closeFtPopovers(); this.showSharedColorPopover(tool, btn); return; }
                 this.closeFtPopovers();
                 this.applyToolToSelection(tool);
                 this.hideFloatingToolbar();
@@ -436,7 +440,7 @@ class DocumentTypography {
     handleTextSelection(e) {
         if (!this.docId) return;
         if (this.pendingIconData) return;
-        if (e.target.closest('.toolbar') || e.target.closest('.styles-panel') || e.target.closest('.app-header') || e.target.closest('.modal-overlay') || e.target.closest('.floating-toolbar')) return;
+        if (e.target.closest('.toolbar') || e.target.closest('.styles-panel') || e.target.closest('.app-header') || e.target.closest('.modal-overlay') || e.target.closest('.floating-toolbar') || e.target.closest('.shared-color-popover')) return;
 
         const selection = window.getSelection();
         const range = selection.rangeCount ? selection.getRangeAt(0) : null;
@@ -535,7 +539,7 @@ class DocumentTypography {
         if (!tb.classList.contains('visible') || !this._ftNaturalPos) return;
         const { left: natLeft, top, width, height } = this._ftNaturalPos;
         let left = natLeft;
-        const openPopovers = document.querySelectorAll('.toolbar .tool-popover.visible, .toolbar .color-picker-popover.visible');
+        const openPopovers = document.querySelectorAll('.toolbar .tool-popover.visible, .shared-color-popover.visible');
         openPopovers.forEach(popover => {
             const pr = popover.getBoundingClientRect();
             const tbBottom = top + height;
@@ -555,6 +559,7 @@ class DocumentTypography {
     hideFloatingToolbar() {
         this.floatingToolbar.classList.remove('visible');
         this.closeFtPopovers();
+        this.closeSharedColorPopover();
     }
 
     toggleFtPopover(popoverId) {
@@ -577,6 +582,7 @@ class DocumentTypography {
             p.classList.remove('visible'); b.classList.remove('active');
         }
         this.fontOptions.forEach(o => o.classList.remove('active'));
+        this.closeSharedColorPopover();
     }
 
     getParentParagraph(node) {
@@ -660,21 +666,18 @@ class DocumentTypography {
         }
         const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X\u00B2', subscript: 'X\u2082', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
         const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing'];
-        const categories = [
-            ['Text Style', ['bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'superscript', 'subscript', 'sansserif', 'mono', 'rounded', 'smallcaps', 'fontsize']],
-            ['Color', ['highlight', 'textcolor']],
-            ['Border', ['border', 'circle']],
-            ['Layout', ['letterspacing', 'dropcap']],
-            ['Insert', ['callout', 'inlineicon']]
+        const typeOrder = [
+            'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough',
+            'superscript', 'subscript', 'sansserif', 'mono', 'rounded', 'smallcaps', 'fontsize',
+            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'inlineicon'
         ];
         const renderItem = s => {
-            const iconStyle = noColorIcon.includes(s.type) ? '' : ` style="color:${s.color}"`;
-            const displayType = s.type === 'fontsize' ? `font size (${s.color})` : s.type === 'letterspacing' ? `letter spacing (${s.color})` : (this.TYPE_LABELS[s.type] || s.type);
+            let detail = '';
+            if (s.type === 'fontsize') detail = ` <span class="style-item-param">(${s.color})</span>`;
+            else if (s.type === 'letterspacing') detail = ` <span class="style-item-param">(${s.color})</span>`;
             return `<div class="style-item" data-id="${s.id}">
-                <div class="style-icon"${iconStyle}>${icons[s.type] || '•'}</div>
                 <div class="style-details">
-                    <div class="style-type">${displayType}</div>
-                    <div class="style-preview">"${s.text.substring(0, 20)}${s.text.length > 20 ? '...' : ''}"</div>
+                    <div class="style-preview">"${s.text.substring(0, 30)}${s.text.length > 30 ? '...' : ''}"${detail}</div>
                 </div>
                 <button class="style-delete" title="Delete">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -682,7 +685,6 @@ class DocumentTypography {
             </div>`;
         };
 
-        // Frequently used techniques (5+ uses)
         const typeCounts = {};
         this.styles.forEach(s => typeCounts[s.type] = (typeCounts[s.type] || 0) + 1);
         const frequent = Object.entries(typeCounts).filter(([, c]) => c >= 5).sort((a, b) => b[1] - a[1]);
@@ -696,16 +698,58 @@ class DocumentTypography {
             html += '</div></div>';
         }
 
-        // Categorized styles
-        categories.forEach(([catName, types]) => {
-            const catStyles = this.styles.filter(s => types.includes(s.type));
-            if (!catStyles.length) return;
-            html += `<div class="style-category"><div class="style-category-header">${catName}</div>`;
-            html += catStyles.map(renderItem).join('');
-            html += '</div>';
+        const typeMap = new Map();
+        this.styles.forEach(s => {
+            if (!typeMap.has(s.type)) typeMap.set(s.type, []);
+            typeMap.get(s.type).push(s);
+        });
+        const sortedTypes = [...typeMap.keys()].sort((a, b) => {
+            const ia = typeOrder.indexOf(a);
+            const ib = typeOrder.indexOf(b);
+            return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
         });
 
+        sortedTypes.forEach(type => {
+            const items = typeMap.get(type);
+            const isExpanded = this.expandedTypeGroups.has(type);
+            const label = this.TYPE_LABELS[type] || type;
+            const icon = icons[type] || '•';
+            const iconStyle = noColorIcon.includes(type) ? '' : ` style="color:${items[0].color}"`;
+            const chevron = `<svg class="type-group-chevron${isExpanded ? ' expanded' : ''}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+            html += `<div class="style-type-group" data-type="${type}">`;
+            html += `<div class="style-type-group-header" data-type="${type}">`;
+            html += `<div class="style-type-group-icon"${iconStyle}>${icon}</div>`;
+            html += `<span class="style-type-group-label">${label}</span>`;
+            html += `<span class="style-type-group-count">${items.length}</span>`;
+            html += chevron;
+            html += `</div>`;
+
+            if (isExpanded) {
+                html += `<div class="style-type-group-items">`;
+                html += items.map(renderItem).join('');
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+        });
+
+        const scrollPos = this.stylesList.scrollTop;
         this.stylesList.innerHTML = html;
+        this.stylesList.scrollTop = scrollPos;
+
+        this.stylesList.querySelectorAll('.style-type-group-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const type = header.dataset.type;
+                if (this.expandedTypeGroups.has(type)) {
+                    this.expandedTypeGroups.delete(type);
+                } else {
+                    this.expandedTypeGroups.add(type);
+                }
+                this.updateStylesList();
+            });
+        });
+
         this.stylesList.querySelectorAll('.style-delete').forEach(btn => {
             btn.addEventListener('click', e => { e.stopPropagation(); this.deleteStyle(e.currentTarget.closest('.style-item').dataset.id); });
         });
@@ -838,32 +882,23 @@ class DocumentTypography {
     handleKeyboard(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         const mod = e.ctrlKey || e.metaKey;
-        const shortcuts = { z: () => this.undo(), y: () => this.redo(), s: () => this.saveStyles(), b: () => this.selectTool('bold'), i: () => this.selectTool('italic'), u: () => this.selectTool('underline') };
-        const keys = { h: 'highlight', t: 'textcolor', r: 'border', c: 'circle', o: 'overline', w: 'wavyunderline', d: 'dropcap' };
+        const shortcuts = { z: () => this.undo(), y: () => this.redo(), s: () => this.saveStyles(), b: () => this.selectTool('bold'), i: () => this.selectTool('italic'), u: () => this.selectTool('underline'), o: () => this.selectTool('overline'), w: () => this.selectTool('wavyunderline') };
 
         if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); this.setZoom(this.zoomLevel + this.ZOOM_STEP); return; }
         if (mod && e.key === '-') { e.preventDefault(); this.setZoom(this.zoomLevel - this.ZOOM_STEP); return; }
         if (mod && e.key === '0') { e.preventDefault(); this.setZoom(100); return; }
         if (mod && shortcuts[e.key]) { e.preventDefault(); shortcuts[e.key](); }
-        else if (!mod && e.key?.toLowerCase() === 'q') this.toggleCalloutPopover();
-        else if (!mod && keys[e.key?.toLowerCase()]) this.selectTool(keys[e.key.toLowerCase()]);
         else if (e.key === 'Escape') {
             if (this.pendingIconData) { this.exitIconPlacementMode(); return; }
             if (this.iconModal.style.display !== 'none') { this.closeIconModal(); return; }
             this._closeToolPopovers();
-            this.closeAllColorPopovers();
+            this.closeSharedColorPopover();
             this.hideFloatingToolbar();
             this._clearSelection();
         }
     }
 
     initColorBoards() {
-        document.querySelectorAll('.color-picker-popover .color-board').forEach(board => {
-            const picker = board.dataset.picker;
-            this.buildColorBoard(board, color => this.selectBoardColor(picker, color));
-            const current = { text: this.textColor, bg: this.bgColor, border: this.borderColor }[picker];
-            this._markBoardSelected(board, current);
-        });
         this.buildColorBoard(this.calloutBoardBorder, color => { this.calloutBorderColor = color; this._markBoardSelected(this.calloutBoardBorder, color); });
         this.buildColorBoard(this.calloutBoardBg, color => { this.calloutBgColor = color; this._markBoardSelected(this.calloutBoardBg, color); });
         this.calloutBorderColor = '#000000';
@@ -913,30 +948,56 @@ class DocumentTypography {
         board.querySelectorAll('.color-board-swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color.toLowerCase()));
     }
 
-    selectBoardColor(picker, color) {
-        if (picker === 'text') { this.textColor = color; this.textcolorIcon.style.color = color; this.previewText.style.backgroundColor = color; }
-        else if (picker === 'bg') { this.bgColor = color; this.highlightIcon.style.background = color; this.previewBg.style.backgroundColor = color; }
-        else { this.borderColor = color; this.previewBorder.style.backgroundColor = color; }
-        const board = this.colorPopovers[picker].querySelector('.color-board');
-        this._markBoardSelected(board, color);
-        this.closeAllColorPopovers();
-    }
-
-    toggleColorPopover(picker) {
-        const popover = this.colorPopovers[picker];
-        const isOpen = popover.classList.contains('visible');
-        this.closeAllColorPopovers();
-        if (!isOpen) {
-            popover.classList.add('visible');
-            popover.closest('.color-picker-item').querySelector('.color-trigger').classList.add('active');
+    showSharedColorPopover(tool, anchorBtn) {
+        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (this._activeColorTool === tool && this.sharedColorPopover.classList.contains('visible')) {
+            this.closeSharedColorPopover();
+            return;
         }
-        this.adjustFloatingToolbarForPopovers();
+        this._closeToolPopovers();
+        this.closeFtPopovers();
+        this._activeColorTool = tool;
+        this._activeColorAnchor = anchorBtn;
+        this.sharedColorBoard.innerHTML = '';
+        this.buildColorBoard(this.sharedColorBoard, color => this._applyColorFromSharedPopover(color));
+        const currentColor = this.getColorForTool(tool);
+        if (typeof currentColor === 'string' && currentColor.startsWith('#')) this._markBoardSelected(this.sharedColorBoard, currentColor);
+        this.sharedColorPopover.classList.add('visible');
+        this._positionSharedPopover(anchorBtn);
     }
 
-    closeAllColorPopovers() {
-        Object.values(this.colorPopovers).forEach(p => p.classList.remove('visible'));
-        this.colorTriggers.forEach(t => t.classList.remove('active'));
-        this.adjustFloatingToolbarForPopovers();
+    _positionSharedPopover(anchorBtn) {
+        const btnRect = anchorBtn.getBoundingClientRect();
+        const popover = this.sharedColorPopover;
+        const popRect = popover.getBoundingClientRect();
+        let left = btnRect.left + btnRect.width / 2 - popRect.width / 2;
+        let top = btnRect.bottom + 4;
+        if (top + popRect.height > window.innerHeight - 8) top = btnRect.top - popRect.height - 4;
+        left = Math.max(8, Math.min(left, window.innerWidth - popRect.width - 8));
+        popover.style.left = left + 'px';
+        popover.style.top = top + 'px';
+    }
+
+    _applyColorFromSharedPopover(color) {
+        const tool = this._activeColorTool;
+        if (!tool) return;
+        const cat = this.TOOL_COLOR_MAP[tool];
+        if (cat === 'text') { this.textColor = color; if (this.textcolorIcon) this.textcolorIcon.style.color = color; }
+        else if (cat === 'bg') { this.bgColor = color; if (this.highlightIcon) this.highlightIcon.style.background = color; }
+        else { this.borderColor = color; }
+        const ftH = this.floatingToolbar.querySelector('.ft-highlight-icon');
+        const ftT = this.floatingToolbar.querySelector('.ft-textcolor-icon');
+        if (ftH) ftH.style.background = this.bgColor;
+        if (ftT) ftT.style.color = this.textColor;
+        this.closeSharedColorPopover();
+        this.applyToolToSelection(tool);
+        this.hideFloatingToolbar();
+    }
+
+    closeSharedColorPopover() {
+        this.sharedColorPopover.classList.remove('visible');
+        this._activeColorTool = null;
+        this._activeColorAnchor = null;
     }
 
     initCustomColorPicker() {
@@ -975,10 +1036,10 @@ class DocumentTypography {
 
     openCustomColorPicker(onSelect) {
         this._customOnSelect = onSelect;
-        this.closeAllColorPopovers();
+        this.closeSharedColorPopover();
         this._closeToolPopovers();
         this._ccModal.classList.add('visible');
-        // Initialize with current preview color
+        
         this._drawHueStrip();
         this._drawGradient(this._ccHue);
         this._updateCustomColorFromHsv();
