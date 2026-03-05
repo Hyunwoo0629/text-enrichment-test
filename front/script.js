@@ -882,7 +882,7 @@ class DocumentTypography {
     handleKeyboard(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         const mod = e.ctrlKey || e.metaKey;
-        const shortcuts = { z: () => this.undo(), y: () => this.redo(), s: () => this.saveStyles(), b: () => this.selectTool('bold'), i: () => this.selectTool('italic'), u: () => this.selectTool('underline'), o: () => this.selectTool('overline'), w: () => this.selectTool('wavyunderline') };
+        const shortcuts = { z: () => this.undo(), y: () => this.redo(), s: () => this.saveStyles(), b: () => this.selectTool('bold'), i: () => this.selectTool('italic'), u: () => this.selectTool('underline'), o: () => this.selectTool('overline') };
 
         if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); this.setZoom(this.zoomLevel + this.ZOOM_STEP); return; }
         if (mod && e.key === '-') { e.preventDefault(); this.setZoom(this.zoomLevel - this.ZOOM_STEP); return; }
