@@ -519,8 +519,7 @@ class DocumentTypography {
             const tag = document.createElement('span');
             tag.className = 'ft-style-tag';
             let label = this.TYPE_LABELS[s.type] || s.type;
-            if (s.type === 'fontsize') label += ` (${parseInt(s.color)}px)`;
-            else if (s.type === 'letterspacing') label += ` (${parseInt(s.color)}px)`;
+            if (s.type === 'fontsize' || s.type === 'letterspacing') label += ` (${parseInt(s.color)}px)`;
             tag.innerHTML = `${label}<button class="ft-style-tag-remove" data-style-id="${s.id}" title="Remove">&times;</button>`;
             tag.querySelector('.ft-style-tag-remove').addEventListener('mousedown', e => e.preventDefault());
             tag.querySelector('.ft-style-tag-remove').addEventListener('click', e => {
@@ -581,7 +580,6 @@ class DocumentTypography {
         for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.calloutPopover, this.calloutBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
         }
-        this.fontOptions.forEach(o => o.classList.remove('active'));
         this.closeSharedColorPopover();
     }
 
@@ -673,8 +671,7 @@ class DocumentTypography {
         ];
         const renderItem = s => {
             let detail = '';
-            if (s.type === 'fontsize') detail = ` <span class="style-item-param">(${s.color})</span>`;
-            else if (s.type === 'letterspacing') detail = ` <span class="style-item-param">(${s.color})</span>`;
+            if (s.type === 'fontsize' || s.type === 'letterspacing') detail = ` <span class="style-item-param">(${s.color})</span>`;
             return `<div class="style-item" data-id="${s.id}">
                 <div class="style-details">
                     <div class="style-preview">"${s.text.substring(0, 30)}${s.text.length > 30 ? '...' : ''}"${detail}</div>
@@ -892,7 +889,6 @@ class DocumentTypography {
             if (this.pendingIconData) { this.exitIconPlacementMode(); return; }
             if (this.iconModal.style.display !== 'none') { this.closeIconModal(); return; }
             this._closeToolPopovers();
-            this.closeSharedColorPopover();
             this.hideFloatingToolbar();
             this._clearSelection();
         }

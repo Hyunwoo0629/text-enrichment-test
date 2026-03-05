@@ -202,9 +202,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 
 .style-item { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: var(--space-sm); transition: all var(--transition); }
 .style-item:hover { border-color: var(--color-border-dark); }
-.style-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-sm); flex-shrink: 0; font-size: 12px; }
 .style-details { flex: 1; min-width: 0; }
-.style-type { font-size: 12px; font-weight: 500; color: var(--color-text); text-transform: capitalize; }
 .style-preview { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .style-delete { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; color: var(--color-text-muted); cursor: pointer; border-radius: var(--radius-sm); transition: all var(--transition); opacity: 0; }
 .style-item:hover .style-delete { opacity: 1; }
