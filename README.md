@@ -92,40 +92,6 @@ OPENAI_API_KEY="your-api-key"   # Required for icon generation
 DOMAIN="yourdomain.com"         # Optional, for HTTPS deployment
 ```
 
-### Docker Deployment
-
-```bash
-# Copy and configure environment
-cp .env.example .env
-
-# Deploy (installs Docker, configures firewall, obtains SSL cert, starts containers)
-chmod +x deploy.sh
-./deploy.sh
-```
-
-The deploy script handles:
-1. Docker installation (Ubuntu)
-2. UFW firewall configuration (ports 22, 80, 443)
-3. SSL certificate via Let's Encrypt (if `DOMAIN` is set)
-4. Building and starting Docker Compose services
-
-Production runs on ports **80** (HTTP) and **443** (HTTPS) via Nginx reverse proxy.
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| POST | `/api/upload` | Upload a .docx file |
-| GET | `/api/documents` | List all documents |
-| GET | `/api/document/<id>` | Get document data |
-| DELETE | `/api/document/<id>` | Delete a document |
-| POST | `/api/document/<id>/styles` | Save styles |
-| POST | `/api/document/<id>/log` | Log enrichment actions |
-| POST | `/api/document/<id>/export` | Export document to PNG |
-| GET | `/api/document/<id>/download` | Download exported PNG |
-| POST | `/api/generate-icon` | Generate SVG icon from text description |
-
 ## Technology Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
