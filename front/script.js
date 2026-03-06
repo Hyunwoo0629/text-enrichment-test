@@ -18,7 +18,7 @@ class DocumentTypography {
         this.ZOOM_MAX = 200;
         this.ZOOM_STEP = 10;
         this.apiBase = '/api';
-        this.recentColors = [];
+        this.recentColors = { text: [], bg: [], border: [] };
         this.RECENT_COLORS_MAX = 10;
         this.expandedTypeGroups = new Set();
         this._activeColorTool = null;
@@ -613,6 +613,8 @@ class DocumentTypography {
         const stylesByPara = {};
         this.styles.forEach(s => (stylesByPara[s.paraIndex] ??= []).push(s));
 
+        const borderTypes = new Set(['border', 'circle']);
+
         for (const paraIndex in stylesByPara) {
             const paraStyles = stylesByPara[paraIndex];
             const para = this.documentContent.querySelector(`p[data-para="${paraIndex}"]`);
@@ -623,17 +625,62 @@ class DocumentTypography {
             const calloutStyles = paraStyles.filter(s => s.type === 'callout');
             const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout');
 
+            const borderStyles = textStyles.filter(s => borderTypes.has(s.type));
+            const nonBorderStyles = textStyles.filter(s => !borderTypes.has(s.type));
+
             const bounds = [...new Set([0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))])].sort((a, b) => a - b);
 
-            let result = '';
+            // Build segments with separate border tracking
+            const segments = [];
             for (let i = 0; i < bounds.length - 1; i++) {
                 const [start, end] = [bounds[i], bounds[i + 1]];
-                iconStyles.filter(s => s.startOffset === start).forEach(s => result += this._iconHtml(s));
+                iconStyles.filter(s => s.startOffset === start).forEach(s => {
+                    segments.push({ kind: 'icon', style: s });
+                });
                 const seg = text.substring(start, end);
                 if (!seg) continue;
-                const active = textStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
-                result += active.length ? this.buildStyledSpan(active, seg) : this.escapeHtml(seg);
+                const active = nonBorderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
+                const activeBorders = borderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
+                segments.push({ kind: 'text', text: seg, styles: active, borders: activeBorders });
             }
+
+            // Generate HTML with border/circle wrappers to keep them unified
+            let result = '';
+            let openBorders = [];
+
+            for (const seg of segments) {
+                if (seg.kind === 'icon') {
+                    result += this._iconHtml(seg.style);
+                    continue;
+                }
+
+                const newBorderIds = new Set(seg.borders.map(b => b.id));
+
+                // Close borders no longer active (reverse order)
+                for (let j = openBorders.length - 1; j >= 0; j--) {
+                    if (!newBorderIds.has(openBorders[j].id)) {
+                        result += '</span>';
+                        openBorders.splice(j, 1);
+                    }
+                }
+
+                // Open new borders
+                for (const b of seg.borders) {
+                    if (!openBorders.some(ob => ob.id === b.id)) {
+                        result += `<span class="styled-text ${b.type}" style="border-color:${b.color}" data-style-id="${b.id}">`;
+                        openBorders.push(b);
+                    }
+                }
+
+                // Inner content (non-border styles only)
+                result += seg.styles.length ? this.buildStyledSpan(seg.styles, seg.text) : this.escapeHtml(seg.text);
+            }
+
+            // Close remaining open borders
+            for (let j = openBorders.length - 1; j >= 0; j--) {
+                result += '</span>';
+            }
+
             iconStyles.filter(s => s.startOffset >= text.length).forEach(s => result += this._iconHtml(s));
             para.innerHTML = result;
 
@@ -895,47 +942,50 @@ class DocumentTypography {
     }
 
     initColorBoards() {
-        this.buildColorBoard(this.calloutBoardBorder, color => { this.calloutBorderColor = color; this._markBoardSelected(this.calloutBoardBorder, color); });
-        this.buildColorBoard(this.calloutBoardBg, color => { this.calloutBgColor = color; this._markBoardSelected(this.calloutBoardBg, color); });
+        this.buildColorBoard(this.calloutBoardBorder, color => { this.calloutBorderColor = color; this._markBoardSelected(this.calloutBoardBorder, color); }, 'border');
+        this.buildColorBoard(this.calloutBoardBg, color => { this.calloutBgColor = color; this._markBoardSelected(this.calloutBoardBg, color); }, 'bg');
         this.calloutBorderColor = '#000000';
         this.calloutBgColor = '#ffffff';
         this._markBoardSelected(this.calloutBoardBorder, '#000000');
         this._markBoardSelected(this.calloutBoardBg, '#ffffff');
     }
 
-    _makeSwatch(color, onClick) {
+    _makeSwatch(color, onClick, category) {
         const s = document.createElement('div');
         s.className = 'color-board-swatch'; s.style.backgroundColor = color; s.title = color; s.dataset.color = color;
-        s.addEventListener('click', () => { this._addRecentColor(color); onClick(color); });
+        s.addEventListener('click', () => { this._addRecentColor(color, category); onClick(color); });
         return s;
     }
 
-    buildColorBoard(container, onClick) {
+    buildColorBoard(container, onClick, category = 'border') {
         container.innerHTML = '';
-        this.COLOR_PALETTE.forEach(row => row.forEach(color => container.appendChild(this._makeSwatch(color, onClick))));
-        const recentRow = document.createElement('div'); recentRow.className = 'color-board-recent';
-        container.appendChild(recentRow); this._renderRecentRow(recentRow, onClick);
+        this.COLOR_PALETTE.forEach(row => row.forEach(color => container.appendChild(this._makeSwatch(color, onClick, category))));
+        const recentRow = document.createElement('div'); recentRow.className = 'color-board-recent'; recentRow.dataset.colorCategory = category;
+        container.appendChild(recentRow); this._renderRecentRow(recentRow, onClick, category);
         const customBtn = document.createElement('div'); customBtn.className = 'color-board-custom'; customBtn.textContent = '+ Custom';
-        customBtn.addEventListener('click', () => this.openCustomColorPicker(color => { this._addRecentColor(color); onClick(color); }));
+        customBtn.addEventListener('click', () => this.openCustomColorPicker(color => { this._addRecentColor(color, category); onClick(color); }));
         container.appendChild(customBtn);
     }
 
-    _addRecentColor(color) {
+    _addRecentColor(color, category = 'border') {
         const c = color.toLowerCase();
-        this.recentColors = this.recentColors.filter(rc => rc !== c);
-        this.recentColors.unshift(c);
-        if (this.recentColors.length > this.RECENT_COLORS_MAX) this.recentColors.length = this.RECENT_COLORS_MAX;
-        document.querySelectorAll('.color-board-recent').forEach(row => { const board = row.closest('.color-board'); if (board?._boardOnClick) this._renderRecentRow(row, board._boardOnClick); });
+        const list = this.recentColors[category] || (this.recentColors[category] = []);
+        const idx = list.indexOf(c);
+        if (idx !== -1) list.splice(idx, 1);
+        list.unshift(c);
+        if (list.length > this.RECENT_COLORS_MAX) list.length = this.RECENT_COLORS_MAX;
+        document.querySelectorAll(`.color-board-recent[data-color-category="${category}"]`).forEach(row => { const board = row.closest('.color-board'); if (board?._boardOnClick) this._renderRecentRow(row, board._boardOnClick, category); });
     }
 
-    _renderRecentRow(row, onClick) {
+    _renderRecentRow(row, onClick, category = 'border') {
         const board = row.closest('.color-board'); if (board) board._boardOnClick = onClick;
         row.innerHTML = '';
-        if (!this.recentColors.length) { row.style.display = 'none'; return; }
+        const list = this.recentColors[category] || [];
+        if (!list.length) { row.style.display = 'none'; return; }
         row.style.display = '';
         const label = document.createElement('div'); label.className = 'color-board-recent-label'; label.textContent = 'Recent';
         const swatches = document.createElement('div'); swatches.className = 'color-board-recent-swatches';
-        this.recentColors.forEach(color => swatches.appendChild(this._makeSwatch(color, onClick)));
+        list.forEach(color => swatches.appendChild(this._makeSwatch(color, onClick, category)));
         row.appendChild(label); row.appendChild(swatches);
     }
 
@@ -954,8 +1004,9 @@ class DocumentTypography {
         this.closeFtPopovers();
         this._activeColorTool = tool;
         this._activeColorAnchor = anchorBtn;
+        const category = this.TOOL_COLOR_MAP[tool] || 'border';
         this.sharedColorBoard.innerHTML = '';
-        this.buildColorBoard(this.sharedColorBoard, color => this._applyColorFromSharedPopover(color));
+        this.buildColorBoard(this.sharedColorBoard, color => this._applyColorFromSharedPopover(color), category);
         const currentColor = this.getColorForTool(tool);
         if (typeof currentColor === 'string' && currentColor.startsWith('#')) this._markBoardSelected(this.sharedColorBoard, currentColor);
         this.sharedColorPopover.classList.add('visible');

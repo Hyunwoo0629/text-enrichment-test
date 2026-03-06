@@ -1,96 +1,136 @@
 # Text Enrichment Interface Studio
 
-Web-based interface for applying typography and highlighting styles to Word documents (.docx).
+Web-based interface for applying rich typography, highlighting, and visual styles to Word documents (.docx). Upload a document, select text, and apply styles directly in the browser — then export the result as a PNG image.
 
 ## Features
 
-- **Upload Word Documents**: Drag-and-drop or click to upload .docx files
-- **Direct Text Styling**: Select text directly and apply styles
-- **Typography Options**:
-  - **Bold**: Make text bold
-  - **Italic**: Make text italic
-  - **Underline**: Add underline to text
-  - **Strikethrough**: Add strikethrough effect
+### Typography
+- **Bold / Italic / Underline / Strikethrough**
+- **Overline / Wavy Underline**
+- **Font families**: Sans-serif, Monospace, Rounded, Small Caps
+- **Font size** and **letter spacing** adjustment
+- **Superscript / Subscript**
+- **Drop caps**
 
-- **Highlighting Options**:
-  - **Background Highlight**: Apply colored background
-  - **Text Color**: Change the color of selected text
-  - **Box Border**: Add rectangular border around text
-  - **Circle Border**: Add elliptical border around text
+### Highlighting & Visual Effects
+- **Background highlight** with custom colors
+- **Text color** customization
+- **Box border** (rectangular) and **circle border** (elliptical)
+- **Callout boxes** with customizable colors
 
-- **Color Customization**: 
-  - Individual color pickers for highlight, text, and border colors
-  - Quick color preset buttons
+### Advanced
+- **Inline icon generation** — describe an icon in natural language and generate an SVG via OpenAI
+- **Export to PNG** — render the styled document as an image using Playwright
+- **Undo / Redo** with full history stack
+- **Zoom controls** (25%–200%)
+- **Floating context toolbar** on text selection
+- **Applied styles panel** showing all active styles grouped by type
+
+### Keyboard Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+B | Bold |
+| Ctrl+I | Italic |
+| Ctrl+U | Underline |
+| Ctrl+O | Overline |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
+| Ctrl+S | Save |
 
 ## Directory Structure
 
 ```
 text-enrichment-interface/
 ├── back/
-│   ├── app.py              # Flask backend server
-│   ├── requirements.txt    # Python dependencies
-│   ├── uploads/            # Uploaded documents 
-│   └── data/               # Style data 
+│   ├── app.py                # Flask backend server
+│   ├── requirements.txt      # Python dependencies
+│   ├── uploads/              # Uploaded .docx files
+│   ├── data/                 # JSON document metadata
+│   ├── exports/              # Generated PNG exports
+│   └── annotations/          # Annotation data
 ├── front/
-│   ├── index.html          # Main HTML file
-│   ├── styles.css          # CSS styles 
-│   └── script.js           # JavaScript application
+│   ├── index.html            # Main HTML file
+│   ├── styles.css            # CSS styles
+│   └── script.js             # JavaScript application
+├── nginx/
+│   ├── nginx.conf            # Nginx HTTPS config
+│   └── nginx-http-only.conf  # Nginx HTTP-only config
+├── Dockerfile                # Docker container definition
+├── docker-compose.yml        # Docker Compose orchestration
+├── deploy.sh                 # Deployment automation script
+├── .env.example              # Environment variable template
 └── README.md
 ```
 
-## Setup Instructions
+## Setup
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.8+
 - pip
 - Modern web browser
 
-### Step 1: Install Dependencies
-
-Open terminal in the `backend` folder:
+### Local Development
 
 ```bash
-cd text-enrichment-interface/back
+# Install dependencies
+cd back
 pip install -r requirements.txt
+
+# Run the server
+python app.py
 ```
 
-### Step 2: Run the Server
+The server starts at **http://localhost:5002**.
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and fill in the values:
+
+```
+OPENAI_API_KEY="your-api-key"   # Required for icon generation
+DOMAIN="yourdomain.com"         # Optional, for HTTPS deployment
+```
+
+### Docker Deployment
 
 ```bash
-python app.py
-/ python3 app.py
+# Copy and configure environment
+cp .env.example .env
+
+# Deploy (installs Docker, configures firewall, obtains SSL cert, starts containers)
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-You should see:
-```
-==================================================
-Server Starting...
-Server running at: http://localhost:5001
-==================================================
-```
+The deploy script handles:
+1. Docker installation (Ubuntu)
+2. UFW firewall configuration (ports 22, 80, 443)
+3. SSL certificate via Let's Encrypt (if `DOMAIN` is set)
+4. Building and starting Docker Compose services
 
-### Step 3: Open the Application
+Production runs on ports **80** (HTTP) and **443** (HTTPS) via Nginx reverse proxy.
 
-Go to: **http://localhost:5001**
+## API Endpoints
 
-## Usage
-
-### Uploading a Document
-
-1. Click "Upload Document" button, or
-2. Drag and drop a .docx file onto the viewer
-
-### Applying Styles
-
-1. **Select a Tool**: Click a tool button in the sidebar (Bold, Italic, Highlight, etc.)
-2. **Select Text**: Click and drag to select text in the document
-3. **Style Applied**: The style is automatically applied when you release the mouse
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| POST | `/api/upload` | Upload a .docx file |
+| GET | `/api/documents` | List all documents |
+| GET | `/api/document/<id>` | Get document data |
+| DELETE | `/api/document/<id>` | Delete a document |
+| POST | `/api/document/<id>/styles` | Save styles |
+| POST | `/api/document/<id>/log` | Log enrichment actions |
+| POST | `/api/document/<id>/export` | Export document to PNG |
+| GET | `/api/document/<id>/download` | Download exported PNG |
+| POST | `/api/generate-icon` | Generate SVG icon from text description |
 
 ## Technology Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Backend**: Python Flask
+- **Backend**: Python Flask, Gunicorn
 - **Document Parsing**: python-docx
-
-
+- **Export**: Playwright (Chromium)
+- **Icon Generation**: OpenAI API
+- **Infrastructure**: Docker, Nginx, Let's Encrypt
