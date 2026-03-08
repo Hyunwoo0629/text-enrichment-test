@@ -6,42 +6,32 @@ from playwright.sync_api import sync_playwright
 from datetime import datetime
 import os, json, uuid, html as html_module, base64, re
 import openai
-
 app = Flask(__name__)
 CORS(app)
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 DATA_FOLDER = os.path.join(BASE_DIR, 'data')
 EXPORT_FOLDER = os.path.join(BASE_DIR, 'exports')
 FRONTEND_PATH = os.path.join(os.path.dirname(BASE_DIR), 'front')
-
 for folder in [UPLOAD_FOLDER, DATA_FOLDER, EXPORT_FOLDER]:
     os.makedirs(folder, exist_ok=True)
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
 ALLOWED_EXTENSIONS = {'docx', 'doc'}
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 def get_data_path(doc_id):
     return os.path.join(DATA_FOLDER, f"{doc_id}.json")
-
 def load_doc(doc_id):
     path = get_data_path(doc_id)
     if not os.path.exists(path):
         return None
     with open(path, 'r') as f:
         return json.load(f)
-
 def save_doc(doc_id, data):
     data['updated_at'] = datetime.now().isoformat()
     with open(get_data_path(doc_id), 'w') as f:
         json.dump(data, f, indent=2)
-
 def extract_text_from_docx(filepath):
     doc = Document(filepath)
     content = []
@@ -54,7 +44,6 @@ def extract_text_from_docx(filepath):
                 if cell.text.strip():
                     content.append({'id': f't-{ti}-{ri}-{ci}', 'type': 'table-cell', 'text': cell.text})
     return content
-
 _CSS_PROP = {
     'highlight': 'background-color', 'textcolor': 'color', 'dropcap': 'color',
     'border': 'border-color', 'circle': 'border-color',
@@ -62,37 +51,30 @@ _CSS_PROP = {
     'strikethrough': 'text-decoration-color', 'overline': 'text-decoration-color',
     'fontsize': 'font-size', 'letterspacing': 'letter-spacing'
 }
-
 def _export_info(doc_id, doc):
     base = os.path.splitext(doc['original_filename'])[0]
     name = f"{base}_enriched.png"
     return name, os.path.join(EXPORT_FOLDER, f"{doc_id}_{name}")
-
 def _icon_html(s):
     if s.get('svgCode'):
         return f'<span class="inline-icon">{s["svgCode"]}</span>'
     if s.get('iconData'):
         return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
     return ''
-
 def build_styled_html(content, styles):
     styles_by_para = {}
     for s in styles:
         styles_by_para.setdefault(s['paraIndex'], []).append(s)
-
     paragraphs = []
     for i, para in enumerate(content):
         text = para['text']
         para_styles = styles_by_para.get(i, [])
-
         if not para_styles:
             paragraphs.append(f'<p>{html_module.escape(text)}</p>')
             continue
-
         icon_styles = [s for s in para_styles if s['type'] == 'inlineicon']
         callout_styles = [s for s in para_styles if s['type'] == 'callout']
         text_styles = [s for s in para_styles if s['type'] not in ('inlineicon', 'callout')]
-
         offsets = {0, len(text)}
         for s in text_styles:
             offsets.add(max(0, min(s['startOffset'], len(text))))
@@ -100,7 +82,6 @@ def build_styled_html(content, styles):
         for s in icon_styles:
             offsets.add(max(0, min(s['startOffset'], len(text))))
         bounds = sorted(offsets)
-
         parts = ''
         for j in range(len(bounds) - 1):
             start, end = bounds[j], bounds[j + 1]
@@ -129,7 +110,6 @@ def build_styled_html(content, styles):
             paragraphs.append(f'<p class="callout-block" style="{";".join(p_inline)}">{parts}</p>')
         else:
             paragraphs.append(f'<p>{parts}</p>')
-
     return f'''<!DOCTYPE html>
 <html>
 <head>
@@ -166,11 +146,9 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 <div class="document-container"><div class="document-content">{''.join(paragraphs)}</div></div>
 </body>
 </html>'''
-
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "message": "Document Typography API is running"})
-
 @app.route('/api/upload', methods=['POST'])
 def upload_document():
     if 'file' not in request.files:
@@ -180,32 +158,26 @@ def upload_document():
         return jsonify({"error": "No file selected"}), 400
     if not allowed_file(file.filename):
         return jsonify({"error": "Only Word documents (.docx) are allowed"}), 400
-
     doc_id = str(uuid.uuid4())
     original_filename = secure_filename(file.filename)
     file_path = os.path.join(UPLOAD_FOLDER, f"{doc_id}.docx")
     file.save(file_path)
-
     try:
         content = extract_text_from_docx(file_path)
     except Exception as e:
         os.remove(file_path)
         return jsonify({"error": f"Failed to parse document: {str(e)}"}), 400
-
     doc_data = {
         "doc_id": doc_id, "original_filename": original_filename,
         "created_at": datetime.now().isoformat(), "updated_at": datetime.now().isoformat(),
         "content": content, "styles": [], "enrichment_log": []
     }
     save_doc(doc_id, doc_data)
-
     return jsonify({"success": True, "doc_id": doc_id, "filename": original_filename, "content": content, "message": "Document uploaded successfully"})
-
 @app.route('/api/document/<doc_id>', methods=['GET'])
 def get_document(doc_id):
     doc = load_doc(doc_id)
     return jsonify(doc) if doc else (jsonify({"error": "Document not found"}), 404)
-
 @app.route('/api/document/<doc_id>/styles', methods=['POST'])
 def save_styles(doc_id):
     doc = load_doc(doc_id)
@@ -214,7 +186,6 @@ def save_styles(doc_id):
     doc['styles'] = request.get_json().get('styles', [])
     save_doc(doc_id, doc)
     return jsonify({"success": True, "message": "Styles saved successfully", "updated_at": doc['updated_at']})
-
 @app.route('/api/document/<doc_id>/log', methods=['POST'])
 def log_enrichment_action(doc_id):
     doc = load_doc(doc_id)
@@ -228,22 +199,18 @@ def log_enrichment_action(doc_id):
     doc.setdefault('enrichment_log', []).append(entry)
     save_doc(doc_id, doc)
     return jsonify({"success": True, "message": "Action logged", "log_count": len(doc['enrichment_log'])})
-
 @app.route('/api/generate-icon', methods=['POST'])
 def generate_icon():
     data = request.get_json()
     if not data or not data.get('description'):
         return jsonify({"error": "Description is required"}), 400
-
     description = data['description'].strip()
     if len(description) > 200:
         return jsonify({"error": "Description too long (max 200 characters)"}), 400
-
     api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
         return jsonify({"error": "OpenAI API key not configured"}), 500
     client = openai.OpenAI(api_key=api_key)
-
     try:
         response = client.chat.completions.create(
             model="gpt-5.2",
@@ -273,50 +240,38 @@ def generate_icon():
             max_completion_tokens=800,
             temperature=0.5
         )
-
         svg_text = response.choices[0].message.content.strip()
-
         if svg_text.startswith('```'):
             svg_text = re.sub(r'^```(?:svg|xml)?\s*\n?', '', svg_text)
             svg_text = re.sub(r'\n?```\s*$', '', svg_text)
             svg_text = svg_text.strip()
-
         if not svg_text.startswith('<svg') or not svg_text.endswith('</svg>'):
             return jsonify({"error": "Failed to generate valid SVG"}), 500
-
         if '<script' in svg_text.lower():
             return jsonify({"error": "Invalid SVG content"}), 500
-
         data_url = f"data:image/svg+xml;base64,{base64.b64encode(svg_text.encode()).decode()}"
-
         return jsonify({
             "success": True,
             "iconData": data_url,
             "iconName": description[:50],
             "svgCode": svg_text
         })
-
     except openai.APIError as e:
         return jsonify({"error": f"OpenAI API error: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": f"Failed to generate icon: {str(e)}"}), 500
-
 @app.route('/api/document/<doc_id>/export', methods=['POST'])
 def export_document(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-
     styles = request.get_json().get('styles', [])
     doc['styles'] = styles
     save_doc(doc_id, doc)
-
     export_filename, export_path = _export_info(doc_id, doc)
     html_path = os.path.join(EXPORT_FOLDER, f"{doc_id}_temp.html")
-
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(build_styled_html(doc['content'], styles))
-
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] if os.environ.get('FLASK_ENV') == 'production' else [])
@@ -331,9 +286,7 @@ def export_document(doc_id):
     finally:
         if os.path.exists(html_path):
             os.remove(html_path)
-
     return jsonify({"success": True, "message": "Document exported successfully", "export_filename": export_filename, "download_url": f"/api/document/{doc_id}/download"})
-
 @app.route('/api/document/<doc_id>/download', methods=['GET'])
 def download_document(doc_id):
     doc = load_doc(doc_id)
@@ -343,7 +296,6 @@ def download_document(doc_id):
     if not os.path.exists(export_path):
         return jsonify({"error": "Export not found. Please save the document first."}), 404
     return send_file(export_path, as_attachment=True, download_name=export_filename)
-
 @app.route('/api/documents', methods=['GET'])
 def list_documents():
     docs = []
@@ -353,25 +305,19 @@ def list_documents():
                 d = json.load(file)
                 docs.append({"doc_id": d['doc_id'], "filename": d['original_filename'], "created_at": d['created_at'], "updated_at": d['updated_at']})
     return jsonify(docs)
-
 @app.route('/api/document/<doc_id>', methods=['DELETE'])
 def delete_document(doc_id):
     for path in [os.path.join(UPLOAD_FOLDER, f"{doc_id}.docx"), get_data_path(doc_id)]:
         if os.path.exists(path):
             os.remove(path)
     return jsonify({"success": True, "message": "Document deleted successfully"})
-
 @app.route('/')
 def serve_frontend():
     return send_from_directory(FRONTEND_PATH, 'index.html')
-
 @app.route('/<path:filename>')
 def serve_static(filename):
     return send_from_directory(FRONTEND_PATH, filename)
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5002))
-    print("=" * 50)
-    print(f"Server running at: http://localhost:{port}")
-    print("=" * 50)
+    print(f"{'=' * 50}\nServer running at: http://localhost:{port}\n{'=' * 50}")
     app.run(debug=os.environ.get('FLASK_ENV') != 'production', host='0.0.0.0', port=port)
