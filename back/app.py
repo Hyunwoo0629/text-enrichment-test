@@ -62,6 +62,7 @@ def _icon_html(s):
         return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
     return ''
 def build_styled_html(content, styles):
+    border_types = {'border', 'circle'}
     styles_by_para = {}
     for s in styles:
         styles_by_para.setdefault(s['paraIndex'], []).append(s)
@@ -75,6 +76,8 @@ def build_styled_html(content, styles):
         icon_styles = [s for s in para_styles if s['type'] == 'inlineicon']
         callout_styles = [s for s in para_styles if s['type'] == 'callout']
         text_styles = [s for s in para_styles if s['type'] not in ('inlineicon', 'callout')]
+        border_styles = [s for s in text_styles if s['type'] in border_types]
+        non_border_styles = [s for s in text_styles if s['type'] not in border_types]
         offsets = {0, len(text)}
         for s in text_styles:
             offsets.add(max(0, min(s['startOffset'], len(text))))
@@ -82,23 +85,43 @@ def build_styled_html(content, styles):
         for s in icon_styles:
             offsets.add(max(0, min(s['startOffset'], len(text))))
         bounds = sorted(offsets)
-        parts = ''
+        segments = []
         for j in range(len(bounds) - 1):
             start, end = bounds[j], bounds[j + 1]
             for s in icon_styles:
                 if s['startOffset'] == start:
-                    parts += _icon_html(s)
+                    segments.append({'kind': 'icon', 'style': s})
             seg = text[start:end]
             if not seg:
                 continue
-            active = [s for s in text_styles if s['startOffset'] <= start and s['endOffset'] >= end]
-            if not active:
-                parts += html_module.escape(seg)
-            else:
-                classes = ['styled-text'] + [s['type'] for s in active]
-                inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in active if s['type'] in _CSS_PROP]
+            active = [s for s in non_border_styles if s['startOffset'] <= start and s['endOffset'] >= end]
+            active_borders = [s for s in border_styles if s['startOffset'] <= start and s['endOffset'] >= end]
+            segments.append({'kind': 'text', 'text': seg, 'styles': active, 'borders': active_borders})
+        parts = ''
+        open_borders = []
+        for seg in segments:
+            if seg['kind'] == 'icon':
+                parts += _icon_html(seg['style'])
+                continue
+            new_border_ids = {s.get('id', id(s)) for s in seg['borders']}
+            for j in range(len(open_borders) - 1, -1, -1):
+                if open_borders[j].get('id', id(open_borders[j])) not in new_border_ids:
+                    parts += '</span>'
+                    open_borders.pop(j)
+            for b in seg['borders']:
+                bid = b.get('id', id(b))
+                if not any(ob.get('id', id(ob)) == bid for ob in open_borders):
+                    parts += f'<span class="styled-text {b["type"]}" style="border-color:{b["color"]}">'
+                    open_borders.append(b)
+            if seg['styles']:
+                classes = ['styled-text'] + [s['type'] for s in seg['styles']]
+                inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in seg['styles'] if s['type'] in _CSS_PROP]
                 style_attr = f' style="{";".join(inline)}"' if inline else ''
-                parts += f'<span class="{" ".join(classes)}"{style_attr}>{html_module.escape(seg)}</span>'
+                parts += f'<span class="{" ".join(classes)}"{style_attr}>{html_module.escape(seg["text"])}</span>'
+            else:
+                parts += html_module.escape(seg['text'])
+        for _ in open_borders:
+            parts += '</span>'
         for s in icon_styles:
             if s['startOffset'] >= len(text):
                 parts += _icon_html(s)
@@ -116,7 +139,7 @@ def build_styled_html(content, styles):
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a;background:#fafafa;-webkit-font-smoothing:antialiased}}
@@ -129,17 +152,22 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text.italic{{font-style:italic}}
 .styled-text.underline{{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:2px}}
 .styled-text.strikethrough{{text-decoration:line-through;text-decoration-thickness:2px}}
-.styled-text.highlight{{padding:0 2px;border-radius:2px}}
+.styled-text.highlight{{position:relative;z-index:1}}
+.styled-text.highlight::before{{content:'';position:absolute;left:-2px;right:-2px;top:0;bottom:0;z-index:-1;border-radius:2px;background-color:inherit}}
 .styled-text.border{{border:2px solid;border-radius:3px;padding:0 4px;margin:0 2px}}
 .styled-text.circle{{border:2px solid;border-radius:100px;padding:2px 8px;margin:0 2px}}
 .styled-text.sansserif{{font-family:'Helvetica Neue',Arial,sans-serif}}
-.styled-text.mono{{font-family:'SF Mono','Consolas','Monaco','Courier New',monospace;background:rgba(0,0,0,.04);padding:0 4px;border-radius:3px}}
+.styled-text.rounded{{font-family:'Nunito','Varela Round',sans-serif}}
+.styled-text.mono{{font-family:'SF Mono','Consolas','Monaco','Courier New',monospace}}
 .styled-text.smallcaps{{font-variant:small-caps;letter-spacing:.05em}}
+.styled-text.superscript{{font-size:0.7em;vertical-align:super}}
+.styled-text.subscript{{font-size:0.7em;vertical-align:sub}}
 .styled-text.overline{{text-decoration:overline;text-decoration-thickness:2px}}
 .styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1.5px;text-underline-offset:2px}}
 .styled-text.dropcap{{float:left;font-size:3.2em;line-height:0.8;padding-right:8px;padding-top:4px;font-weight:700}}
 .document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
-.inline-icon{{height:1em;width:auto;vertical-align:middle;margin:0 2px;display:inline}}
+.inline-icon{{display:inline-block;height:1em;width:auto;vertical-align:middle;margin:0 2px}}
+.inline-icon svg{{height:1em;width:auto;display:block}}
 </style>
 </head>
 <body>
