@@ -148,12 +148,13 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text { position: relative; display: inline; }
 .styled-text.bold { font-weight: 700; }
 .styled-text.italic { font-style: italic; }
-.styled-text.underline { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
-.styled-text.strikethrough { text-decoration: line-through; text-decoration-thickness: 2px; }
-.styled-text.highlight { position: relative; z-index: 1; }
-.styled-text.highlight::before { content: ''; position: absolute; left: -2px; right: -2px; top: 0; bottom: 0; z-index: -1; border-radius: 2px; }
-.styled-text.border { border: 2px solid; border-radius: 3px; padding: 0 4px; margin: 0 2px; }
-.styled-text.circle { border: 2px solid; border-radius: 100px; padding: 2px 8px; margin: 0 2px; }
+.styled-text.underline { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+.styled-text.strikethrough { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.styled-text.highlight { padding: 1px 2px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.styled-text.border { border: 1.5px solid; border-radius: 3px; padding: 0 4px; margin: 0 2px; }
+.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 2px 8px; margin: 0 2px; }
+.styled-text.border .styled-text.highlight,
+.styled-text.circle .styled-text.highlight { padding: 0; border-radius: 0; }
 .styled-text.sansserif { font-family: 'Helvetica Neue', Arial, sans-serif; }
 .styled-text.rounded { font-family: 'Nunito', 'Varela Round', sans-serif; }
 .styled-text.mono { font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace; }
