@@ -162,7 +162,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text.superscript { font-size: 0.7em; vertical-align: super; }
 .styled-text.subscript { font-size: 0.7em; vertical-align: sub; }
 .styled-text.overline { text-decoration: overline; text-decoration-thickness: 2px; }
-.styled-text.wavyunderline { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+.styled-text.wavyunderline { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 1.5px; }
 .styled-text.dropcap { float: left; font-size: 3.2em; line-height: 0.8; padding-right: 8px; padding-top: 4px; font-weight: 700; }
 .document-content p.callout-block { border: 2px solid; border-radius: 8px; padding: 12px 16px; margin-bottom: 1em; }
 .inline-icon { display: inline-block; height: 1em; width: auto; vertical-align: middle; margin: 0 2px; }
