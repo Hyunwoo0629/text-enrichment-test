@@ -162,7 +162,7 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text.smallcaps{{font-variant:small-caps;letter-spacing:.05em}}
 .styled-text.superscript{{font-size:0.7em;vertical-align:super}}
 .styled-text.subscript{{font-size:0.7em;vertical-align:sub}}
-.styled-text.overline{{text-decoration:overline;text-decoration-thickness:2px}}
+.styled-text.overline{{text-decoration:overline;text-decoration-thickness:1.5px}}
 .styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1.5px;text-underline-offset:1.5px}}
 .styled-text.dropcap{{float:left;font-size:3.2em;line-height:0.8;padding-right:8px;padding-top:4px;font-weight:700}}
 .document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
