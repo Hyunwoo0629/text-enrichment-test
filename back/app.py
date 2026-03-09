@@ -303,7 +303,7 @@ def export_document(doc_id):
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] if os.environ.get('FLASK_ENV') == 'production' else [])
-            page = browser.new_page(viewport={'width': 900, 'height': 800})
+            page = browser.new_page(viewport={'width': 900, 'height': 800}, device_scale_factor=2)
             page.goto(f'file://{html_path}')
             page.wait_for_load_state('networkidle')
             page.wait_for_timeout(500)
