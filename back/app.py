@@ -150,7 +150,7 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text{{position:relative;display:inline}}
 .styled-text.bold{{font-weight:700}}
 .styled-text.italic{{font-style:italic}}
-.styled-text.underline{{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:2px}}
+.styled-text.underline{{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:1.5px}}
 .styled-text.strikethrough{{text-decoration:line-through;text-decoration-thickness:1.5px}}
 .styled-text.highlight{{padding:1px 2px;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}}
 .styled-text.border{{border:1.5px solid;border-radius:3px;padding:0 4px;margin:0 2px}}
@@ -163,7 +163,7 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text.superscript{{font-size:0.7em;vertical-align:super}}
 .styled-text.subscript{{font-size:0.7em;vertical-align:sub}}
 .styled-text.overline{{text-decoration:overline;text-decoration-thickness:2px}}
-.styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1.5px;text-underline-offset:2px}}
+.styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1.5px;text-underline-offset:1/5px}}
 .styled-text.dropcap{{float:left;font-size:3.2em;line-height:0.8;padding-right:8px;padding-top:4px;font-weight:700}}
 .document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
 .inline-icon{{display:inline-block;height:1em;width:auto;vertical-align:middle;margin:0 2px}}
