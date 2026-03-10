@@ -1,6 +1,7 @@
-# Text Enrichment Interface Studio
+# Text Enrichment Interface
 
-Web-based interface for applying rich typography, highlighting, and visual styles to Word documents (.docx). Upload a document, select text, and apply styles directly in the browser — then export the result as a PNG image.
+Web-based interface for applying typography, highlighting, and visual styles to Word documents (.docx). 
+Upload a document, select text, and apply styles directly in the browser — then export the result as a PNG image.
 
 ## Features
 
@@ -16,10 +17,10 @@ Web-based interface for applying rich typography, highlighting, and visual style
 - **Background highlight** with custom colors
 - **Text color** customization
 - **Box border** (rectangular) and **circle border** (elliptical)
-- **Callout boxes** with customizable colors
+- **Callout boxes** with customizable background & border colors
 
 ### Advanced
-- **Inline icon generation** — describe an icon in natural language and generate an SVG via OpenAI
+- **Inline icon generation** — give a short description of an icon and generate an SVG
 - **Export to PNG** — render the styled document as an image using Playwright
 - **Undo / Redo** with full history stack
 - **Zoom controls** (25%–200%)
