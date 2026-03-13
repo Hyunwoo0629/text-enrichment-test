@@ -14,7 +14,6 @@ services:
       - app-exports:/app/back/exports
     networks:
       - webnet
-
   nginx:
     image: nginx:alpine
     container_name: text-enrichment-nginx
@@ -30,11 +29,9 @@ services:
       - app
     networks:
       - webnet
-
 volumes:
   app-uploads:
   app-data:
   app-exports:
-
 networks:
   webnet:
