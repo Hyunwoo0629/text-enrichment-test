@@ -134,6 +134,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .zoom-btn:hover { background: var(--color-bg); color: var(--color-text); border-color: var(--color-border-dark); }
 .zoom-level { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); min-width: 36px; text-align: center; user-select: none; }
 .zoom-reset-btn { margin-left: 2px; }
+.zoom-fit-btn { margin-left: 1px; font-size: 10px; }
 .document-viewport { flex: 1; overflow: auto; padding: var(--space-xl); }
 .document-viewport.drag-over { background: #f0f7ff; }
 .document-viewport.drag-over .empty-state { opacity: 0.5; }
@@ -169,6 +170,8 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .inline-icon svg { height: 1em; width: auto; display: block; }
 .document-content.icon-placement-mode { cursor: crosshair; }
 .document-content.icon-placement-mode * { cursor: crosshair; }
+.text-cursor { display: inline-block; width: 1.5px; height: 1.1em; background: #000; vertical-align: text-bottom; margin: 0 -0.75px; animation: blink-cursor 1s step-end infinite; pointer-events: none; }
+@keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 ::selection { background: rgba(25,118,210,0.2); }
 .styles-panel { width: 260px; background: var(--color-white); border-left: 1px solid var(--color-border); display: flex; flex-direction: column; overflow: hidden; }
 .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-lg); border-bottom: 1px solid var(--color-border); }
@@ -220,6 +223,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .toast-action-btn:hover { background: var(--color-bg); }
 .toast-action-btn-primary { height: 40px; padding: 0 28px; background: #000; border-color: #000; color: var(--color-white); font-size: 14px; font-weight: 600; }
 .toast-action-btn-primary:hover { opacity: 0.85; background: #222; }
+.toast-action-anchored { animation: ftFadeIn 0.15s ease !important; }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
