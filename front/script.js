@@ -25,9 +25,9 @@ class DocumentTypography {
         this.expandedTypeGroups = new Set();
         this._activeColorTool = null;
         this._activeColorAnchor = null;
-        this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'dropcap']);
+        this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough']);
         this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border']);
-        this.TOOL_COLOR_MAP = { textcolor: 'text', dropcap: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
+        this.TOOL_COLOR_MAP = { textcolor: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
         this.TYPE_LABELS = { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' };
         this.COLOR_PALETTE = [
             ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
@@ -447,7 +447,7 @@ class DocumentTypography {
         const paraIndex = parseInt(startNode.dataset.para);
         const startOffset = this.getTextOffset(startNode, range.startContainer, range.startOffset);
         const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset);
-        this.savedSelection = { paraIndex, startOffset, endOffset, text: selectedText };
+        this.savedSelection = { paraIndex, startOffset, endOffset, text: selectedText, rect: range.getBoundingClientRect() };
         this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}" selected`;
         const fs = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
         if (fs) { const v = parseInt(fs.color); if (v > 0) { this.fontSize = fs.color; this.fontSizeInput.value = v; } }
@@ -549,7 +549,7 @@ class DocumentTypography {
         return total + offset;
     }
     getColorForTool(tool) {
-        return { textcolor: this.textColor, dropcap: this.textColor, highlight: this.bgColor, fontsize: this.fontSize, letterspacing: this.letterSpacing }[tool] || this.borderColor;
+        return { textcolor: this.textColor, dropcap: '#000000', highlight: this.bgColor, fontsize: this.fontSize, letterspacing: this.letterSpacing }[tool] || this.borderColor;
     }
     applyAllStyles() {
         this.documentContent.innerHTML = this.content.map((p, i) => `<p data-para="${i}">${this.escapeHtml(p.text)}</p>`).join('');
@@ -644,7 +644,7 @@ class DocumentTypography {
             return;
         }
         const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X\u00B2', subscript: 'X\u2082', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
-        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing'];
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap'];
         const typeOrder = [
             'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough',
             'superscript', 'subscript', 'sansserif', 'mono', 'rounded', 'smallcaps', 'fontsize',
@@ -908,12 +908,18 @@ class DocumentTypography {
     _positionSharedPopover(anchorBtn) {
         const popover = this.sharedColorPopover, popRect = popover.getBoundingClientRect();
         let left, top;
+        const selRect = this.savedSelection && this.savedSelection.rect;
         if (this._instantStyleAnchor) {
             const r = this._instantStyleAnchor.getBoundingClientRect();
             left = r.right + 10;
             if (left + popRect.width > window.innerWidth - 8) left = r.left - popRect.width - 10;
             left = Math.max(8, left);
             top = Math.max(8, Math.min(r.top, window.innerHeight - popRect.height - 8));
+        } else if (selRect && (this._activeColorTool === 'textcolor' || this._activeColorTool === 'highlight')) {
+            left = selRect.right + 10;
+            if (left + popRect.width > window.innerWidth - 8) left = selRect.left - popRect.width - 10;
+            left = Math.max(8, left);
+            top = Math.max(8, Math.min(selRect.top, window.innerHeight - popRect.height - 8));
         } else {
             const r = anchorBtn.getBoundingClientRect();
             left = r.left + r.width / 2 - popRect.width / 2;
