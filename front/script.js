@@ -860,7 +860,16 @@ class DocumentTypography {
         const recentRow = document.createElement('div'); recentRow.className = 'color-board-recent'; recentRow.dataset.colorCategory = category;
         container.appendChild(recentRow); this._renderRecentRow(recentRow, onClick, category);
         const customBtn = document.createElement('div'); customBtn.className = 'color-board-custom'; customBtn.textContent = '+ Custom';
-        customBtn.addEventListener('click', () => this.openCustomColorPicker(color => { this._addRecentColor(color, category); onClick(color); }));
+        customBtn.addEventListener('click', () => {
+            const savedTool = this._activeColorTool;
+            const savedInstantId = this._instantStyleId;
+            this.openCustomColorPicker(color => {
+                this._activeColorTool = savedTool;
+                this._instantStyleId = savedInstantId;
+                this._addRecentColor(color, category);
+                onClick(color);
+            });
+        });
         container.appendChild(customBtn);
     }
     _addRecentColor(color, category = 'border') {
