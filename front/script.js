@@ -26,7 +26,7 @@ class DocumentTypography {
         this._activeColorTool = null;
         this._activeColorAnchor = null;
         this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough']);
-        this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border']);
+        this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border', 'circle']);
         this.TOOL_COLOR_MAP = { textcolor: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
         this.TYPE_LABELS = { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' };
         this.COLOR_PALETTE = [
@@ -108,7 +108,6 @@ class DocumentTypography {
                 if (this.COLOR_TOOLS.has(tool)) { this.closeFtPopovers(); this.showSharedColorPopover(tool, btn); return; }
                 this.closeFtPopovers();
                 this.applyToolToSelection(tool);
-                this.hideFloatingToolbar();
             });
         });
         this.floatingToolbar.querySelectorAll('[data-ft-font],[data-ft-script]').forEach(opt => {
@@ -117,7 +116,6 @@ class DocumentTypography {
                 e.stopPropagation();
                 this.applyToolToSelection(opt.dataset.ftFont || opt.dataset.ftScript);
                 this.closeFtPopovers();
-                this.hideFloatingToolbar();
             });
         });
         this.floatingToolbar.addEventListener('mousedown', e => e.preventDefault());
@@ -273,7 +271,6 @@ class DocumentTypography {
     selectTool(tool) {
         if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
         this._closeToolPopovers();
-        this.hideFloatingToolbar();
         this.applyToolToSelection(tool);
     }
     applyInstantTool(tool, anchorBtn) {
@@ -323,14 +320,17 @@ class DocumentTypography {
             const existing = this.styles.find(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
             if (existing) { existing.color = this.getColorForTool(tool); this._refreshViews(); this.restoreSelection(paraIndex, sOff, eOff); return; }
         }
+        const existingIdx = this.styles.findIndex(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
+        const replaced = existingIdx !== -1 ? this.styles.splice(existingIdx, 1)[0] : null;
         const style = { id: this._genId(), type: tool, text: sText, color: this.getColorForTool(tool), paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
         if (tool === 'callout') style.bgColor = this.bgColor;
-        this._pushHistory({ action: 'add', style });
+        this._pushHistory({ action: 'add', style, replaced });
         this.styles.push(style);
         this.logAction('add', style);
         this._refreshViews();
-        if (keepSelection) { this.restoreSelection(paraIndex, sOff, eOff); }
-        else { this._clearSelection(); this.promptApplyToAll(style); }
+        this.restoreSelection(paraIndex, sOff, eOff);
+        this._updateFloatingToolbarStyles();
+        if (!keepSelection) { this.promptApplyToAll(style); }
     }
     restoreSelection(paraIndex, startOffset, endOffset) {
         const para = this.documentContent.querySelector(`p[data-para="${paraIndex}"]`);
@@ -510,6 +510,18 @@ class DocumentTypography {
         this.floatingToolbar.classList.remove('visible');
         this.closeFtPopovers();
         this.closeSharedColorPopover();
+    }
+    _updateFloatingToolbarStyles() {
+        if (!this.savedSelection || !this.floatingToolbar.classList.contains('visible')) return;
+        const { paraIndex, startOffset, endOffset } = this.savedSelection;
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        this.savedSelection.rect = range.getBoundingClientRect();
+        const overlapping = this.styles.filter(s =>
+            s.paraIndex === paraIndex && s.startOffset < endOffset && s.endOffset > startOffset
+        );
+        this.showFloatingToolbar(range, overlapping);
     }
     toggleFtPopover(popoverId) {
         const popover = this[popoverId];
@@ -769,7 +781,7 @@ class DocumentTypography {
         if (!this.history.length) return;
         const last = this.history.pop();
         const { action } = last;
-        if (action === 'add') this._removeById(last.style.id);
+        if (action === 'add') { this._removeById(last.style.id); if (last.replaced) this.styles.push(last.replaced); }
         else if (action === 'delete') this.styles.push(last.style);
         else if (action === 'clear') this.styles = last.styles;
         else if (action === 'batch_add') last.styles.forEach(s => this._removeById(s.id));
@@ -783,7 +795,7 @@ class DocumentTypography {
         if (!this.redoStack.length) return;
         const last = this.redoStack.pop();
         const { action } = last;
-        if (action === 'add') this.styles.push(last.style);
+        if (action === 'add') { if (last.replaced) this._removeById(last.replaced.id); this.styles.push(last.style); }
         else if (action === 'delete') this._removeById(last.style.id);
         else if (action === 'clear') this.styles = [];
         else if (action === 'batch_add') last.styles.forEach(s => this.styles.push(s));
@@ -954,9 +966,13 @@ class DocumentTypography {
         if (instantId) {
             const style = this.styles.find(s => s.id === instantId);
             if (style) { style.color = color; this._refreshViews(); }
-            this._clearSelection(); this.hideFloatingToolbar();
+            if (this.savedSelection) {
+                const { paraIndex, startOffset, endOffset } = this.savedSelection;
+                this.restoreSelection(paraIndex, startOffset, endOffset);
+            }
+            this._updateFloatingToolbarStyles();
             if (style) this.promptApplyToAll(style);
-        } else { this.applyToolToSelection(tool); this.hideFloatingToolbar(); }
+        } else { this.applyToolToSelection(tool); }
     }
     closeSharedColorPopover() {
         const wasVisible = this.sharedColorPopover.classList.contains('visible');
@@ -966,8 +982,11 @@ class DocumentTypography {
         if (this._instantStyleId && wasVisible) {
             const style = this.styles.find(s => s.id === this._instantStyleId);
             this._instantStyleId = null;
-            this._clearSelection();
-            this.hideFloatingToolbar();
+            if (this.savedSelection) {
+                const { paraIndex, startOffset, endOffset } = this.savedSelection;
+                this.restoreSelection(paraIndex, startOffset, endOffset);
+            }
+            this._updateFloatingToolbarStyles();
             if (style) this.promptApplyToAll(style);
         }
     }
