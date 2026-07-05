@@ -6,7 +6,7 @@
     <title>Document Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Nunito:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Maruburiâ€‹:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -49,10 +49,7 @@
                 <span class="logo-text" data-i18n="studio">Studio</span>
             </div>
             <div class="header-actions">
-                <button id="langToggleBtn" class="btn btn-outline lang-toggle-btn" title="Change language / 언어 변경">
-                    <span id="langDisplay">EN</span>
-                </button>
-                <button id="uploadBtn" class="btn btn-outline">
+<button id="uploadBtn" class="btn btn-outline">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
@@ -90,11 +87,7 @@
                             <button class="tool-btn" id="fontFamilyBtn" data-tooltip-title="Font Family" data-i18n-tooltip-title="font_family">Aa</button>
                             <div class="tool-popover font-family-popover" id="fontFamilyPopover">
                                 <div class="popover-label" data-i18n="font_family">Font Family</div>
-                                <div class="font-family-options">
-                                    <button class="font-option" data-font="sansserif" data-i18n="sans_serif">Sans-Serif</button>
-                                    <button class="font-option" data-font="mono" data-i18n="monospace">Monospace</button>
-                                    <button class="font-option" data-font="rounded" data-i18n="rounded">Rounded</button>
-                                    <button class="font-option" data-font="smallcaps" data-i18n="small_caps">Small Caps</button>
+                                <div class="font-family-options" id="fontFamilyOptions">
                                 </div>
                             </div>
                         </div>
@@ -323,10 +316,6 @@
             <div class="ft-group">
                 <button class="ft-btn" data-ft-tool="fontfamily" title="Font Family" data-i18n-title="font_family">Aa</button>
                 <div class="ft-popover font-family-popover" id="ftFontFamilyPopover">
-                    <button class="ft-popover-option" data-ft-font="sansserif" data-i18n="sans_serif">Sans-Serif</button>
-                    <button class="ft-popover-option" data-ft-font="mono" data-i18n="monospace">Monospace</button>
-                    <button class="ft-popover-option" data-ft-font="rounded" data-i18n="rounded">Rounded</button>
-                    <button class="ft-popover-option" data-ft-font="smallcaps" data-i18n="small_caps">Small Caps</button>
                 </div>
                 <div class="ft-size-stepper">
                     <button class="ft-stepper-btn" id="ftFontSizeMinus" title="Decrease Font Size">&minus;</button>
