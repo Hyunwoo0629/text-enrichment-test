@@ -10,6 +10,33 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="lang-select-overlay" id="langSelectOverlay">
+        <div class="lang-select-card">
+            <div class="lang-select-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+                <span> </span>
+            </div>
+            <div class="lang-select-heading">
+                <h2>Version Selection</h2>
+            </div>
+            <div class="lang-select-buttons">
+                <button class="lang-btn lang-btn-en" id="langBtnEn">
+                    English
+                    <small>English</small>
+                </button>
+                <button class="lang-btn lang-btn-ko" id="langBtnKo">
+                    한국어
+                    <small>Korean</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-container">
         <header class="app-header">
             <div class="logo">
@@ -19,16 +46,19 @@
                     <line x1="16" y1="13" x2="8" y2="13"/>
                     <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
-                <span class="logo-text">Studio</span>
+                <span class="logo-text" data-i18n="studio">Studio</span>
             </div>
             <div class="header-actions">
+                <button id="langToggleBtn" class="btn btn-outline lang-toggle-btn" title="Change language / 언어 변경">
+                    <span id="langDisplay">EN</span>
+                </button>
                 <button id="uploadBtn" class="btn btn-outline">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    Upload Document
+                    <span data-i18n="upload_document">Upload Document</span>
                 </button>
                 <input type="file" id="fileInput" accept=".docx,.doc" hidden>
             </div>
@@ -36,15 +66,15 @@
         <div class="main-content">
             <div class="toolbar" id="toolbar">
                 <div class="toolbar-group toolbar-undo">
-                    <span class="toolbar-label">History</span>
+                    <span class="toolbar-label" data-i18n="history">History</span>
                     <div class="toolbar-buttons">
-                        <button id="undoBtn" class="tool-btn" data-tooltip-title="Undo" data-tooltip="Ctrl+Z" disabled>
+                        <button id="undoBtn" class="tool-btn" data-tooltip-title="Undo" data-tooltip="Ctrl+Z" data-i18n-tooltip-title="undo" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 7v6h6"/>
                                 <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
                             </svg>
                         </button>
-                        <button id="redoBtn" class="tool-btn" data-tooltip-title="Redo" data-tooltip="Ctrl+Y" disabled>
+                        <button id="redoBtn" class="tool-btn" data-tooltip-title="Redo" data-tooltip="Ctrl+Y" data-i18n-tooltip-title="redo" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 7v6h-6"/>
                                 <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/>
@@ -54,17 +84,17 @@
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group toolbar-textstyle">
-                    <span class="toolbar-label">Text Style</span>
+                    <span class="toolbar-label" data-i18n="text_style">Text Style</span>
                     <div class="toolbar-buttons">
                         <div class="tool-btn-wrapper">
-                            <button class="tool-btn" id="fontFamilyBtn" data-tooltip-title="Font Family">Aa</button>
+                            <button class="tool-btn" id="fontFamilyBtn" data-tooltip-title="Font Family" data-i18n-tooltip-title="font_family">Aa</button>
                             <div class="tool-popover font-family-popover" id="fontFamilyPopover">
-                                <div class="popover-label">Font Family</div>
+                                <div class="popover-label" data-i18n="font_family">Font Family</div>
                                 <div class="font-family-options">
-                                    <button class="font-option" data-font="sansserif">Sans-Serif</button>
-                                    <button class="font-option" data-font="mono">Monospace</button>
-                                    <button class="font-option" data-font="rounded">Rounded</button>
-                                    <button class="font-option" data-font="smallcaps">Small Caps</button>
+                                    <button class="font-option" data-font="sansserif" data-i18n="sans_serif">Sans-Serif</button>
+                                    <button class="font-option" data-font="mono" data-i18n="monospace">Monospace</button>
+                                    <button class="font-option" data-font="rounded" data-i18n="rounded">Rounded</button>
+                                    <button class="font-option" data-font="smallcaps" data-i18n="small_caps">Small Caps</button>
                                 </div>
                             </div>
                         </div>
@@ -75,19 +105,19 @@
                         </div>
                     </div>
                     <div class="toolbar-buttons">
-                        <button class="tool-btn" data-tool="bold" data-tooltip-title="Bold" data-tooltip="Ctrl+B"><strong>B</strong></button>
-                        <button class="tool-btn" data-tool="italic" data-tooltip-title="Italic" data-tooltip="Ctrl+I"><em>I</em></button>
-                        <button class="tool-btn" data-tool="underline" data-tooltip-title="Underline" data-tooltip="Ctrl+U"><u>U</u></button>
-                        <button class="tool-btn" data-tool="overline" data-tooltip-title="Overline" data-tooltip="Ctrl+O">O̅</button>
-                        <button class="tool-btn" data-tool="wavyunderline" data-tooltip-title="Wavy Underline"><span style="text-decoration:underline wavy">W</span></button>
-                        <button class="tool-btn" data-tool="strikethrough" data-tooltip-title="Strikethrough"><s>S</s></button>
+                        <button class="tool-btn" data-tool="bold" data-tooltip-title="Bold" data-tooltip="Ctrl+B" data-i18n-tooltip-title="bold_tooltip"><strong>B</strong></button>
+                        <button class="tool-btn" data-tool="italic" data-tooltip-title="Italic" data-tooltip="Ctrl+I" data-i18n-tooltip-title="italic_tooltip"><em>I</em></button>
+                        <button class="tool-btn" data-tool="underline" data-tooltip-title="Underline" data-tooltip="Ctrl+U" data-i18n-tooltip-title="underline_tooltip"><u>U</u></button>
+                        <button class="tool-btn" data-tool="overline" data-tooltip-title="Overline" data-tooltip="Ctrl+O" data-i18n-tooltip-title="overline_tooltip">O̅</button>
+                        <button class="tool-btn" data-tool="wavyunderline" data-tooltip-title="Wavy Underline" data-i18n-tooltip-title="wavyunderline_tooltip"><span style="text-decoration:underline wavy">W</span></button>
+                        <button class="tool-btn" data-tool="strikethrough" data-tooltip-title="Strikethrough" data-i18n-tooltip-title="strikethrough_tooltip"><s>S</s></button>
                         <div class="tool-btn-wrapper">
-                            <button class="tool-btn" id="scriptSizeBtn" data-tooltip-title="Script Size"><span style="font-size:13px;position:relative">X<span style="font-size:7px;position:absolute;top:-3px;right:-7px">2</span></span></button>
+                            <button class="tool-btn" id="scriptSizeBtn" data-tooltip-title="Script Size" data-i18n-tooltip-title="script_size"><span style="font-size:13px;position:relative">X<span style="font-size:7px;position:absolute;top:-3px;right:-7px">2</span></span></button>
                             <div class="tool-popover script-size-popover" id="scriptSizePopover">
-                                <div class="popover-label">Script Size</div>
+                                <div class="popover-label" data-i18n="script_size">Script Size</div>
                                 <div class="script-size-options">
-                                    <button class="script-option" data-script="superscript">Superscript</button>
-                                    <button class="script-option" data-script="subscript">Subscript</button>
+                                    <button class="script-option" data-script="superscript" data-i18n="superscript">Superscript</button>
+                                    <button class="script-option" data-script="subscript" data-i18n="subscript">Subscript</button>
                                 </div>
                             </div>
                         </div>
@@ -95,26 +125,26 @@
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group">
-                    <span class="toolbar-label">Color</span>
+                    <span class="toolbar-label" data-i18n="color">Color</span>
                     <div class="toolbar-buttons">
-                        <button class="tool-btn" data-tool="highlight" data-tooltip-title="Highlight"><span id="highlightIcon" style="background:#FFEB3B;padding:0 3px;border-radius:2px;line-height:1.1">A</span></button>
-                        <button class="tool-btn" data-tool="textcolor" data-tooltip-title="Text Color"><span id="textcolorIcon" style="color:#E53935">A</span></button>
+                        <button class="tool-btn" data-tool="highlight" data-tooltip-title="Highlight" data-i18n-tooltip-title="highlight_tooltip"><span id="highlightIcon" style="background:#FFEB3B;padding:0 3px;border-radius:2px;line-height:1.1">A</span></button>
+                        <button class="tool-btn" data-tool="textcolor" data-tooltip-title="Text Color" data-i18n-tooltip-title="text_color_tooltip"><span id="textcolorIcon" style="color:#E53935">A</span></button>
                     </div>
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group">
-                    <span class="toolbar-label">Border</span>
+                    <span class="toolbar-label" data-i18n="border_label">Border</span>
                     <div class="toolbar-buttons">
-                        <button class="tool-btn tool-btn-lg" data-tool="border" data-tooltip-title="Border">□</button>
-                        <button class="tool-btn tool-btn-lg" data-tool="circle" data-tooltip-title="Circle">○</button>
+                        <button class="tool-btn tool-btn-lg" data-tool="border" data-tooltip-title="Border" data-i18n-tooltip-title="border_tooltip">□</button>
+                        <button class="tool-btn tool-btn-lg" data-tool="circle" data-tooltip-title="Circle" data-i18n-tooltip-title="circle_tooltip">○</button>
                     </div>
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group">
-                    <span class="toolbar-label">Layout</span>
+                    <span class="toolbar-label" data-i18n="layout">Layout</span>
                     <div class="toolbar-buttons">
                         <div class="tool-btn-wrapper">
-                            <button class="tool-btn" id="letterSpacingBtn" data-tooltip-title="Letter Spacing">
+                            <button class="tool-btn" id="letterSpacingBtn" data-tooltip-title="Letter Spacing" data-i18n-tooltip-title="letter_spacing_short">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text>
                                     <text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text>
@@ -124,7 +154,7 @@
                                 </svg>
                             </button>
                             <div class="tool-popover letter-spacing-popover" id="letterSpacingPopover">
-                                <div class="popover-label">Letter Spacing (px)</div>
+                                <div class="popover-label" data-i18n="letter_spacing_px">Letter Spacing (px)</div>
                                 <div class="size-stepper">
                                     <button class="stepper-btn" id="letterSpacingMinus" title="Decrease Spacing">&minus;</button>
                                     <input type="number" id="letterSpacingInput" class="stepper-input" min="0" max="100" value="0">
@@ -132,7 +162,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="tool-btn" data-tool="dropcap" data-tooltip-title="Drop Cap">
+                        <button class="tool-btn" data-tool="dropcap" data-tooltip-title="Drop Cap" data-i18n-tooltip-title="drop_cap">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text>
                                 <line x1="15" y1="5" x2="23" y2="5"/>
@@ -145,10 +175,10 @@
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group">
-                    <span class="toolbar-label">Insert</span>
+                    <span class="toolbar-label" data-i18n="insert">Insert</span>
                     <div class="toolbar-buttons">
                         <div class="tool-btn-wrapper">
-                            <button class="tool-btn" id="calloutBtn" data-tooltip-title="Callout">
+                            <button class="tool-btn" id="calloutBtn" data-tooltip-title="Callout" data-i18n-tooltip-title="callout_tooltip">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="2" y="3" width="20" height="18" rx="3"/>
                                     <text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text>
@@ -156,17 +186,17 @@
                             </button>
                             <div class="tool-popover callout-popover" id="calloutPopover">
                                 <div class="callout-color-section">
-                                    <div class="popover-label">Border</div>
+                                    <div class="popover-label" data-i18n="border_word">Border</div>
                                     <div class="color-board" id="calloutBoardBorder"></div>
                                 </div>
                                 <div class="callout-color-section">
-                                    <div class="popover-label">Fill</div>
+                                    <div class="popover-label" data-i18n="fill">Fill</div>
                                     <div class="color-board" id="calloutBoardBg"></div>
                                 </div>
-                                <button class="callout-apply-btn" id="calloutApplyBtn">Apply</button>
+                                <button class="callout-apply-btn" id="calloutApplyBtn" data-i18n="apply">Apply</button>
                             </div>
                         </div>
-                        <button class="tool-btn" id="iconUploadBtn" data-tooltip-title="Inline Icon">
+                        <button class="tool-btn" id="iconUploadBtn" data-tooltip-title="Inline Icon" data-i18n-tooltip-title="inline_icon_tooltip">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -177,15 +207,15 @@
                 </div>
                 <div class="toolbar-divider"></div>
                 <div class="toolbar-group toolbar-actions">
-                    <span class="toolbar-label">Actions</span>
+                    <span class="toolbar-label" data-i18n="actions">Actions</span>
                     <div class="toolbar-buttons">
-                        <button id="clearBtn" class="tool-btn" data-tooltip-title="Clear All">
+                        <button id="clearBtn" class="tool-btn" data-tooltip-title="Clear All" data-i18n-tooltip-title="clear_all">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             </svg>
                         </button>
-                        <button id="saveBtn" class="tool-btn tool-btn-save" data-tooltip-title="Save" data-tooltip="Ctrl+S">
+                        <button id="saveBtn" class="tool-btn tool-btn-save" data-tooltip-title="Save" data-tooltip="Ctrl+S" data-i18n-tooltip-title="save">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                                 <polyline points="17 21 17 13 7 13 7 21"/>
@@ -199,10 +229,10 @@
             <main class="viewer-container">
                 <div class="viewer-header">
                     <div class="file-info" id="fileInfo">
-                        <span class="file-name">No document loaded</span>
+                        <span class="file-name" data-i18n="no_document">No document loaded</span>
                     </div>
                     <div class="view-controls">
-                        <span class="selection-hint" id="selectionHint">Select text to apply styles</span>
+                        <span class="selection-hint" id="selectionHint" data-i18n="select_text_hint">Select text to apply styles</span>
                         <div class="zoom-controls">
                             <button class="zoom-btn" id="zoomOutBtn" title="Zoom Out">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -233,15 +263,15 @@
                                 <line x1="16" y1="17" x2="8" y2="17"/>
                             </svg>
                         </div>
-                        <h2>Upload a Word document</h2>
-                        <p>Drag and drop a .docx file here or click the button below</p>
+                        <h2 data-i18n="upload_word_doc">Upload a Word document</h2>
+                        <p data-i18n="drag_drop_hint">Drag and drop a .docx file here or click the button below</p>
                         <button id="uploadBtnAlt" class="btn btn-outline">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="17 8 12 3 7 8"/>
                                 <line x1="12" y1="3" x2="12" y2="15"/>
                             </svg>
-                            Upload Document
+                            <span data-i18n="upload_document">Upload Document</span>
                         </button>
                     </div>
                     <div class="document-container" id="documentContainer" style="display: none;">
@@ -251,13 +281,13 @@
             </main>
             <aside class="styles-panel" id="stylesPanel">
                 <div class="panel-header">
-                    <h3>Applied Styles</h3>
+                    <h3 data-i18n="applied_styles">Applied Styles</h3>
                     <span class="style-count" id="styleCount">0</span>
                 </div>
                 <div class="styles-list" id="stylesList">
                     <div class="empty-styles">
-                        <p>No styles applied</p>
-                        <small>Select text and apply styles</small>
+                        <p data-i18n="no_styles">No styles applied</p>
+                        <small data-i18n="select_apply_styles">Select text and apply styles</small>
                     </div>
                 </div>
             </aside>
@@ -266,7 +296,7 @@
         <div class="modal-overlay" id="iconModal" style="display:none">
             <div class="modal-dialog">
                 <div class="modal-header">
-                    <h3>Generate Inline Icon</h3>
+                    <h3 data-i18n="generate_icon">Generate Inline Icon</h3>
                     <button class="modal-close" id="iconModalClose">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -275,14 +305,14 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <label class="modal-label" for="iconDescription">Describe the icon you want</label>
-                    <input type="text" id="iconDescription" class="modal-input" placeholder="e.g., a check mark, a star, ..." maxlength="200" autocomplete="off">
-                    <div class="modal-hint">SVG icon will be generated according to the description. Click in the text to place it after generating.</div>
+                    <label class="modal-label" for="iconDescription" data-i18n="describe_icon">Describe the icon you want</label>
+                    <input type="text" id="iconDescription" class="modal-input" placeholder="e.g., a check mark, a star, ..." data-i18n-placeholder="icon_placeholder" maxlength="200" autocomplete="off">
+                    <div class="modal-hint" data-i18n="icon_hint">SVG icon will be generated according to the description. Click in the text to place it after generating.</div>
                 </div>
                 <div class="modal-footer">
-                    <button class="modal-btn modal-btn-secondary" id="iconModalCancel">Cancel</button>
+                    <button class="modal-btn modal-btn-secondary" id="iconModalCancel" data-i18n="cancel">Cancel</button>
                     <button class="modal-btn modal-btn-primary" id="iconModalSubmit">
-                        <span id="iconModalSubmitText">Generate</span>
+                        <span id="iconModalSubmitText" data-i18n="generate">Generate</span>
                         <span id="iconModalSpinner" class="spinner" style="display:none"></span>
                     </button>
                 </div>
@@ -291,43 +321,43 @@
         <div class="floating-toolbar" id="floatingToolbar">
             <div class="ft-main-row">
             <div class="ft-group">
-                <button class="ft-btn" data-ft-tool="fontfamily" title="Font Family">Aa</button>
+                <button class="ft-btn" data-ft-tool="fontfamily" title="Font Family" data-i18n-title="font_family">Aa</button>
                 <div class="ft-popover font-family-popover" id="ftFontFamilyPopover">
-                    <button class="ft-popover-option" data-ft-font="sansserif">Sans-Serif</button>
-                    <button class="ft-popover-option" data-ft-font="mono">Monospace</button>
-                    <button class="ft-popover-option" data-ft-font="rounded">Rounded</button>
-                    <button class="ft-popover-option" data-ft-font="smallcaps">Small Caps</button>
+                    <button class="ft-popover-option" data-ft-font="sansserif" data-i18n="sans_serif">Sans-Serif</button>
+                    <button class="ft-popover-option" data-ft-font="mono" data-i18n="monospace">Monospace</button>
+                    <button class="ft-popover-option" data-ft-font="rounded" data-i18n="rounded">Rounded</button>
+                    <button class="ft-popover-option" data-ft-font="smallcaps" data-i18n="small_caps">Small Caps</button>
                 </div>
                 <div class="ft-size-stepper">
                     <button class="ft-stepper-btn" id="ftFontSizeMinus" title="Decrease Font Size">&minus;</button>
                     <input type="number" id="ftFontSizeInput" class="ft-stepper-input" min="1" max="200" value="16">
                     <button class="ft-stepper-btn" id="ftFontSizePlus" title="Increase Font Size">+</button>
                 </div>
-                <button class="ft-btn" data-ft-tool="bold" title="Bold"><strong>B</strong></button>
-                <button class="ft-btn" data-ft-tool="italic" title="Italic"><em>I</em></button>
-                <button class="ft-btn" data-ft-tool="underline" title="Underline"><u>U</u></button>
-                <button class="ft-btn" data-ft-tool="overline" title="Overline">O̅</button>
-                <button class="ft-btn" data-ft-tool="wavyunderline" title="Wavy Underline"><span style="text-decoration:underline wavy">W</span></button>
-                <button class="ft-btn" data-ft-tool="strikethrough" title="Strikethrough"><s>S</s></button>
-                <button class="ft-btn" data-ft-tool="scriptsize" title="Script Size"><span style="font-size:11px;position:relative">X<span style="font-size:6px;position:absolute;top:-2px;right:-5px">2</span></span></button>
+                <button class="ft-btn" data-ft-tool="bold" title="Bold" data-i18n-title="bold_tooltip"><strong>B</strong></button>
+                <button class="ft-btn" data-ft-tool="italic" title="Italic" data-i18n-title="italic_tooltip"><em>I</em></button>
+                <button class="ft-btn" data-ft-tool="underline" title="Underline" data-i18n-title="underline_tooltip"><u>U</u></button>
+                <button class="ft-btn" data-ft-tool="overline" title="Overline" data-i18n-title="overline_tooltip">O̅</button>
+                <button class="ft-btn" data-ft-tool="wavyunderline" title="Wavy Underline" data-i18n-title="wavyunderline_tooltip"><span style="text-decoration:underline wavy">W</span></button>
+                <button class="ft-btn" data-ft-tool="strikethrough" title="Strikethrough" data-i18n-title="strikethrough_tooltip"><s>S</s></button>
+                <button class="ft-btn" data-ft-tool="scriptsize" title="Script Size" data-i18n-title="script_size"><span style="font-size:11px;position:relative">X<span style="font-size:6px;position:absolute;top:-2px;right:-5px">2</span></span></button>
                 <div class="ft-popover script-size-popover" id="ftScriptSizePopover">
-                    <button class="ft-popover-option" data-ft-script="superscript">Superscript</button>
-                    <button class="ft-popover-option" data-ft-script="subscript">Subscript</button>
+                    <button class="ft-popover-option" data-ft-script="superscript" data-i18n="superscript">Superscript</button>
+                    <button class="ft-popover-option" data-ft-script="subscript" data-i18n="subscript">Subscript</button>
                 </div>
             </div>
             <div class="ft-divider"></div>
             <div class="ft-group">
-                <button class="ft-btn" data-ft-tool="highlight" title="Highlight"><span class="ft-highlight-icon" style="background:#FFEB3B;padding:0 2px;border-radius:2px;line-height:1">A</span></button>
-                <button class="ft-btn" data-ft-tool="textcolor" title="Text Color"><span class="ft-textcolor-icon" style="color:#E53935">A</span></button>
+                <button class="ft-btn" data-ft-tool="highlight" title="Highlight" data-i18n-title="highlight_tooltip"><span class="ft-highlight-icon" style="background:#FFEB3B;padding:0 2px;border-radius:2px;line-height:1">A</span></button>
+                <button class="ft-btn" data-ft-tool="textcolor" title="Text Color" data-i18n-title="text_color_tooltip"><span class="ft-textcolor-icon" style="color:#E53935">A</span></button>
             </div>
             <div class="ft-divider"></div>
             <div class="ft-group">
-                <button class="ft-btn ft-btn-lg" data-ft-tool="border" title="Border">□</button>
-                <button class="ft-btn ft-btn-lg" data-ft-tool="circle" title="Circle">○</button>
+                <button class="ft-btn ft-btn-lg" data-ft-tool="border" title="Border" data-i18n-title="border_tooltip">□</button>
+                <button class="ft-btn ft-btn-lg" data-ft-tool="circle" title="Circle" data-i18n-title="circle_tooltip">○</button>
             </div>
             <div class="ft-divider"></div>
             <div class="ft-group">
-                <button class="ft-btn" data-ft-tool="letterspacing" title="Letter Spacing">
+                <button class="ft-btn" data-ft-tool="letterspacing" title="Letter Spacing" data-i18n-title="letter_spacing_short">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text>
                         <text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text>
@@ -337,14 +367,14 @@
                     </svg>
                 </button>
                 <div class="ft-popover ft-letterspacing-popover" id="ftLetterSpacingPopover">
-                    <div class="ft-popover-label">Letter Spacing (px)</div>
+                    <div class="ft-popover-label" data-i18n="letter_spacing_px">Letter Spacing (px)</div>
                     <div class="ft-size-stepper">
                         <button class="ft-stepper-btn" id="ftLetterSpacingMinus">&minus;</button>
                         <input type="number" id="ftLetterSpacingInput" class="ft-stepper-input" min="0" max="100" value="0">
                         <button class="ft-stepper-btn" id="ftLetterSpacingPlus">+</button>
                     </div>
                 </div>
-                <button class="ft-btn" data-ft-tool="dropcap" title="Drop Cap">
+                <button class="ft-btn" data-ft-tool="dropcap" title="Drop Cap" data-i18n-title="drop_cap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text>
                         <line x1="15" y1="5" x2="23" y2="5"/>
@@ -360,7 +390,7 @@
         <div class="toast-container" id="toastContainer"></div>
         <div class="custom-color-modal" id="customColorModal">
             <div class="custom-color-content">
-                <div class="custom-color-header">Custom Color</div>
+                <div class="custom-color-header" data-i18n="custom_color">Custom Color</div>
                 <div class="custom-color-body">
                     <div class="custom-color-canvas-area">
                         <canvas id="colorGradient" width="220" height="160"></canvas>
@@ -369,7 +399,7 @@
                     <div class="custom-color-inputs">
                         <div class="custom-color-preview-box" id="customColorPreview"></div>
                         <div class="custom-color-field">
-                            <label>Hex</label>
+                            <label data-i18n="hex">Hex</label>
                             <input type="text" id="customHexInput" maxlength="7" placeholder="#000000">
                         </div>
                         <div class="custom-color-rgb">
@@ -389,8 +419,8 @@
                     </div>
                 </div>
                 <div class="custom-color-actions">
-                    <button id="customColorCancel" class="custom-color-btn cancel">Cancel</button>
-                    <button id="customColorApply" class="custom-color-btn apply">Apply</button>
+                    <button id="customColorCancel" class="custom-color-btn cancel" data-i18n="cancel">Cancel</button>
+                    <button id="customColorApply" class="custom-color-btn apply" data-i18n="apply">Apply</button>
                 </div>
             </div>
         </div>

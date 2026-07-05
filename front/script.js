@@ -1,5 +1,193 @@
+const TRANSLATIONS = {
+    en: {
+        studio: 'Studio',
+        upload_document: 'Upload Document',
+        history: 'History',
+        undo: 'Undo',
+        redo: 'Redo',
+        text_style: 'Text Style',
+        font_family: 'Font Family',
+        sans_serif: 'Sans-Serif',
+        monospace: 'Monospace',
+        rounded: 'Rounded',
+        small_caps: 'Small Caps',
+        script_size: 'Script Size',
+        superscript: 'Superscript',
+        subscript: 'Subscript',
+        color: 'Color',
+        highlight_tooltip: 'Highlight',
+        text_color_tooltip: 'Text Color',
+        border_label: 'Border',
+        border_word: 'Border',
+        border_tooltip: 'Border',
+        circle_tooltip: 'Circle',
+        layout: 'Layout',
+        letter_spacing_short: 'Letter Spacing',
+        letter_spacing_px: 'Letter Spacing (px)',
+        drop_cap: 'Drop Cap',
+        insert: 'Insert',
+        callout_tooltip: 'Callout',
+        fill: 'Fill',
+        apply: 'Apply',
+        inline_icon_tooltip: 'Inline Icon',
+        actions: 'Actions',
+        clear_all: 'Clear All',
+        save: 'Save',
+        bold_tooltip: 'Bold',
+        italic_tooltip: 'Italic',
+        underline_tooltip: 'Underline',
+        overline_tooltip: 'Overline',
+        wavyunderline_tooltip: 'Wavy Underline',
+        strikethrough_tooltip: 'Strikethrough',
+        no_document: 'No document loaded',
+        select_text_hint: 'Select text to apply styles',
+        upload_word_doc: 'Upload a Word document',
+        drag_drop_hint: 'Drag and drop a .docx file here or click the button below',
+        applied_styles: 'Applied Styles',
+        no_styles: 'No styles applied',
+        select_apply_styles: 'Select text and apply styles',
+        generate_icon: 'Generate Inline Icon',
+        describe_icon: 'Describe the icon you want',
+        icon_placeholder: 'e.g., a check mark, a star, ...',
+        icon_hint: 'SVG icon will be generated according to the description. Click in the text to place it after generating.',
+        cancel: 'Cancel',
+        generate: 'Generate',
+        generating: 'Generating...',
+        custom_color: 'Custom Color',
+        hex: 'Hex',
+        load_doc_first: 'Load a document first',
+        select_text_first: 'Select text first',
+        drop_docx: 'Please drop a Word document (.docx)',
+        select_docx: 'Please select a Word document (.docx)',
+        upload_success: 'Document uploaded successfully',
+        upload_failed: 'Failed to upload: ',
+        icon_placement_hint: 'Click in the document to place the icon',
+        click_text_place_icon: 'Click anywhere in text to place icon',
+        no_styles_to_clear: 'No styles to clear',
+        confirm_clear: 'Clear all styles?',
+        all_cleared: 'All styles cleared',
+        no_doc_loaded: 'No document loaded',
+        save_failed: 'Failed to save: ',
+        exported_downloading: 'Image exported! Downloading...',
+        describe_icon_first: 'Please describe the icon',
+        icon_gen_failed: 'Failed to generate icon: ',
+        position_error: 'Could not determine position',
+        click_inside_text: 'Click inside the text',
+        cursor_placed: 'Cursor placed',
+        selected_suffix: ' selected',
+        frequently_used: 'Frequently Used',
+        recent: 'Recent',
+        custom_color_btn: '+ Custom',
+        this_only: 'This only',
+        remove_all: 'Remove all',
+        skip: 'Skip',
+        apply_to_all: 'Apply to all',
+        found_more: 'Found {0} more "{1}" — apply {2} to all?',
+        applied_to_occurrences: 'Applied {0} to {1} more occurrence{2}',
+        removed_styles: 'Removed {0} style{1}',
+        icon_placed_cursor: 'Icon "{0}" placed at cursor',
+        icon_placed: 'Icon "{0}" placed',
+    },
+    ko: {
+        studio: '스튜디오',
+        upload_document: '문서 업로드',
+        history: '기록',
+        undo: '실행 취소',
+        redo: '다시 실행',
+        text_style: '텍스트 스타일',
+        font_family: '글꼴',
+        sans_serif: '산세리프',
+        monospace: '고정폭',
+        rounded: '둥근',
+        small_caps: '소형 대문자',
+        script_size: '위아래 첨자',
+        superscript: '위첨자',
+        subscript: '아래첨자',
+        color: '색상',
+        highlight_tooltip: '형광펜',
+        text_color_tooltip: '글자 색',
+        border_label: '테두리',
+        border_word: '테두리',
+        border_tooltip: '테두리',
+        circle_tooltip: '원형',
+        layout: '레이아웃',
+        letter_spacing_short: '자간',
+        letter_spacing_px: '자간 (px)',
+        drop_cap: '드롭캡',
+        insert: '삽입',
+        callout_tooltip: '콜아웃',
+        fill: '채우기',
+        apply: '적용',
+        inline_icon_tooltip: '인라인 아이콘',
+        actions: '작업',
+        clear_all: '모두 지우기',
+        save: '저장',
+        bold_tooltip: '굵게',
+        italic_tooltip: '기울임',
+        underline_tooltip: '밑줄',
+        overline_tooltip: '윗줄',
+        wavyunderline_tooltip: '물결 밑줄',
+        strikethrough_tooltip: '취소선',
+        no_document: '문서 없음',
+        select_text_hint: '텍스트를 선택하여 스타일 적용',
+        upload_word_doc: 'Word 문서 업로드',
+        drag_drop_hint: '여기에 .docx 파일을 끌어다 놓거나 아래 버튼을 클릭하세요',
+        applied_styles: '적용된 스타일',
+        no_styles: '적용된 스타일 없음',
+        select_apply_styles: '텍스트를 선택하고 스타일을 적용하세요',
+        generate_icon: '인라인 아이콘 생성',
+        describe_icon: '원하는 아이콘을 설명하세요',
+        icon_placeholder: '예: 체크 표시, 별, ...',
+        icon_hint: '설명에 따라 SVG 아이콘이 생성됩니다. 생성 후 텍스트를 클릭하여 배치하세요.',
+        cancel: '취소',
+        generate: '생성',
+        generating: '생성 중...',
+        custom_color: '사용자 정의 색상',
+        hex: '16진수',
+        load_doc_first: '먼저 문서를 불러오세요',
+        select_text_first: '먼저 텍스트를 선택하세요',
+        drop_docx: 'Word 문서(.docx)를 끌어다 놓으세요',
+        select_docx: 'Word 문서(.docx)를 선택하세요',
+        upload_success: '문서가 성공적으로 업로드되었습니다',
+        upload_failed: '업로드 실패: ',
+        icon_placement_hint: '문서에서 아이콘을 배치할 위치를 클릭하세요',
+        click_text_place_icon: '텍스트의 아무 곳이나 클릭하여 아이콘을 배치하세요',
+        no_styles_to_clear: '지울 스타일이 없습니다',
+        confirm_clear: '모든 스타일을 지우시겠습니까?',
+        all_cleared: '모든 스타일이 지워졌습니다',
+        no_doc_loaded: '문서가 없습니다',
+        save_failed: '저장 실패: ',
+        exported_downloading: '이미지 내보내기 완료! 다운로드 중...',
+        describe_icon_first: '아이콘을 설명해 주세요',
+        icon_gen_failed: '아이콘 생성 실패: ',
+        position_error: '위치를 결정할 수 없습니다',
+        click_inside_text: '텍스트 안을 클릭하세요',
+        cursor_placed: '커서 위치 지정됨',
+        selected_suffix: ' 선택됨',
+        frequently_used: '자주 사용',
+        recent: '최근',
+        custom_color_btn: '+ 사용자 지정',
+        this_only: '이것만',
+        remove_all: '모두 제거',
+        skip: '건너뛰기',
+        apply_to_all: '모두 적용',
+        found_more: '"{1}" {0}개 더 발견 — {2}에 모두 적용?',
+        applied_to_occurrences: '{1}개 추가 위치에 {0} 적용됨',
+        removed_styles: '{0}개 스타일 제거됨',
+        icon_placed_cursor: '아이콘 "{0}"이(가) 커서 위치에 삽입됨',
+        icon_placed: '아이콘 "{0}"이(가) 삽입됨',
+    }
+};
+
+const TYPE_LABELS_ALL = {
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' },
+    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄' }
+};
+
 class DocumentTypography {
     constructor() {
+        this.lang = 'en';
+        this.TYPE_LABELS = TYPE_LABELS_ALL.en;
         this.docId = null;
         this.content = [];
         this.styles = [];
@@ -28,7 +216,6 @@ class DocumentTypography {
         this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough']);
         this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border', 'circle']);
         this.TOOL_COLOR_MAP = { textcolor: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
-        this.TYPE_LABELS = { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline' };
         this.COLOR_PALETTE = [
             ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
             ['#980000','#ff0000','#ff9900','#ffff00','#00ff00','#00ffff','#4a86e8','#0000ff','#9900ff','#ff00ff'],
@@ -43,17 +230,66 @@ class DocumentTypography {
         this.initEventListeners();
         this.initColorBoards();
         this.initCustomColorPicker();
+        this.initLanguage();
     }
+
+    t(key, ...args) {
+        let str = (TRANSLATIONS[this.lang] || TRANSLATIONS.en)[key];
+        if (str === undefined) str = TRANSLATIONS.en[key] || key;
+        args.forEach((arg, i) => { str = str.replace(new RegExp(`\\{${i}\\}`, 'g'), arg); });
+        return str;
+    }
+
+    initLanguage() {
+        const saved = localStorage.getItem('docstudio_lang');
+        if (saved === 'en' || saved === 'ko') {
+            this.applyLanguage(saved);
+            this.langDisplay.textContent = saved.toUpperCase();
+            this.langSelectOverlay.classList.add('hidden');
+        }
+    }
+
+    selectLanguage(lang) {
+        localStorage.setItem('docstudio_lang', lang);
+        this.applyLanguage(lang);
+        this.langDisplay.textContent = lang.toUpperCase();
+        this.langSelectOverlay.classList.add('hidden');
+    }
+
+    applyLanguage(lang) {
+        this.lang = lang;
+        this.TYPE_LABELS = TYPE_LABELS_ALL[lang] || TYPE_LABELS_ALL.en;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = this.t(el.dataset.i18n);
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            el.placeholder = this.t(el.dataset.i18nPlaceholder);
+        });
+        document.querySelectorAll('[data-i18n-tooltip-title]').forEach(el => {
+            el.dataset.tooltipTitle = this.t(el.dataset.i18nTooltipTitle);
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            el.title = this.t(el.dataset.i18nTitle);
+        });
+        document.title = lang === 'ko' ? '문서 스튜디오' : 'Document Studio';
+        document.documentElement.lang = lang === 'ko' ? 'ko' : 'en';
+        if (!this.docId) {
+            this.selectionHint.textContent = this.t('select_text_hint');
+        }
+    }
+
     _genId(prefix = 'style') { return prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11); }
     _pushHistory(entry) { this.history.push(entry); this.redoStack = []; this.undoBtn.disabled = false; this.redoBtn.disabled = true; }
     _refreshViews() { this.applyAllStyles(); this.updateStylesList(); }
-    _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = 'Select text to apply styles'; }
+    _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
+
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo langToggleBtn langDisplay'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.fontOptions = document.querySelectorAll('.font-option');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
+
     initEventListeners() {
         this.uploadBtn.addEventListener('click', () => this.fileInput.click());
         this.uploadBtnAlt.addEventListener('click', () => this.fileInput.click());
@@ -80,7 +316,7 @@ class DocumentTypography {
         this.clearBtn.addEventListener('click', () => this.clearAllStyles());
         this.saveBtn.addEventListener('click', () => this.saveStyles());
         this.iconUploadBtn.addEventListener('click', () => {
-            if (!this.docId) { this.showToast('Load a document first', 'error'); return; }
+            if (!this.docId) { this.showToast(this.t('load_doc_first'), 'error'); return; }
             this.openIconModal();
         });
         this.documentContent.addEventListener('click', e => this.handleIconPlacement(e));
@@ -121,17 +357,22 @@ class DocumentTypography {
         this.floatingToolbar.addEventListener('mousedown', e => e.preventDefault());
         this._initStepperWithInput(this.ftFontSizeMinus, this.ftFontSizePlus, this.ftFontSizeInput, 1, 200, 'fontSize', 'fontsize', v => v > 0, this.fontSizeInput);
         this._initStepperWithInput(this.ftLetterSpacingMinus, this.ftLetterSpacingPlus, this.ftLetterSpacingInput, 0, 100, 'letterSpacing', 'letterspacing', v => v >= 0, this.letterSpacingInput);
+        this.langBtnEn.addEventListener('click', () => this.selectLanguage('en'));
+        this.langBtnKo.addEventListener('click', () => this.selectLanguage('ko'));
+        this.langToggleBtn.addEventListener('click', () => this.langSelectOverlay.classList.remove('hidden'));
     }
+
     async handleFileUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
         const validTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
         if (!validTypes.includes(file.type) && !file.name.endsWith('.docx')) {
-            this.showToast('Please select a Word document (.docx)', 'error');
+            this.showToast(this.t('select_docx'), 'error');
             return;
         }
         await this.uploadDocument(file);
     }
+
     async handleDrop(e) {
         e.preventDefault();
         this.documentViewport.classList.remove('drag-over');
@@ -139,9 +380,10 @@ class DocumentTypography {
         if (file && (file.name.endsWith('.docx') || file.name.endsWith('.doc'))) {
             await this.uploadDocument(file);
         } else {
-            this.showToast('Please drop a Word document (.docx)', 'error');
+            this.showToast(this.t('drop_docx'), 'error');
         }
     }
+
     async uploadDocument(file) {
         try {
             const formData = new FormData();
@@ -158,15 +400,16 @@ class DocumentTypography {
                 this.renderDocument();
                 this.updateStylesList();
                 this.fileInfo.querySelector('.file-name').textContent = data.filename;
-                this.showToast('Document uploaded successfully', 'success');
+                this.showToast(this.t('upload_success'), 'success');
             } else {
                 throw new Error(data.error);
             }
         } catch (error) {
             console.error('Upload error:', error);
-            this.showToast('Failed to upload: ' + error.message, 'error');
+            this.showToast(this.t('upload_failed') + error.message, 'error');
         }
     }
+
     renderDocument() {
         if (!this.content.length) {
             this.emptyState.style.display = 'flex';
@@ -178,21 +421,25 @@ class DocumentTypography {
         this.documentContent.innerHTML = this.content.map((p, i) => `<p data-para="${i}">${this.escapeHtml(p.text)}</p>`).join('');
         this.applyAllStyles();
     }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
+
     _iconHtml(s) {
         return s.svgCode
             ? `<span class="inline-icon" data-style-id="${s.id}" title="${this.escapeHtml(s.iconName)}">${s.svgCode}</span>`
             : `<img src="${s.iconData}" class="inline-icon" data-style-id="${s.id}" alt="">`;
     }
+
     _initStepperWithInput(minusBtn, plusBtn, input, min, max, prop, tool, validate, syncInput) {
         const apply = val => { this[prop] = val + 'px'; if (syncInput) syncInput.value = val; if (this.savedSelection) this.applyToolToSelection(tool, true); };
         this._setupStepper(minusBtn, plusBtn, input, min, max, apply);
         input.addEventListener('change', e => { const v = parseInt(e.target.value); if (v && validate(v)) apply(v); });
     }
+
     _setupStepper(minusBtn, plusBtn, input, min, max, onChange) {
         const step = dir => { const val = Math.max(min, Math.min(max, parseInt(input.value) + dir)); input.value = val; onChange(val); };
         const startHold = dir => {
@@ -209,6 +456,7 @@ class DocumentTypography {
         minusBtn.addEventListener('mousedown', e => { e.preventDefault(); startHold(-1); });
         plusBtn.addEventListener('mousedown', e => { e.preventDefault(); startHold(1); });
     }
+
     setZoom(level) {
         this.zoomLevel = Math.max(this.ZOOM_MIN, Math.min(this.ZOOM_MAX, level));
         const scale = this.zoomLevel / 100;
@@ -219,6 +467,7 @@ class DocumentTypography {
         this.zoomOutBtn.disabled = this.zoomLevel <= this.ZOOM_MIN;
         this.zoomInBtn.disabled = this.zoomLevel >= this.ZOOM_MAX;
     }
+
     zoomFitWidth() {
         this.setZoom(100);
         const vpStyle = getComputedStyle(this.documentViewport);
@@ -226,6 +475,7 @@ class DocumentTypography {
         const docWidth = this.documentContainer.offsetWidth;
         if (docWidth > 0) this.setZoom(Math.floor((vpWidth / docWidth) * 100));
     }
+
     zoomFitHeight() {
         this.setZoom(100);
         const vpStyle = getComputedStyle(this.documentViewport);
@@ -233,6 +483,7 @@ class DocumentTypography {
         const docHeight = this.documentContainer.offsetHeight;
         if (docHeight > 0) this.setZoom(Math.floor((vpHeight / docHeight) * 100));
     }
+
     resetStepperDefaults() {
         this.fontSize = '16px';
         this.letterSpacing = '0px';
@@ -240,23 +491,26 @@ class DocumentTypography {
         this.letterSpacingInput.value = 0;
         this.ftFontSizeInput.value = 16;
     }
+
     toggleLetterSpacingPopover() {
         this.letterSpacingPopover.classList.toggle('visible');
         this.letterSpacingBtn.classList.toggle('active');
         this.adjustFloatingToolbarForPopovers();
     }
+
     toggleCalloutPopover() {
         const isVisible = this.calloutPopover.classList.contains('visible');
         this._closeToolPopovers();
         if (!isVisible) {
-            if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+            if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
             this.calloutPopover.classList.add('visible');
             this.calloutBtn.classList.add('active');
         }
         this.adjustFloatingToolbarForPopovers();
     }
+
     applyCallout() {
-        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
         const style = { id: this._genId(), type: 'callout', text, color: this.calloutBorderColor || '#000000', bgColor: this.calloutBgColor || '#ffffff', paraIndex, startOffset, endOffset, created_at: new Date().toISOString() };
         this._pushHistory({ action: 'add', style });
@@ -268,13 +522,15 @@ class DocumentTypography {
         this.hideFloatingToolbar();
         this.promptApplyToAll(style);
     }
+
     selectTool(tool) {
-        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         this._closeToolPopovers();
         this.applyToolToSelection(tool);
     }
+
     applyInstantTool(tool, anchorBtn) {
-        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         const prev = this.borderColor; this.borderColor = '#000000';
         this.applyToolToSelection(tool, true); this.borderColor = prev;
         const sel = this.savedSelection;
@@ -287,30 +543,35 @@ class DocumentTypography {
             this._instantStyleId = applied ? applied.id : null; this._instantStyleAnchor = null;
         }));
     }
+
     toggleFontFamilyPopover() {
         const isVisible = this.fontFamilyPopover.classList.contains('visible');
-        if (!isVisible && !this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!isVisible && !this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         this._closeToolPopovers();
         if (!isVisible) { this.fontFamilyPopover.classList.add('visible'); this.fontFamilyBtn.classList.add('active'); }
         this.adjustFloatingToolbarForPopovers();
     }
+
     selectFontFamily(font) {
         if (this.savedSelection) this.applyToolToSelection(font);
         this._closeToolPopovers();
         this.adjustFloatingToolbarForPopovers();
     }
+
     toggleScriptSizePopover() {
         const isVisible = this.scriptSizePopover.classList.contains('visible');
-        if (!isVisible && !this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!isVisible && !this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         this._closeToolPopovers();
         if (!isVisible) { this.scriptSizePopover.classList.add('visible'); this.scriptSizeBtn.classList.add('active'); }
         this.adjustFloatingToolbarForPopovers();
     }
+
     selectScriptSize(type) {
         if (this.savedSelection) this.applyToolToSelection(type);
         this._closeToolPopovers();
         this.adjustFloatingToolbarForPopovers();
     }
+
     applyToolToSelection(tool, keepSelection = false) {
         if (!this.savedSelection) return;
         const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
@@ -332,6 +593,7 @@ class DocumentTypography {
         this._updateFloatingToolbarStyles();
         if (!keepSelection) { this.promptApplyToAll(style); }
     }
+
     restoreSelection(paraIndex, startOffset, endOffset) {
         const para = this.documentContent.querySelector(`p[data-para="${paraIndex}"]`);
         if (!para) return;
@@ -345,25 +607,29 @@ class DocumentTypography {
         }
         if (sn && en) { const r = document.createRange(); r.setStart(sn, so); r.setEnd(en, eo); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }
     }
+
     openIconModal() {
         this.iconDescription.value = '';
         this.iconModal.style.display = 'flex';
         this.iconDescription.focus();
         this.setIconModalLoading(false);
     }
+
     closeIconModal() {
         this.iconModal.style.display = 'none';
         this.iconDescription.value = '';
     }
+
     setIconModalLoading(loading) {
         this.iconDescription.disabled = loading;
         this.iconModalSubmit.disabled = loading;
-        this.iconModalSubmitText.textContent = loading ? 'Generating...' : 'Generate';
+        this.iconModalSubmitText.textContent = loading ? this.t('generating') : this.t('generate');
         this.iconModalSpinner.style.display = loading ? 'inline-block' : 'none';
     }
+
     async generateIcon() {
         const description = this.iconDescription.value.trim();
-        if (!description) { this.showToast('Please describe the icon', 'error'); return; }
+        if (!description) { this.showToast(this.t('describe_icon_first'), 'error'); return; }
         this.setIconModalLoading(true);
         try {
             const response = await fetch(`${this.apiBase}/generate-icon`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description }) });
@@ -375,20 +641,23 @@ class DocumentTypography {
             else { this.pendingIconData = iconInfo; this.enterIconPlacementMode(); }
         } catch (error) {
             console.error('Icon generation error:', error);
-            this.showToast('Failed to generate icon: ' + error.message, 'error');
+            this.showToast(this.t('icon_gen_failed') + error.message, 'error');
             this.setIconModalLoading(false);
         }
     }
+
     enterIconPlacementMode() {
         this.documentContent.classList.add('icon-placement-mode');
-        this.selectionHint.textContent = 'Click anywhere in text to place icon';
-        this.showToast('Click in the document to place the icon', 'success');
+        this.selectionHint.textContent = this.t('click_text_place_icon');
+        this.showToast(this.t('icon_placement_hint'), 'success');
     }
+
     exitIconPlacementMode() {
         this.pendingIconData = null;
         this.documentContent.classList.remove('icon-placement-mode');
-        this.selectionHint.textContent = 'Select text to apply styles';
+        this.selectionHint.textContent = this.t('select_text_hint');
     }
+
     _insertIcon(paraIndex, offset, iconInfo) {
         const style = { id: this._genId(), type: 'inlineicon', text: iconInfo.iconName, color: '#000000', paraIndex, startOffset: offset, endOffset: offset, ...iconInfo, created_at: new Date().toISOString() };
         this._pushHistory({ action: 'add', style });
@@ -397,23 +666,26 @@ class DocumentTypography {
         this._refreshViews();
         return style;
     }
+
     placeIconAtCursor(iconInfo) {
         const cp = this.cursorPosition;
         const s = this._insertIcon(cp.paraIndex, cp.offset, iconInfo);
-        this.showToast(`Icon "${s.iconName}" placed at cursor`, 'success');
+        this.showToast(this.t('icon_placed_cursor', s.iconName), 'success');
     }
+
     handleIconPlacement(e) {
         if (!this.pendingIconData) return;
         e.preventDefault(); e.stopPropagation();
         const range = document.caretRangeFromPoint(e.clientX, e.clientY);
-        if (!range) { this.showToast('Could not determine position', 'error'); return; }
+        if (!range) { this.showToast(this.t('position_error'), 'error'); return; }
         const para = this.getParentParagraph(range.startContainer);
-        if (!para) { this.showToast('Click inside the text', 'error'); return; }
+        if (!para) { this.showToast(this.t('click_inside_text'), 'error'); return; }
         const s = this._insertIcon(parseInt(para.dataset.para), this.getTextOffset(para, range.startContainer, range.startOffset), this.pendingIconData);
-        this.showToast(`Icon "${s.iconName}" placed`, 'success');
+        this.showToast(this.t('icon_placed', s.iconName), 'success');
         this.exitIconPlacementMode();
         window.getSelection().removeAllRanges();
     }
+
     handleTextSelection(e) {
         if (!this.docId) return;
         if (this.pendingIconData) return;
@@ -431,14 +703,14 @@ class DocumentTypography {
                     const paraIndex = parseInt(cursorPara.dataset.para);
                     const offset = this.getTextOffset(cursorPara, range.startContainer, range.startOffset);
                     this.cursorPosition = { paraIndex, offset };
-                    this.selectionHint.textContent = 'Cursor placed';
+                    this.selectionHint.textContent = this.t('cursor_placed');
                     this._refreshViews();
                     return;
                 }
             }
             this.cursorPosition = null;
             this._refreshViews();
-            this.selectionHint.textContent = 'Select text to apply styles';
+            this.selectionHint.textContent = this.t('select_text_hint');
             return;
         }
         this.cursorPosition = null;
@@ -448,7 +720,7 @@ class DocumentTypography {
         const startOffset = this.getTextOffset(startNode, range.startContainer, range.startOffset);
         const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset);
         this.savedSelection = { paraIndex, startOffset, endOffset, text: selectedText, rect: range.getBoundingClientRect() };
-        this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}" selected`;
+        this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}"${this.t('selected_suffix')}`;
         const fs = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
         if (fs) { const v = parseInt(fs.color); if (v > 0) { this.fontSize = fs.color; this.fontSizeInput.value = v; } }
         const ls = this.styles.find(s => s.type === 'letterspacing' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
@@ -458,6 +730,7 @@ class DocumentTypography {
         );
         this.showFloatingToolbar(range, overlapping);
     }
+
     showFloatingToolbar(range, overlappingStyles = []) {
         const rect = range.getBoundingClientRect(), tb = this.floatingToolbar;
         const ftH = tb.querySelector('.ft-highlight-icon'), ftT = tb.querySelector('.ft-textcolor-icon');
@@ -475,6 +748,7 @@ class DocumentTypography {
         tb.style.left = left + 'px'; tb.style.top = top + 'px';
         tb.classList.toggle('above', top > rect.bottom);
     }
+
     renderExistingStyleTags(styles) {
         const container = this.ftExistingStyles;
         container.innerHTML = '';
@@ -491,6 +765,7 @@ class DocumentTypography {
         });
         container.classList.add('has-styles');
     }
+
     adjustFloatingToolbarForPopovers() {
         const tb = this.floatingToolbar;
         if (!tb.classList.contains('visible') || !this._ftNaturalPos) return;
@@ -506,11 +781,13 @@ class DocumentTypography {
         });
         tb.style.left = left + 'px';
     }
+
     hideFloatingToolbar() {
         this.floatingToolbar.classList.remove('visible');
         this.closeFtPopovers();
         this.closeSharedColorPopover();
     }
+
     _updateFloatingToolbarStyles() {
         if (!this.savedSelection || !this.floatingToolbar.classList.contains('visible')) return;
         const { paraIndex, startOffset, endOffset } = this.savedSelection;
@@ -523,17 +800,20 @@ class DocumentTypography {
         );
         this.showFloatingToolbar(range, overlapping);
     }
+
     toggleFtPopover(popoverId) {
         const popover = this[popoverId];
         const isOpen = popover.classList.contains('visible');
         this.closeFtPopovers();
         if (!isOpen) popover.classList.add('visible');
     }
+
     closeFtPopovers() {
         this.ftFontFamilyPopover.classList.remove('visible');
         this.ftScriptSizePopover.classList.remove('visible');
         this.ftLetterSpacingPopover.classList.remove('visible');
     }
+
     _closeToolPopovers() {
         this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
@@ -542,6 +822,7 @@ class DocumentTypography {
         }
         this.closeSharedColorPopover();
     }
+
     getParentParagraph(node) {
         while (node && node !== this.documentContent) {
             if (node.nodeName === 'P' && node.dataset?.para !== undefined) return node;
@@ -549,6 +830,7 @@ class DocumentTypography {
         }
         return null;
     }
+
     getTextOffset(paragraph, node, offset) {
         const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT, {
             acceptNode: n => n.parentElement?.closest('.inline-icon') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
@@ -560,9 +842,11 @@ class DocumentTypography {
         }
         return total + offset;
     }
+
     getColorForTool(tool) {
         return { textcolor: this.textColor, dropcap: '#000000', highlight: this.bgColor, fontsize: this.fontSize, letterspacing: this.letterSpacing }[tool] || this.borderColor;
     }
+
     applyAllStyles() {
         this.documentContent.innerHTML = this.content.map((p, i) => `<p data-para="${i}">${this.escapeHtml(p.text)}</p>`).join('');
         const stylesByPara = {};
@@ -640,6 +924,7 @@ class DocumentTypography {
             }
         }
     }
+
     buildStyledSpan(styles, text) {
         const classes = ['styled-text', ...styles.map(s => s.type)];
         const inlineMap = { highlight: 'background-color', textcolor: 'color', border: 'border-color', circle: 'border-color', underline: 'text-decoration-color', wavyunderline: 'text-decoration-color', strikethrough: 'text-decoration-color', overline: 'text-decoration-color', fontsize: 'font-size', letterspacing: 'letter-spacing', dropcap: 'color' };
@@ -648,14 +933,15 @@ class DocumentTypography {
         const styleAttr = inline.length ? ` style="${inline.join(';')}"` : '';
         return `<span class="${classes.join(' ')}" data-style-id="${ids}"${styleAttr}>${this.escapeHtml(text)}</span>`;
     }
+
     updateStylesList() {
         const count = this.styles.length;
         this.styleCount.textContent = count;
         if (!count) {
-            this.stylesList.innerHTML = '<div class="empty-styles"><p>No styles applied</p><small>Select text and apply styles</small></div>';
+            this.stylesList.innerHTML = `<div class="empty-styles"><p>${this.t('no_styles')}</p><small>${this.t('select_apply_styles')}</small></div>`;
             return;
         }
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X\u00B2', subscript: 'X\u2082', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: 'Aa', mono: 'T_', rounded: 'Rr', smallcaps: 'Aᴀ', fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
         const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap'];
         const typeOrder = [
             'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough',
@@ -679,7 +965,7 @@ class DocumentTypography {
         const frequent = Object.entries(typeCounts).filter(([, c]) => c >= 5).sort((a, b) => b[1] - a[1]);
         let html = '';
         if (frequent.length) {
-            html += '<div class="frequent-section"><div class="frequent-header">Frequently Used</div><div class="frequent-tags">';
+            html += `<div class="frequent-section"><div class="frequent-header">${this.t('frequently_used')}</div><div class="frequent-tags">`;
             html += frequent.map(([type, cnt]) => {
                 const label = this.TYPE_LABELS[type] || type;
                 return `<span class="frequent-tag" data-tool="${type}" title="Click to apply"><span class="frequent-tag-icon">${icons[type] || '•'}</span>${label}<span class="frequent-tag-count">${cnt}</span></span>`;
@@ -740,6 +1026,7 @@ class DocumentTypography {
             });
         });
     }
+
     deleteStyle(id) {
         const index = this.styles.findIndex(s => s.id === id);
         if (index === -1) return;
@@ -751,6 +1038,7 @@ class DocumentTypography {
             this._doDelete(id);
         }
     }
+
     _doDelete(id) {
         const index = this.styles.findIndex(s => s.id === id);
         if (index === -1) return;
@@ -760,23 +1048,32 @@ class DocumentTypography {
         this.logAction('delete', style);
         this._refreshViews();
     }
+
     promptRemoveAll(style, duplicates) {
         const all = [style, ...duplicates];
         const el = this.documentContent.querySelector(`[data-style-id*="${style.id}"]`);
         const trunc = style.text.length > 15 ? style.text.substring(0, 15) + '...' : style.text;
-        this.showActionToast(`${all.length} "${trunc}" with ${this.TYPE_LABELS[style.type] || style.type} found — remove all?`,
-            [{ label: 'This only', primary: false, onClick: () => this._doDelete(style.id) }, { label: `Remove all (${all.length})`, primary: true, onClick: () => this._doBatchDelete(all) }],
+        const typeName = this.TYPE_LABELS[style.type] || style.type;
+        this.showActionToast(
+            `${all.length} "${trunc}" with ${typeName} found — remove all?`,
+            [
+                { label: this.t('this_only'), primary: false, onClick: () => this._doDelete(style.id) },
+                { label: `${this.t('remove_all')} (${all.length})`, primary: true, onClick: () => this._doBatchDelete(all) }
+            ],
             8000, el ? el.getBoundingClientRect() : null);
     }
+
     _doBatchDelete(styles) {
         const removed = [];
         styles.forEach(s => { const idx = this.styles.findIndex(st => st.id === s.id); if (idx !== -1) { removed.push(this.styles[idx]); this.styles.splice(idx, 1); this.logAction('delete', s); } });
         if (!removed.length) return;
         this._pushHistory({ action: 'batch_delete', styles: removed });
         this._refreshViews();
-        this.showToast(`Removed ${removed.length} style${removed.length > 1 ? 's' : ''}`, 'success');
+        this.showToast(this.t('removed_styles', removed.length, removed.length > 1 ? 's' : ''), 'success');
     }
+
     _removeById(id) { const idx = this.styles.findIndex(s => s.id === id); if (idx !== -1) this.styles.splice(idx, 1); }
+
     undo() {
         if (!this.history.length) return;
         const last = this.history.pop();
@@ -791,6 +1088,7 @@ class DocumentTypography {
         this.undoBtn.disabled = !this.history.length;
         this.redoBtn.disabled = false;
     }
+
     redo() {
         if (!this.redoStack.length) return;
         const last = this.redoStack.pop();
@@ -805,37 +1103,41 @@ class DocumentTypography {
         this.undoBtn.disabled = false;
         this.redoBtn.disabled = !this.redoStack.length;
     }
+
     async clearAllStyles() {
-        if (!this.styles.length) { this.showToast('No styles to clear', 'error'); return; }
-        if (!confirm('Clear all styles?')) return;
+        if (!this.styles.length) { this.showToast(this.t('no_styles_to_clear'), 'error'); return; }
+        if (!confirm(this.t('confirm_clear'))) return;
         this._pushHistory({ action: 'clear', styles: [...this.styles] });
         const count = this.styles.length;
         this.styles = [];
         this.logAction('clear', null, count);
         this._refreshViews();
-        this.showToast('All styles cleared', 'success');
+        this.showToast(this.t('all_cleared'), 'success');
     }
+
     async saveStyles() {
-        if (!this.docId) { this.showToast('No document loaded', 'error'); return; }
+        if (!this.docId) { this.showToast(this.t('no_doc_loaded'), 'error'); return; }
         const post = body => fetch(`${this.apiBase}/document/${this.docId}/${body}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ styles: this.styles }) }).then(r => r.json());
         try {
             const data = await post('styles');
             if (!data.success) throw new Error(data.error);
             const exp = await post('export');
             if (!exp.success) throw new Error(exp.error);
-            this.showToast('Image exported! Downloading...', 'success');
+            this.showToast(this.t('exported_downloading'), 'success');
             window.location.href = `${this.apiBase}/document/${this.docId}/download`;
         } catch (error) {
             console.error('Save error:', error);
-            this.showToast('Failed to save: ' + error.message, 'error');
+            this.showToast(this.t('save_failed') + error.message, 'error');
         }
     }
+
     async logAction(action, style = null, stylesCleared = null) {
         if (!this.docId) return;
         const entry = { log_id: this._genId('log'), action, timestamp: new Date().toISOString(), style: style ? { id: style.id, type: style.type, text: style.text, color: style.color, paraIndex: style.paraIndex, startOffset: style.startOffset, endOffset: style.endOffset, ...(style.bgColor ? { bgColor: style.bgColor } : {}) } : null, styles_cleared: stylesCleared };
         try { await fetch(`${this.apiBase}/document/${this.docId}/log`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) }); }
         catch (e) { console.error('Failed to log action:', e); }
     }
+
     handleKeyboard(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         const mod = e.ctrlKey || e.metaKey;
@@ -847,11 +1149,13 @@ class DocumentTypography {
         else if (e.key === 'Escape') {
             if (this.pendingIconData) { this.exitIconPlacementMode(); return; }
             if (this.iconModal.style.display !== 'none') { this.closeIconModal(); return; }
+            if (!this.langSelectOverlay.classList.contains('hidden')) { this.langSelectOverlay.classList.add('hidden'); return; }
             this._closeToolPopovers();
             this.hideFloatingToolbar();
             this._clearSelection();
         }
     }
+
     initColorBoards() {
         this.buildColorBoard(this.calloutBoardBorder, color => { this.calloutBorderColor = color; this._markBoardSelected(this.calloutBoardBorder, color); }, 'border');
         this.buildColorBoard(this.calloutBoardBg, color => { this.calloutBgColor = color; this._markBoardSelected(this.calloutBoardBg, color); }, 'bg');
@@ -860,18 +1164,20 @@ class DocumentTypography {
         this._markBoardSelected(this.calloutBoardBorder, '#000000');
         this._markBoardSelected(this.calloutBoardBg, '#ffffff');
     }
+
     _makeSwatch(color, onClick, category) {
         const s = document.createElement('div');
         s.className = 'color-board-swatch'; s.style.backgroundColor = color; s.title = color; s.dataset.color = color;
         s.addEventListener('click', () => { this._addRecentColor(color, category); onClick(color); });
         return s;
     }
+
     buildColorBoard(container, onClick, category = 'border') {
         container.innerHTML = '';
         this.COLOR_PALETTE.forEach(row => row.forEach(color => container.appendChild(this._makeSwatch(color, onClick, category))));
         const recentRow = document.createElement('div'); recentRow.className = 'color-board-recent'; recentRow.dataset.colorCategory = category;
         container.appendChild(recentRow); this._renderRecentRow(recentRow, onClick, category);
-        const customBtn = document.createElement('div'); customBtn.className = 'color-board-custom'; customBtn.textContent = '+ Custom';
+        const customBtn = document.createElement('div'); customBtn.className = 'color-board-custom'; customBtn.textContent = this.t('custom_color_btn');
         customBtn.addEventListener('click', () => {
             const savedTool = this._activeColorTool;
             const savedInstantId = this._instantStyleId;
@@ -884,6 +1190,7 @@ class DocumentTypography {
         });
         container.appendChild(customBtn);
     }
+
     _addRecentColor(color, category = 'border') {
         const c = color.toLowerCase();
         const list = this.recentColors[category] || (this.recentColors[category] = []);
@@ -893,23 +1200,26 @@ class DocumentTypography {
         if (list.length > this.RECENT_COLORS_MAX) list.length = this.RECENT_COLORS_MAX;
         document.querySelectorAll(`.color-board-recent[data-color-category="${category}"]`).forEach(row => { const board = row.closest('.color-board'); if (board?._boardOnClick) this._renderRecentRow(row, board._boardOnClick, category); });
     }
+
     _renderRecentRow(row, onClick, category = 'border') {
         const board = row.closest('.color-board'); if (board) board._boardOnClick = onClick;
         row.innerHTML = '';
         const list = this.recentColors[category] || [];
         if (!list.length) { row.style.display = 'none'; return; }
         row.style.display = '';
-        const label = document.createElement('div'); label.className = 'color-board-recent-label'; label.textContent = 'Recent';
+        const label = document.createElement('div'); label.className = 'color-board-recent-label'; label.textContent = this.t('recent');
         const swatches = document.createElement('div'); swatches.className = 'color-board-recent-swatches';
         list.forEach(color => swatches.appendChild(this._makeSwatch(color, onClick, category)));
         row.appendChild(label); row.appendChild(swatches);
     }
+
     _markBoardSelected(board, color) {
         if (!board) return;
         board.querySelectorAll('.color-board-swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color.toLowerCase()));
     }
+
     showSharedColorPopover(tool, anchorBtn) {
-        if (!this.savedSelection) { this.showToast('Select text first', 'error'); return; }
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         if (this._activeColorTool === tool && this.sharedColorPopover.classList.contains('visible')) {
             this.closeSharedColorPopover();
             return;
@@ -926,6 +1236,7 @@ class DocumentTypography {
         this.sharedColorPopover.classList.add('visible');
         this._positionSharedPopover(anchorBtn);
     }
+
     _positionSharedPopover(anchorBtn) {
         const popover = this.sharedColorPopover, popRect = popover.getBoundingClientRect();
         let left, top;
@@ -951,6 +1262,7 @@ class DocumentTypography {
         popover.style.left = left + 'px';
         popover.style.top = top + 'px';
     }
+
     _applyColorFromSharedPopover(color) {
         const tool = this._activeColorTool;
         if (!tool) return;
@@ -974,6 +1286,7 @@ class DocumentTypography {
             if (style) this.promptApplyToAll(style);
         } else { this.applyToolToSelection(tool); }
     }
+
     closeSharedColorPopover() {
         const wasVisible = this.sharedColorPopover.classList.contains('visible');
         this.sharedColorPopover.classList.remove('visible');
@@ -990,6 +1303,7 @@ class DocumentTypography {
             if (style) this.promptApplyToAll(style);
         }
     }
+
     initCustomColorPicker() {
         const $ = id => document.getElementById(id);
         this._ccModal = $('customColorModal'); this._ccGradient = $('colorGradient'); this._ccHueStrip = $('colorHueStrip');
@@ -1020,6 +1334,7 @@ class DocumentTypography {
         this._ccCancelBtn.addEventListener('click', () => this.closeCustomColorPicker());
         this._ccModal.addEventListener('click', e => { if (e.target === this._ccModal) this.closeCustomColorPicker(); });
     }
+
     openCustomColorPicker(onSelect) {
         this._customOnSelect = onSelect;
         this.closeSharedColorPopover();
@@ -1029,16 +1344,19 @@ class DocumentTypography {
         this._drawGradient(this._ccHue);
         this._updateCustomColorFromHsv();
     }
+
     closeCustomColorPicker() {
         this._ccModal.classList.remove('visible');
         this._customOnSelect = null;
     }
+
     _setupCanvasDrag(canvas, onMove) {
         let dragging = false;
         canvas.addEventListener('mousedown', e => { dragging = true; onMove(e); });
         document.addEventListener('mousemove', e => { if (dragging) onMove(e); });
         document.addEventListener('mouseup', () => { dragging = false; });
     }
+
     _pickGradient(e) {
         const rect = this._ccGradient.getBoundingClientRect();
         const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
@@ -1047,6 +1365,7 @@ class DocumentTypography {
         this._ccVal = 1 - y / rect.height;
         this._updateCustomColorFromHsv();
     }
+
     _pickHue(e) {
         const rect = this._ccHueStrip.getBoundingClientRect();
         const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
@@ -1054,6 +1373,7 @@ class DocumentTypography {
         this._drawGradient(this._ccHue);
         this._updateCustomColorFromHsv();
     }
+
     _updateCustomColorFromHsv() {
         const [r, g, b] = this._hsvToRgb(this._ccHue, this._ccSat, this._ccVal);
         const hex = '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
@@ -1061,6 +1381,7 @@ class DocumentTypography {
         this._ccHexInput.value = hex;
         this._ccPreview.style.backgroundColor = hex;
     }
+
     _drawGradient(hue) {
         const ctx = this._ccGradient.getContext('2d'), w = this._ccGradient.width, h = this._ccGradient.height;
         const [r, g, b] = this._hsvToRgb(hue, 1, 1);
@@ -1070,6 +1391,7 @@ class DocumentTypography {
         const bg = ctx.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, '#000');
         ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
     }
+
     _drawHueStrip() {
         const ctx = this._ccHueStrip.getContext('2d');
         const w = this._ccHueStrip.width, h = this._ccHueStrip.height;
@@ -1080,6 +1402,7 @@ class DocumentTypography {
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
     }
+
     _hsvToRgb(h, s, v) {
         h = ((h % 360) + 360) % 360;
         const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c;
@@ -1092,6 +1415,7 @@ class DocumentTypography {
         else { r1 = c; g1 = 0; b1 = x; }
         return [Math.round((r1 + m) * 255), Math.round((g1 + m) * 255), Math.round((b1 + m) * 255)];
     }
+
     _rgbToHsv(r, g, b) {
         r /= 255; g /= 255; b /= 255;
         const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
@@ -1105,6 +1429,7 @@ class DocumentTypography {
         const s = max === 0 ? 0 : d / max;
         return [h, s, max];
     }
+
     showToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
@@ -1115,7 +1440,8 @@ class DocumentTypography {
         this.toastContainer.appendChild(toast);
         setTimeout(() => { toast.style.animation = 'slideIn 0.2s ease reverse forwards'; setTimeout(() => toast.remove(), 200); }, 3000);
     }
-    showActionToast(message, actions = [], duration = 8000, anchorRect = null) {
+
+    showActionToast(message, actions = [], duration = 8000, anchorRect = null, onDismiss = null) {
         [this.toastContainer.querySelector('.toast-action'), document.querySelector('.toast-action-anchored')].forEach(el => el?.remove());
         const toast = document.createElement('div');
         toast.className = 'toast toast-action';
@@ -1123,7 +1449,7 @@ class DocumentTypography {
         const buttonsHtml = actions.map(a => `<button class="toast-action-btn ${a.primary ? 'toast-action-btn-primary' : ''}">${a.label}</button>`).join('');
         toast.innerHTML = `<div class="toast-header"><span class="toast-icon">${icon}</span><span class="toast-message">${message}</span></div><div class="toast-actions">${buttonsHtml}</div>`;
         let dismissed = false;
-        const dismiss = () => { if (dismissed) return; dismissed = true; toast.style.animation = 'ftFadeIn 0.15s ease reverse forwards'; setTimeout(() => toast.remove(), 200); };
+        const dismiss = () => { if (dismissed) return; dismissed = true; if (onDismiss) onDismiss(); toast.style.animation = 'ftFadeIn 0.15s ease reverse forwards'; setTimeout(() => toast.remove(), 200); };
         toast.querySelectorAll('.toast-action-btn').forEach((btn, i) => {
             btn.addEventListener('click', () => { if (actions[i].onClick) actions[i].onClick(); dismiss(); });
         });
@@ -1141,6 +1467,7 @@ class DocumentTypography {
         }
         setTimeout(dismiss, duration);
     }
+
     findOccurrences(text, excludeParaIndex, excludeStart, excludeEnd) {
         const matches = [];
         if (!text || text.length <= 1) return matches;
@@ -1158,22 +1485,70 @@ class DocumentTypography {
         }
         return matches;
     }
+
     promptApplyToAll(style) {
         if (!style.text || style.text.length <= 1 || style.type === 'inlineicon') return;
         const matches = this.findOccurrences(style.text, style.paraIndex, style.startOffset, style.endOffset);
         if (!matches.length) return;
         const el = this.documentContent.querySelector(`[data-style-id*="${style.id}"]`);
         const trunc = style.text.length > 15 ? style.text.substring(0, 15) + '...' : style.text;
-        this.showActionToast(`Found ${matches.length} more "${trunc}" \u2014 apply ${this.TYPE_LABELS[style.type] || style.type} to all?`,
-            [{ label: 'Skip', primary: false }, { label: `Apply to all (${matches.length})`, primary: true, onClick: () => this.applyStyleToAllOccurrences(style, matches) }],
-            8000, el ? el.getBoundingClientRect() : null);
+        const typeName = this.TYPE_LABELS[style.type] || style.type;
+        this._addOccurrencePreview(matches);
+        const clearPreview = () => this._removeOccurrencePreview();
+        this.showActionToast(
+            this.t('found_more', matches.length, trunc, typeName),
+            [
+                { label: this.t('skip'), primary: false, onClick: clearPreview },
+                { label: `${this.t('apply_to_all')} (${matches.length})`, primary: true, onClick: () => { clearPreview(); this.applyStyleToAllOccurrences(style, matches); } }
+            ],
+            8000, el ? el.getBoundingClientRect() : null, clearPreview);
     }
+
+    _addOccurrencePreview(matches) {
+        this._removeOccurrencePreview();
+        for (const m of matches) {
+            const para = this.documentContent.querySelector(`p[data-para="${m.paraIndex}"]`);
+            if (!para) continue;
+            const walker = document.createTreeWalker(para, NodeFilter.SHOW_TEXT);
+            let charCount = 0;
+            const ranges = [];
+            while (walker.nextNode()) {
+                const node = walker.currentNode;
+                const nodeStart = charCount;
+                const nodeEnd = charCount + node.length;
+                if (nodeEnd > m.startOffset && nodeStart < m.endOffset) {
+                    const range = document.createRange();
+                    range.setStart(node, Math.max(0, m.startOffset - nodeStart));
+                    range.setEnd(node, Math.min(node.length, m.endOffset - nodeStart));
+                    ranges.push(range);
+                }
+                charCount = nodeEnd;
+            }
+            for (const range of ranges) {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'occurrence-preview';
+                range.surroundContents(wrapper);
+            }
+        }
+    }
+
+    _removeOccurrencePreview() {
+        this.documentContent.querySelectorAll('.occurrence-preview').forEach(el => {
+            const parent = el.parentNode;
+            while (el.firstChild) parent.insertBefore(el.firstChild, el);
+            el.remove();
+            parent.normalize();
+        });
+    }
+
     applyStyleToAllOccurrences(originalStyle, matches) {
         const newStyles = matches.map(m => ({ id: this._genId(), type: originalStyle.type, text: originalStyle.text, color: originalStyle.color, paraIndex: m.paraIndex, startOffset: m.startOffset, endOffset: m.endOffset, created_at: new Date().toISOString(), ...(originalStyle.bgColor ? { bgColor: originalStyle.bgColor } : {}) }));
         this._pushHistory({ action: 'batch_add', styles: newStyles });
         newStyles.forEach(s => { this.styles.push(s); this.logAction('add', s); });
         this._refreshViews();
-        this.showToast(`Applied ${originalStyle.type} to ${newStyles.length} more occurrence${newStyles.length > 1 ? 's' : ''}`, 'success');
+        const typeName = this.TYPE_LABELS[originalStyle.type] || originalStyle.type;
+        this.showToast(this.t('applied_to_occurrences', typeName, newStyles.length, newStyles.length > 1 ? 's' : ''), 'success');
     }
 }
+
 document.addEventListener('DOMContentLoaded', () => { window.docTypography = new DocumentTypography(); });
