@@ -241,16 +241,10 @@ class DocumentTypography {
     }
 
     initLanguage() {
-        const saved = localStorage.getItem('docstudio_lang');
-        if (saved === 'en' || saved === 'ko') {
-            this.applyLanguage(saved);
-            this.langDisplay.textContent = saved.toUpperCase();
-            this.langSelectOverlay.classList.add('hidden');
-        }
+        // Always show the overlay on page load — no persistence across refreshes
     }
 
     selectLanguage(lang) {
-        localStorage.setItem('docstudio_lang', lang);
         this.applyLanguage(lang);
         this.langDisplay.textContent = lang.toUpperCase();
         this.langSelectOverlay.classList.add('hidden');
