@@ -33,6 +33,10 @@ const TRANSLATIONS = {
         fill: 'Fill',
         apply: 'Apply',
         inline_icon_tooltip: 'Inline Icon',
+        divider_tooltip: 'Divider',
+        divider_label: 'Divider',
+        div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted',
+        div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Cross', div_vertical: 'Vertical',
         actions: 'Actions',
         clear_all: 'Clear All',
         save: 'Save',
@@ -42,6 +46,7 @@ const TRANSLATIONS = {
         overline_tooltip: 'Overline',
         wavyunderline_tooltip: 'Wavy Underline',
         strikethrough_tooltip: 'Strikethrough',
+        link_tooltip: 'Hyperlink',
         no_document: 'No document loaded',
         select_text_hint: 'Select text to apply styles',
         upload_word_doc: 'Upload a Word document',
@@ -125,6 +130,10 @@ const TRANSLATIONS = {
         fill: '채우기',
         apply: '적용',
         inline_icon_tooltip: '인라인 아이콘',
+        divider_tooltip: '구분선',
+        divider_label: '구분선',
+        div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선',
+        div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '십자', div_vertical: '세로선',
         actions: '작업',
         clear_all: '모두 지우기',
         save: '저장',
@@ -134,6 +143,7 @@ const TRANSLATIONS = {
         overline_tooltip: '윗줄',
         wavyunderline_tooltip: '물결 밑줄',
         strikethrough_tooltip: '취소선',
+        link_tooltip: '하이퍼링크',
         no_document: '문서 없음',
         select_text_hint: '텍스트를 선택하여 스타일 적용',
         upload_word_doc: 'Word 문서 업로드',
@@ -186,8 +196,8 @@ const TRANSLATIONS = {
 };
 
 const TYPE_LABELS_ALL = {
-    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive' },
-    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia' }
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Cross', div_vertical: 'Vertical' },
+    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '십자', div_vertical: '세로선' }
 };
 
 const FONT_OPTIONS = {
@@ -241,6 +251,7 @@ class DocumentTypography {
         this.fontSize = '16px';
         this.letterSpacing = '0px';
         this.lineHeight = 1.8;
+        this.activeParagraphIndex = null;
         this.zoomLevel = 100;
         this.ZOOM_MIN = 25;
         this.ZOOM_MAX = 200;
@@ -354,7 +365,7 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
@@ -389,6 +400,14 @@ class DocumentTypography {
         this.iconUploadBtn.addEventListener('click', () => {
             if (!this.docId) { this.showToast(this.t('load_doc_first'), 'error'); return; }
             this.openIconModal();
+        });
+        this.dividerBtn.addEventListener('click', () => this.toggleDividerPopover());
+        this.dividerPopover.querySelectorAll('[data-divider]').forEach(opt => {
+            opt.addEventListener('click', () => this.insertDivider(opt.dataset.divider));
+        });
+        this.documentContent.addEventListener('mousedown', e => {
+            const para = this.getParentParagraph(e.target);
+            if (para) this.activeParagraphIndex = parseInt(para.dataset.para);
         });
         this.documentContent.addEventListener('click', e => this.handleIconPlacement(e));
         this.iconModalClose.addEventListener('click', () => this.closeIconModal());
@@ -626,6 +645,46 @@ class DocumentTypography {
         this._clearSelection();
         this.hideFloatingToolbar();
         this.promptApplyToAll(style);
+    }
+
+    toggleDividerPopover() {
+        const isVisible = this.dividerPopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            if (!this.docId) { this.showToast(this.t('load_doc_first'), 'error'); return; }
+            this.dividerPopover.classList.add('visible');
+            this.dividerBtn.classList.add('active');
+        }
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    insertDivider(dividerType) {
+        if (!this.docId) { this.showToast(this.t('load_doc_first'), 'error'); return; }
+        const paraIndex = this.activeParagraphIndex ?? this.savedSelection?.paraIndex ?? (this.content.length - 1);
+        const style = { id: this._genId('div'), type: 'divider', dividerType, paraIndex, startOffset: -1, endOffset: -1, text: '', color: '', created_at: new Date().toISOString() };
+        this._pushHistory({ action: 'add', style });
+        this.styles.push(style);
+        this.logAction('add', style);
+        this._closeToolPopovers();
+        this._refreshViews();
+    }
+
+    buildDividerElement(d) {
+        const el = document.createElement('div');
+        el.className = `divider-block divider-${d.dividerType}`;
+        el.dataset.divId = d.id;
+        el.contentEditable = 'false';
+        const line = '<div class="div-line"></div>';
+        const sym = s => `<span class="div-symbol">${s}</span>`;
+        const inner = {
+            full: line, short: line, bold: line, dotted: line,
+            triangle: line + sym('▼') + line,
+            diamond:  line + sym('◆') + line,
+            cross:    '<div class="div-slash"></div>',
+            vertical: '<div class="div-vline"></div>',
+        }[d.dividerType] ?? line;
+        el.innerHTML = inner;
+        return el;
     }
 
     selectTool(tool) {
@@ -939,7 +998,7 @@ class DocumentTypography {
     _closeToolPopovers() {
         this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn]]) {
+        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
         }
         this.closeSharedColorPopover();
@@ -972,7 +1031,7 @@ class DocumentTypography {
     applyAllStyles() {
         this.documentContent.innerHTML = this.content.map((p, i) => `<p data-para="${i}">${this.escapeHtml(p.text)}</p>`).join('');
         const stylesByPara = {};
-        this.styles.forEach(s => (stylesByPara[s.paraIndex] ??= []).push(s));
+        this.styles.filter(s => s.type !== 'divider').forEach(s => (stylesByPara[s.paraIndex] ??= []).push(s));
         const borderTypes = new Set(['border', 'circle']);
         const cursorHtml = '<span class="text-cursor"></span>';
         const cp = this.cursorPosition;
@@ -1045,6 +1104,11 @@ class DocumentTypography {
                 if (cs.bgColor) para.style.backgroundColor = cs.bgColor;
             }
         }
+
+        this.styles.filter(s => s.type === 'divider').forEach(d => {
+            const para = this.documentContent.querySelector(`p[data-para="${d.paraIndex}"]`);
+            if (para) para.after(this.buildDividerElement(d));
+        });
     }
 
     buildStyledSpan(styles, text) {
@@ -1064,17 +1128,26 @@ class DocumentTypography {
             return;
         }
         const fontIcon = 'Aa';
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
-        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
+        const linkIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+        const divIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>';
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>', link: linkIcon, divider: divIcon };
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'link', 'divider', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
         const typeOrder = [
-            'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough',
+            'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'link',
             'superscript', 'subscript', 'fontsize',
             'serif', 'sansserif', 'mono', 'rounded', 'smallcaps',
             'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont',
             'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo',
-            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'inlineicon'
+            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'inlineicon', 'divider'
         ];
         const renderItem = s => {
+            if (s.type === 'divider') {
+                const subLabel = this.TYPE_LABELS['div_' + s.dividerType] || s.dividerType;
+                return `<div class="style-item" data-id="${s.id}">
+                    <div class="style-details"><div class="style-preview">— ${subLabel}</div></div>
+                    <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>`;
+            }
             let detail = '';
             if (s.type === 'fontsize' || s.type === 'letterspacing') detail = ` <span class="style-item-param">(${s.color})</span>`;
             return `<div class="style-item" data-id="${s.id}">
