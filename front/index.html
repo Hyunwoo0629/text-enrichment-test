@@ -96,6 +96,20 @@
                             <input type="number" id="fontSizeInput" class="stepper-input" min="1" max="200" value="16">
                             <button class="stepper-btn" id="fontSizePlus" title="Increase Font Size">+</button>
                         </div>
+                        <div class="tool-btn-wrapper">
+                            <button class="tool-btn" id="headingSizeBtn" data-tooltip-title="Heading Size" data-i18n-tooltip-title="heading_size">H</button>
+                            <div class="tool-popover heading-size-popover" id="headingSizePopover">
+                                <div class="popover-label" data-i18n="heading_size">Heading Size</div>
+                                <div class="heading-size-options">
+                                    <button class="heading-option" data-heading="32">H1<span>32px</span></button>
+                                    <button class="heading-option" data-heading="24">H2<span>24px</span></button>
+                                    <button class="heading-option" data-heading="20">H3<span>20px</span></button>
+                                    <button class="heading-option" data-heading="16">H4<span>16px</span></button>
+                                    <button class="heading-option" data-heading="14">H5<span>14px</span></button>
+                                    <button class="heading-option" data-heading="12">H6<span>12px</span></button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="toolbar-buttons">
                         <button class="tool-btn" data-tool="bold" data-tooltip-title="Bold" data-tooltip="Ctrl+B" data-i18n-tooltip-title="bold_tooltip"><strong>B</strong></button>
@@ -152,6 +166,24 @@
                                     <button class="stepper-btn" id="letterSpacingMinus" title="Decrease Spacing">&minus;</button>
                                     <input type="number" id="letterSpacingInput" class="stepper-input" min="0" max="100" value="0">
                                     <button class="stepper-btn" id="letterSpacingPlus" title="Increase Spacing">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tool-btn-wrapper">
+                            <button class="tool-btn" id="lineHeightBtn" data-tooltip-title="Line Height" data-i18n-tooltip-title="line_height_short">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="3" y1="5" x2="21" y2="5"/>
+                                    <line x1="3" y1="19" x2="21" y2="19"/>
+                                    <polyline points="8 9 12 5 16 9"/>
+                                    <polyline points="8 15 12 19 16 15"/>
+                                </svg>
+                            </button>
+                            <div class="tool-popover line-height-popover" id="lineHeightPopover">
+                                <div class="popover-label" data-i18n="line_height_label">Line Height</div>
+                                <div class="size-stepper">
+                                    <button class="stepper-btn" id="lineHeightMinus" title="Decrease Line Height">&minus;</button>
+                                    <input type="number" id="lineHeightInput" class="stepper-input lh-input" min="1.0" max="4.0" step="0.1" value="1.8">
+                                    <button class="stepper-btn" id="lineHeightPlus" title="Increase Line Height">+</button>
                                 </div>
                             </div>
                         </div>
@@ -321,6 +353,15 @@
                     <button class="ft-stepper-btn" id="ftFontSizeMinus" title="Decrease Font Size">&minus;</button>
                     <input type="number" id="ftFontSizeInput" class="ft-stepper-input" min="1" max="200" value="16">
                     <button class="ft-stepper-btn" id="ftFontSizePlus" title="Increase Font Size">+</button>
+                </div>
+                <button class="ft-btn" data-ft-tool="headingsize" title="Heading Size" data-i18n-title="heading_size">H</button>
+                <div class="ft-popover heading-size-popover" id="ftHeadingSizePopover">
+                    <button class="ft-popover-option" data-ft-heading="32">H1<span class="ft-heading-size">32px</span></button>
+                    <button class="ft-popover-option" data-ft-heading="24">H2<span class="ft-heading-size">24px</span></button>
+                    <button class="ft-popover-option" data-ft-heading="20">H3<span class="ft-heading-size">20px</span></button>
+                    <button class="ft-popover-option" data-ft-heading="16">H4<span class="ft-heading-size">16px</span></button>
+                    <button class="ft-popover-option" data-ft-heading="14">H5<span class="ft-heading-size">14px</span></button>
+                    <button class="ft-popover-option" data-ft-heading="12">H6<span class="ft-heading-size">12px</span></button>
                 </div>
                 <button class="ft-btn" data-ft-tool="bold" title="Bold" data-i18n-title="bold_tooltip"><strong>B</strong></button>
                 <button class="ft-btn" data-ft-tool="italic" title="Italic" data-i18n-title="italic_tooltip"><em>I</em></button>

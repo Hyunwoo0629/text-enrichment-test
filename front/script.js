@@ -12,6 +12,7 @@ const TRANSLATIONS = {
         rounded: 'Rounded',
         small_caps: 'Small Caps',
         script_size: 'Script Size',
+        heading_size: 'Heading Size',
         superscript: 'Superscript',
         subscript: 'Subscript',
         color: 'Color',
@@ -24,6 +25,8 @@ const TRANSLATIONS = {
         layout: 'Layout',
         letter_spacing_short: 'Letter Spacing',
         letter_spacing_px: 'Letter Spacing (px)',
+        line_height_short: 'Line Height',
+        line_height_label: 'Line Height',
         drop_cap: 'Drop Cap',
         insert: 'Insert',
         callout_tooltip: 'Callout',
@@ -101,6 +104,7 @@ const TRANSLATIONS = {
         rounded: '둥근',
         small_caps: '소형 대문자',
         script_size: '위아래 첨자',
+        heading_size: '제목 크기',
         superscript: '위첨자',
         subscript: '아래첨자',
         color: '색상',
@@ -113,6 +117,8 @@ const TRANSLATIONS = {
         layout: '레이아웃',
         letter_spacing_short: '자간',
         letter_spacing_px: '자간 (px)',
+        line_height_short: '줄 간격',
+        line_height_label: '줄 간격',
         drop_cap: '드롭캡',
         insert: '삽입',
         callout_tooltip: '콜아웃',
@@ -180,12 +186,17 @@ const TRANSLATIONS = {
 };
 
 const TYPE_LABELS_ALL = {
-    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive' },
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive' },
     ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia' }
 };
 
 const FONT_OPTIONS = {
     en: [
+        { key: 'serif',       label: 'Serif',      css: "Georgia, 'Times New Roman', serif" },
+        { key: 'sansserif',   label: 'Sans-Serif', css: "'Helvetica Neue', Arial, sans-serif" },
+        { key: 'mono',        label: 'Monospace',  css: "'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace" },
+        { key: 'rounded',     label: 'Rounded',    css: "'Nunito', 'Varela Round', sans-serif" },
+        { key: 'smallcaps',   label: 'Small Caps', css: "'Helvetica Neue', Arial, sans-serif", extraStyle: 'font-variant:small-caps;letter-spacing:0.05em' },
         { key: 'arial',       label: 'Arial',      css: 'Arial, sans-serif' },
         { key: 'courier',     label: 'Courier',    css: "'Courier New', Courier, monospace" },
         { key: 'georgia',     label: 'Georgia',    css: "Georgia, 'Times New Roman', serif" },
@@ -229,6 +240,7 @@ class DocumentTypography {
         this.borderColor = '#000000';
         this.fontSize = '16px';
         this.letterSpacing = '0px';
+        this.lineHeight = 1.8;
         this.zoomLevel = 100;
         this.ZOOM_MIN = 25;
         this.ZOOM_MAX = 200;
@@ -300,6 +312,10 @@ class DocumentTypography {
 
     buildFontOptions() {
         const options = FONT_OPTIONS[this.lang] || FONT_OPTIONS.en;
+        const applyOptStyle = (btn, opt) => {
+            btn.style.fontFamily = opt.css;
+            if (opt.extraStyle) btn.style.cssText += ';' + opt.extraStyle;
+        };
         const sidebarContainer = document.getElementById('fontFamilyOptions');
         if (sidebarContainer) {
             sidebarContainer.innerHTML = '';
@@ -307,7 +323,7 @@ class DocumentTypography {
                 const btn = document.createElement('button');
                 btn.className = 'font-option';
                 btn.dataset.font = opt.key;
-                btn.style.fontFamily = opt.css;
+                applyOptStyle(btn, opt);
                 btn.textContent = opt.label;
                 btn.addEventListener('click', () => this.selectFontFamily(opt.key));
                 sidebarContainer.appendChild(btn);
@@ -319,7 +335,7 @@ class DocumentTypography {
                 const btn = document.createElement('button');
                 btn.className = 'ft-popover-option';
                 btn.dataset.ftFont = opt.key;
-                btn.style.fontFamily = opt.css;
+                applyOptStyle(btn, opt);
                 btn.textContent = opt.label;
                 btn.addEventListener('mousedown', e => e.preventDefault());
                 btn.addEventListener('click', e => {
@@ -338,7 +354,7 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
@@ -356,6 +372,8 @@ class DocumentTypography {
         this._initStepperWithInput(this.fontSizeMinus, this.fontSizePlus, this.fontSizeInput, 1, 200, 'fontSize', 'fontsize', v => v > 0);
         this._initStepperWithInput(this.letterSpacingMinus, this.letterSpacingPlus, this.letterSpacingInput, 0, 100, 'letterSpacing', 'letterspacing', v => v >= 0);
         this.letterSpacingBtn.addEventListener('click', () => this.toggleLetterSpacingPopover());
+        this.lineHeightBtn.addEventListener('click', () => this.toggleLineHeightPopover());
+        this._initLineHeightStepper();
         this.calloutBtn.addEventListener('click', () => this.toggleCalloutPopover());
         this.calloutApplyBtn.addEventListener('click', () => this.applyCallout());
         this.zoomInBtn.addEventListener('click', () => this.setZoom(this.zoomLevel + this.ZOOM_STEP));
@@ -381,6 +399,8 @@ class DocumentTypography {
         this.fontFamilyBtn.addEventListener('click', () => this.toggleFontFamilyPopover());
         this.scriptSizeBtn.addEventListener('click', () => this.toggleScriptSizePopover());
         this.scriptOptions.forEach(opt => opt.addEventListener('click', () => this.selectScriptSize(opt.dataset.script)));
+        this.headingSizeBtn.addEventListener('click', () => this.toggleHeadingSizePopover());
+        document.querySelectorAll('.heading-option').forEach(opt => opt.addEventListener('click', () => this.selectHeadingSize(parseInt(opt.dataset.heading))));
         document.addEventListener('mouseup', e => this.handleTextSelection(e));
         document.addEventListener('keydown', e => this.handleKeyboard(e));
         this.floatingToolbar.querySelectorAll('.ft-btn').forEach(btn => {
@@ -392,6 +412,7 @@ class DocumentTypography {
                 if (tool === 'fontfamily') { this.toggleFtPopover('ftFontFamilyPopover'); return; }
                 if (tool === 'scriptsize') { this.toggleFtPopover('ftScriptSizePopover'); return; }
                 if (tool === 'letterspacing') { this.toggleFtPopover('ftLetterSpacingPopover'); return; }
+                if (tool === 'headingsize') { this.toggleFtPopover('ftHeadingSizePopover'); return; }
                 if (this.INSTANT_APPLY_TOOLS.has(tool)) { this.closeFtPopovers(); this.applyInstantTool(tool, btn); return; }
                 if (this.COLOR_TOOLS.has(tool)) { this.closeFtPopovers(); this.showSharedColorPopover(tool, btn); return; }
                 this.closeFtPopovers();
@@ -403,6 +424,14 @@ class DocumentTypography {
             opt.addEventListener('click', e => {
                 e.stopPropagation();
                 this.applyToolToSelection(opt.dataset.ftScript);
+                this.closeFtPopovers();
+            });
+        });
+        this.floatingToolbar.querySelectorAll('[data-ft-heading]').forEach(opt => {
+            opt.addEventListener('mousedown', e => e.preventDefault());
+            opt.addEventListener('click', e => {
+                e.stopPropagation();
+                this.selectHeadingSize(parseInt(opt.dataset.ftHeading));
                 this.closeFtPopovers();
             });
         });
@@ -549,6 +578,31 @@ class DocumentTypography {
         this.adjustFloatingToolbarForPopovers();
     }
 
+    toggleLineHeightPopover() {
+        this.lineHeightPopover.classList.toggle('visible');
+        this.lineHeightBtn.classList.toggle('active');
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    _initLineHeightStepper() {
+        const apply = val => {
+            this.lineHeight = val;
+            this.lineHeightInput.value = val.toFixed(1);
+            if (this.documentContent) this.documentContent.style.lineHeight = val;
+        };
+        const step = dir => {
+            const val = Math.round((Math.max(1.0, Math.min(4.0, parseFloat(this.lineHeightInput.value) + dir * 0.1)) * 10)) / 10;
+            apply(val);
+        };
+        this.lineHeightMinus.addEventListener('click', () => step(-1));
+        this.lineHeightPlus.addEventListener('click', () => step(1));
+        this.lineHeightInput.addEventListener('change', e => {
+            const v = parseFloat(e.target.value);
+            if (!isNaN(v) && v >= 1.0 && v <= 4.0) apply(Math.round(v * 10) / 10);
+            else this.lineHeightInput.value = this.lineHeight.toFixed(1);
+        });
+    }
+
     toggleCalloutPopover() {
         const isVisible = this.calloutPopover.classList.contains('visible');
         this._closeToolPopovers();
@@ -614,6 +668,23 @@ class DocumentTypography {
         if (!isVisible && !this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
         this._closeToolPopovers();
         if (!isVisible) { this.scriptSizePopover.classList.add('visible'); this.scriptSizeBtn.classList.add('active'); }
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    toggleHeadingSizePopover() {
+        const isVisible = this.headingSizePopover.classList.contains('visible');
+        if (!isVisible && !this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        this._closeToolPopovers();
+        if (!isVisible) { this.headingSizePopover.classList.add('visible'); this.headingSizeBtn.classList.add('active'); }
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    selectHeadingSize(px) {
+        this.fontSize = px + 'px';
+        this.fontSizeInput.value = px;
+        this.ftFontSizeInput.value = px;
+        if (this.savedSelection) this.applyToolToSelection('fontsize', true);
+        this._closeToolPopovers();
         this.adjustFloatingToolbarForPopovers();
     }
 
@@ -868,7 +939,7 @@ class DocumentTypography {
     _closeToolPopovers() {
         this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.calloutPopover, this.calloutBtn]]) {
+        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
         }
         this.closeSharedColorPopover();
@@ -993,14 +1064,14 @@ class DocumentTypography {
             return;
         }
         const fontIcon = 'Aa';
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
-        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>' };
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
         const typeOrder = [
             'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough',
             'superscript', 'subscript', 'fontsize',
+            'serif', 'sansserif', 'mono', 'rounded', 'smallcaps',
             'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont',
             'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo',
-            'sansserif', 'mono', 'rounded', 'smallcaps',
             'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'inlineicon'
         ];
         const renderItem = s => {
