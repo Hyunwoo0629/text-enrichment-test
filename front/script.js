@@ -38,6 +38,7 @@ const TRANSLATIONS = {
         div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted',
         div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical',
         quote_tooltip: 'Quote Block', quote_label: 'Quote Block', quote_marks_label: 'Marks', quote_line_label: 'Line',
+        list_tooltip: 'List', list_label: 'List', list_bullet_label: 'Bullet', list_numbered_label: 'Numbered',
         actions: 'Actions',
         clear_all: 'Clear All',
         save: 'Save',
@@ -136,6 +137,7 @@ const TRANSLATIONS = {
         div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선',
         div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선',
         quote_tooltip: '인용 블록', quote_label: '인용 블록', quote_marks_label: '인용부호', quote_line_label: '세로선',
+        list_tooltip: '목록', list_label: '목록', list_bullet_label: '불렛 포인트', list_numbered_label: '번호',
         actions: '작업',
         clear_all: '모두 지우기',
         save: '저장',
@@ -198,8 +200,8 @@ const TRANSLATIONS = {
 };
 
 const TYPE_LABELS_ALL = {
-    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line' },
-    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형' }
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line', list: 'List', list_bullet: 'Bullet List', list_numbered: 'Numbered List' },
+    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형', list: '목록', list_bullet: '불릿 목록', list_numbered: '번호 목록' }
 };
 
 const FONT_OPTIONS = {
@@ -368,7 +370,7 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover listBtn listPopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
@@ -428,6 +430,10 @@ class DocumentTypography {
         this.quoteBtn.addEventListener('click', () => this.toggleQuotePopover());
         this.quotePopover.querySelectorAll('[data-quote]').forEach(opt => {
             opt.addEventListener('click', () => this.insertQuoteBlock(opt.dataset.quote));
+        });
+        this.listBtn.addEventListener('click', () => this.toggleListPopover());
+        this.listPopover.querySelectorAll('[data-list]').forEach(opt => {
+            opt.addEventListener('click', () => this.insertListBlock(opt.dataset.list));
         });
         this.documentContent.addEventListener('mousedown', e => {
             const para = this.getParentParagraph(e.target);
@@ -752,6 +758,63 @@ class DocumentTypography {
         this.restoreSelection(quoteIdx, 0, quoted.length);
     }
 
+    toggleListPopover() {
+        const isVisible = this.listPopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+            this.listPopover.classList.add('visible');
+            this.listBtn.classList.add('active');
+        }
+    }
+
+    insertListBlock(listStyle) {
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const { paraIndex, startOffset, endOffset } = this.savedSelection;
+        const fullText = this.content[paraIndex].text;
+        const listed = fullText.slice(startOffset, endOffset);
+        if (!listed) return;
+
+        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+
+        const origPara = this.content[paraIndex];
+        const listIdx = paraIndex + 1;
+        const afterIdx = paraIndex + 2;
+        this.content = [
+            ...this.content.slice(0, paraIndex),
+            { ...origPara, text: fullText.slice(0, startOffset) },
+            { text: listed },
+            { ...origPara, text: fullText.slice(endOffset) },
+            ...this.content.slice(paraIndex + 1)
+        ];
+
+        const adjustedStyles = [];
+        for (const s of this.styles) {
+            if (s.paraIndex > paraIndex) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + 2 }); continue; }
+            if (s.paraIndex < paraIndex) { adjustedStyles.push(s); continue; }
+            if (s.type === 'divider') { adjustedStyles.push(s); continue; }
+            if (s.type === 'inlineicon') {
+                if (s.startOffset < startOffset) adjustedStyles.push(s);
+                else if (s.startOffset >= endOffset) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.startOffset - endOffset });
+                continue;
+            }
+            if (s.endOffset <= startOffset) { adjustedStyles.push(s); }
+            else if (s.startOffset >= endOffset) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.endOffset - endOffset }); }
+            else if (s.startOffset >= startOffset && s.endOffset <= endOffset) { adjustedStyles.push({ ...s, paraIndex: listIdx, startOffset: s.startOffset - startOffset, endOffset: s.endOffset - startOffset }); }
+            else if (s.startOffset < startOffset) { adjustedStyles.push({ ...s, endOffset: startOffset }); }
+        }
+        const listStyleObj = { id: this._genId(), type: 'list', listStyle, text: listed, color: '', paraIndex: listIdx, startOffset: 0, endOffset: listed.length, created_at: new Date().toISOString() };
+        adjustedStyles.push(listStyleObj);
+        this.styles = adjustedStyles;
+
+        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+        this._pushHistory({ action: 'list_split', before: beforeState, after: afterState });
+        this.logAction('add', listStyleObj);
+        this._closeToolPopovers();
+        this._refreshViews();
+        this.restoreSelection(listIdx, 0, listed.length);
+    }
+
     buildDividerElement(d) {
         const el = document.createElement('div');
         el.className = `divider-block divider-${d.dividerType}`;
@@ -759,8 +822,8 @@ class DocumentTypography {
         el.contentEditable = 'false';
         if (d.alignment) el.dataset.align = d.alignment;
         const line = '<div class="div-line"></div>';
-        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 28 22" width="28" height="22"><polygon points="0,11 28,11 14,20" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
-        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 28 22" width="28" height="22"><polygon points="0,11 14,4 28,11 14,18" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 20 18" width="20" height="18"><polygon points="0,9 20,9 10,17" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 20 18" width="20" height="18"><polygon points="0,9 10,3 20,9 10,15" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
         const inner = {
             full: line, short: line, bold: line, dotted: line,
             triangle: line + triangleSvg + line,
@@ -840,24 +903,55 @@ class DocumentTypography {
 
     applyToolToSelection(tool, keepSelection = false) {
         if (!this.savedSelection) return;
-        const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
+        const { spans, text } = this.savedSelection;
         const isDropcap = tool === 'dropcap';
-        const sOff = isDropcap ? 0 : startOffset, eOff = isDropcap ? 1 : endOffset, sText = isDropcap ? text.charAt(0) : text;
-        if (keepSelection) {
-            const existing = this.styles.find(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
-            if (existing) { existing.color = this.getColorForTool(tool); this._refreshViews(); this.restoreSelection(paraIndex, sOff, eOff); return; }
+        const color = this.getColorForTool(tool);
+
+        if (!spans || spans.length <= 1) {
+            // Single-paragraph path
+            const { paraIndex, startOffset, endOffset } = spans ? spans[0] : this.savedSelection;
+            const sOff = isDropcap ? 0 : startOffset, eOff = isDropcap ? 1 : endOffset;
+            const sText = isDropcap ? (this.content[paraIndex]?.text?.charAt(sOff) || '') : text;
+            if (keepSelection) {
+                const existing = this.styles.find(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
+                if (existing) { existing.color = color; this._refreshViews(); this.restoreSelection(paraIndex, sOff, eOff); return; }
+            }
+            const existingIdx = this.styles.findIndex(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
+            const replaced = existingIdx !== -1 ? this.styles.splice(existingIdx, 1)[0] : null;
+            const style = { id: this._genId(), type: tool, text: sText, color, paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
+            if (tool === 'callout') style.bgColor = this.bgColor;
+            this._pushHistory({ action: 'add', style, replaced });
+            this.styles.push(style);
+            this.logAction('add', style);
+            this._refreshViews();
+            this.restoreSelection(paraIndex, sOff, eOff);
+            this._updateFloatingToolbarStyles();
+            if (!keepSelection) { this.promptApplyToAll(style); }
+        } else {
+            // Multi-paragraph path — create one style entry per span
+            const activeSpans = isDropcap ? [spans[0]] : spans;
+            if (keepSelection) {
+                let anyUpdated = false;
+                for (const sp of activeSpans) {
+                    const sOff = isDropcap ? 0 : sp.startOffset, eOff = isDropcap ? 1 : sp.endOffset;
+                    const existing = this.styles.find(s => s.type === tool && s.paraIndex === sp.paraIndex && s.startOffset === sOff && s.endOffset === eOff);
+                    if (existing) { existing.color = color; anyUpdated = true; }
+                }
+                if (anyUpdated) { this._refreshViews(); this.restoreSelectionSpans(spans); return; }
+            }
+            const newStyles = activeSpans.map(sp => {
+                const sOff = isDropcap ? 0 : sp.startOffset, eOff = isDropcap ? 1 : sp.endOffset;
+                const spanText = this.content[sp.paraIndex]?.text?.slice(sOff, eOff) ?? '';
+                const style = { id: this._genId(), type: tool, text: spanText, color, paraIndex: sp.paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
+                if (tool === 'callout') style.bgColor = this.bgColor;
+                return style;
+            });
+            this._pushHistory({ action: 'batch_add', styles: newStyles });
+            newStyles.forEach(s => { this.styles.push(s); this.logAction('add', s); });
+            this._refreshViews();
+            this.restoreSelectionSpans(spans);
+            this._updateFloatingToolbarStyles();
         }
-        const existingIdx = this.styles.findIndex(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
-        const replaced = existingIdx !== -1 ? this.styles.splice(existingIdx, 1)[0] : null;
-        const style = { id: this._genId(), type: tool, text: sText, color: this.getColorForTool(tool), paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
-        if (tool === 'callout') style.bgColor = this.bgColor;
-        this._pushHistory({ action: 'add', style, replaced });
-        this.styles.push(style);
-        this.logAction('add', style);
-        this._refreshViews();
-        this.restoreSelection(paraIndex, sOff, eOff);
-        this._updateFloatingToolbarStyles();
-        if (!keepSelection) { this.promptApplyToAll(style); }
     }
 
     restoreSelection(paraIndex, startOffset, endOffset) {
@@ -872,6 +966,26 @@ class DocumentTypography {
             total += len;
         }
         if (sn && en) { const r = document.createRange(); r.setStart(sn, so); r.setEnd(en, eo); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+    }
+
+    restoreSelectionSpans(spans) {
+        if (!spans || !spans.length) return;
+        if (spans.length === 1) { this.restoreSelection(spans[0].paraIndex, spans[0].startOffset, spans[0].endOffset); return; }
+        const getNodeAt = (paraIndex, offset) => {
+            const para = this.documentContent.querySelector(`p[data-para="${paraIndex}"]`);
+            if (!para) return null;
+            const walker = document.createTreeWalker(para, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement?.closest('.inline-icon') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+            let total = 0, current;
+            while ((current = walker.nextNode())) {
+                const len = current.textContent.length;
+                if (total + len >= offset) return { node: current, offset: offset - total };
+                total += len;
+            }
+            return current ? { node: current, offset: current.textContent.length } : null;
+        };
+        const start = getNodeAt(spans[0].paraIndex, spans[0].startOffset);
+        const end = getNodeAt(spans[spans.length - 1].paraIndex, spans[spans.length - 1].endOffset);
+        if (start && end) { const r = document.createRange(); r.setStart(start.node, start.offset); r.setEnd(end.node, end.offset); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }
     }
 
     openIconModal() {
@@ -981,18 +1095,41 @@ class DocumentTypography {
         }
         this.cursorPosition = null;
         const startNode = this.getParentParagraph(range.startContainer);
+        const endNode = this.getParentParagraph(range.endContainer);
         if (!startNode) return;
-        const paraIndex = parseInt(startNode.dataset.para);
+        const startParaIndex = parseInt(startNode.dataset.para);
+        const endParaIndex = endNode ? parseInt(endNode.dataset.para) : startParaIndex;
         const startOffset = this.getTextOffset(startNode, range.startContainer, range.startOffset);
-        const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset);
-        this.savedSelection = { paraIndex, startOffset, endOffset, text: selectedText, rect: range.getBoundingClientRect() };
+
+        let spans;
+        if (startParaIndex === endParaIndex) {
+            const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset);
+            spans = [{ paraIndex: startParaIndex, startOffset, endOffset }];
+        } else {
+            spans = [];
+            for (let pi = startParaIndex; pi <= endParaIndex; pi++) {
+                const paraText = this.content[pi]?.text ?? '';
+                if (pi === startParaIndex) {
+                    spans.push({ paraIndex: pi, startOffset, endOffset: paraText.length });
+                } else if (pi === endParaIndex) {
+                    const endPara = this.documentContent.querySelector(`p[data-para="${pi}"]`);
+                    const endOff = endPara ? this.getTextOffset(endPara, range.endContainer, range.endOffset) : paraText.length;
+                    spans.push({ paraIndex: pi, startOffset: 0, endOffset: endOff });
+                } else {
+                    spans.push({ paraIndex: pi, startOffset: 0, endOffset: paraText.length });
+                }
+            }
+        }
+
+        const firstSpan = spans[0];
+        this.savedSelection = { paraIndex: firstSpan.paraIndex, startOffset: firstSpan.startOffset, endOffset: firstSpan.endOffset, text: selectedText, rect: range.getBoundingClientRect(), spans };
         this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}"${this.t('selected_suffix')}`;
-        const fs = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
+        const fs = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === firstSpan.paraIndex && s.startOffset <= firstSpan.startOffset && s.endOffset >= firstSpan.endOffset);
         if (fs) { const v = parseInt(fs.color); if (v > 0) { this.fontSize = fs.color; this.fontSizeInput.value = v; } }
-        const ls = this.styles.find(s => s.type === 'letterspacing' && s.paraIndex === paraIndex && s.startOffset <= startOffset && s.endOffset >= endOffset);
+        const ls = this.styles.find(s => s.type === 'letterspacing' && s.paraIndex === firstSpan.paraIndex && s.startOffset <= firstSpan.startOffset && s.endOffset >= firstSpan.endOffset);
         if (ls) { const v = parseInt(ls.color); if (v >= 0) { this.letterSpacing = ls.color; this.letterSpacingInput.value = v; } }
         const overlapping = this.styles.filter(s =>
-            s.paraIndex === paraIndex && s.startOffset < endOffset && s.endOffset > startOffset
+            spans.some(sp => s.paraIndex === sp.paraIndex && s.startOffset < sp.endOffset && s.endOffset > sp.startOffset)
         );
         this.showFloatingToolbar(range, overlapping);
     }
@@ -1056,13 +1193,13 @@ class DocumentTypography {
 
     _updateFloatingToolbarStyles() {
         if (!this.savedSelection || !this.floatingToolbar.classList.contains('visible')) return;
-        const { paraIndex, startOffset, endOffset } = this.savedSelection;
+        const { spans } = this.savedSelection;
         const sel = window.getSelection();
         if (!sel.rangeCount) return;
         const range = sel.getRangeAt(0);
         this.savedSelection.rect = range.getBoundingClientRect();
         const overlapping = this.styles.filter(s =>
-            s.paraIndex === paraIndex && s.startOffset < endOffset && s.endOffset > startOffset
+            (spans || [this.savedSelection]).some(sp => s.paraIndex === sp.paraIndex && s.startOffset < sp.endOffset && s.endOffset > sp.startOffset)
         );
         this.showFloatingToolbar(range, overlapping);
     }
@@ -1083,7 +1220,7 @@ class DocumentTypography {
     _closeToolPopovers() {
         this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn], [this.quotePopover, this.quoteBtn]]) {
+        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn], [this.quotePopover, this.quoteBtn], [this.listPopover, this.listBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
         }
         this.dividerAlignPanel.style.display = 'none';
@@ -1134,7 +1271,8 @@ class DocumentTypography {
             const iconStyles = paraStyles.filter(s => s.type === 'inlineicon');
             const calloutStyles = paraStyles.filter(s => s.type === 'callout');
             const quoteStyles = paraStyles.filter(s => s.type === 'quote');
-            const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote');
+            const listStyles = paraStyles.filter(s => s.type === 'list');
+            const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote' && s.type !== 'list');
             const borderStyles = textStyles.filter(s => borderTypes.has(s.type));
             const nonBorderStyles = textStyles.filter(s => !borderTypes.has(s.type));
             const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
@@ -1184,6 +1322,10 @@ class DocumentTypography {
                 const qs = quoteStyles[quoteStyles.length - 1];
                 para.classList.add(`quote-${qs.quoteStyle}`);
             }
+            if (listStyles.length) {
+                const ls = listStyles[listStyles.length - 1];
+                para.classList.add(`list-${ls.listStyle}`);
+            }
         }
 
         this.styles.filter(s => s.type === 'divider').forEach(d => {
@@ -1212,15 +1354,16 @@ class DocumentTypography {
         const linkIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
         const divIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>';
         const quoteIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><text x="1" y="12" font-size="14" font-family="Georgia,serif">&#8220;</text><text x="13" y="12" font-size="14" font-family="Georgia,serif">&#8221;</text></svg>';
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>', link: linkIcon, divider: divIcon, quote: quoteIcon };
-        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'link', 'divider', 'quote', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
+        const listIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>';
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>', link: linkIcon, divider: divIcon, quote: quoteIcon, list: listIcon };
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'link', 'divider', 'quote', 'list', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
         const typeOrder = [
             'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'link',
             'superscript', 'subscript', 'fontsize',
             'serif', 'sansserif', 'mono', 'rounded', 'smallcaps',
             'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont',
             'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo',
-            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'quote', 'inlineicon', 'divider'
+            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'quote', 'list', 'inlineicon', 'divider'
         ];
         const renderItem = s => {
             if (s.type === 'divider') {
@@ -1232,9 +1375,16 @@ class DocumentTypography {
             }
             if (s.type === 'quote') {
                 const subLabel = this.TYPE_LABELS['quote_' + s.quoteStyle] || s.quoteStyle;
-                return `<div class="style-item" data-id="${s.id}">
-                    <div class="style-details"><div class="style-preview">“ ${subLabel} ”</div></div>
-                    <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                return `<div class=”style-item” data-id=”${s.id}”>
+                    <div class=”style-details”><div class=”style-preview”>” ${subLabel} “</div></div>
+                    <button class=”style-delete” title=”Delete”><svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2”><line x1=”18” y1=”6” x2=”6” y2=”18”/><line x1=”6” y1=”6” x2=”18” y2=”18”/></svg></button>
+                </div>`;
+            }
+            if (s.type === 'list') {
+                const subLabel = this.TYPE_LABELS['list_' + s.listStyle] || s.listStyle;
+                return `<div class=”style-item” data-id=”${s.id}”>
+                    <div class=”style-details”><div class=”style-preview”>• ${subLabel}</div></div>
+                    <button class=”style-delete” title=”Delete”><svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2”><line x1=”18” y1=”6” x2=”6” y2=”18”/><line x1=”6” y1=”6” x2=”18” y2=”18”/></svg></button>
                 </div>`;
             }
             let detail = '';
@@ -1372,6 +1522,7 @@ class DocumentTypography {
         else if (action === 'batch_add') last.styles.forEach(s => this._removeById(s.id));
         else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
         else if (action === 'quote_split') { this.content = last.before.content; this.styles = last.before.styles; }
+        else if (action === 'list_split') { this.content = last.before.content; this.styles = last.before.styles; }
         this.redoStack.push(last);
         this._refreshViews();
         this.undoBtn.disabled = !this.history.length;
@@ -1388,6 +1539,7 @@ class DocumentTypography {
         else if (action === 'batch_add') last.styles.forEach(s => this.styles.push(s));
         else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
         else if (action === 'quote_split') { this.content = last.after.content; this.styles = last.after.styles; }
+        else if (action === 'list_split') { this.content = last.after.content; this.styles = last.after.styles; }
         this.history.push(last);
         this._refreshViews();
         this.undoBtn.disabled = false;
@@ -1568,10 +1720,7 @@ class DocumentTypography {
         if (instantId) {
             const style = this.styles.find(s => s.id === instantId);
             if (style) { style.color = color; this._refreshViews(); }
-            if (this.savedSelection) {
-                const { paraIndex, startOffset, endOffset } = this.savedSelection;
-                this.restoreSelection(paraIndex, startOffset, endOffset);
-            }
+            if (this.savedSelection) { this.restoreSelectionSpans(this.savedSelection.spans || [this.savedSelection]); }
             this._updateFloatingToolbarStyles();
             if (style) this.promptApplyToAll(style);
         } else { this.applyToolToSelection(tool); }
@@ -1585,10 +1734,7 @@ class DocumentTypography {
         if (this._instantStyleId && wasVisible) {
             const style = this.styles.find(s => s.id === this._instantStyleId);
             this._instantStyleId = null;
-            if (this.savedSelection) {
-                const { paraIndex, startOffset, endOffset } = this.savedSelection;
-                this.restoreSelection(paraIndex, startOffset, endOffset);
-            }
+            if (this.savedSelection) { this.restoreSelectionSpans(this.savedSelection.spans || [this.savedSelection]); }
             this._updateFloatingToolbarStyles();
             if (style) this.promptApplyToAll(style);
         }

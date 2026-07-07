@@ -258,6 +258,45 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="tool-btn-wrapper">
+                            <button class="tool-btn" id="listBtn" data-tooltip-title="List" data-i18n-tooltip-title="list_tooltip">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="9" y1="6" x2="21" y2="6"/>
+                                    <line x1="9" y1="12" x2="21" y2="12"/>
+                                    <line x1="9" y1="18" x2="21" y2="18"/>
+                                    <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+                                    <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                                    <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/>
+                                </svg>
+                            </button>
+                            <div class="tool-popover list-type-popover" id="listPopover">
+                                <div class="popover-label" data-i18n="list_label">List</div>
+                                <div class="list-type-options">
+                                    <button class="list-type-opt" data-list="bullet">
+                                        <svg width="56" height="36" style="flex-shrink:0">
+                                            <circle cx="8" cy="8" r="2" fill="#bbb"/>
+                                            <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
+                                            <circle cx="8" cy="18" r="2" fill="#bbb"/>
+                                            <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
+                                            <circle cx="8" cy="28" r="2" fill="#bbb"/>
+                                            <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
+                                        </svg>
+                                        <span data-i18n="list_bullet_label">Bullet</span>
+                                    </button>
+                                    <button class="list-type-opt" data-list="numbered">
+                                        <svg width="56" height="36" style="flex-shrink:0">
+                                            <text x="3" y="12" font-size="9" fill="#bbb" font-family="sans-serif">1.</text>
+                                            <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
+                                            <text x="3" y="22" font-size="9" fill="#bbb" font-family="sans-serif">2.</text>
+                                            <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
+                                            <text x="3" y="32" font-size="9" fill="#bbb" font-family="sans-serif">3.</text>
+                                            <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
+                                        </svg>
+                                        <span data-i18n="list_numbered_label">Numbered</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <button class="tool-btn" id="iconUploadBtn" data-tooltip-title="Inline Icon" data-i18n-tooltip-title="inline_icon_tooltip">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -293,11 +332,11 @@
                                             <span data-i18n="div_dotted">Dotted</span>
                                         </button>
                                         <button class="divider-type-opt" data-divider="triangle">
-                                            <svg width="64" height="18"><line x1="0" y1="9" x2="22" y2="9" stroke="#aaa" stroke-width="1"/><polygon points="22,9 42,9 32,17" fill="none" stroke="#aaa" stroke-width="1"/><line x1="42" y1="9" x2="64" y2="9" stroke="#aaa" stroke-width="1"/></svg>
+                                            <svg width="64" height="18"><line x1="0" y1="9" x2="25" y2="9" stroke="#aaa" stroke-width="1"/><polygon points="25,9 39,9 32,17" fill="none" stroke="#aaa" stroke-width="1"/><line x1="39" y1="9" x2="64" y2="9" stroke="#aaa" stroke-width="1"/></svg>
                                             <span data-i18n="div_triangle">Triangle</span>
                                         </button>
                                         <button class="divider-type-opt" data-divider="diamond">
-                                            <svg width="64" height="18"><line x1="0" y1="9" x2="22" y2="9" stroke="#aaa" stroke-width="1"/><polygon points="22,9 32,3 42,9 32,15" fill="none" stroke="#aaa" stroke-width="1"/><line x1="42" y1="9" x2="64" y2="9" stroke="#aaa" stroke-width="1"/></svg>
+                                            <svg width="64" height="18"><line x1="0" y1="9" x2="25" y2="9" stroke="#aaa" stroke-width="1"/><polygon points="25,9 32,3 39,9 32,15" fill="none" stroke="#aaa" stroke-width="1"/><line x1="39" y1="9" x2="64" y2="9" stroke="#aaa" stroke-width="1"/></svg>
                                             <span data-i18n="div_diamond">Diamond</span>
                                         </button>
                                         <button class="divider-type-opt" data-divider="cross">
