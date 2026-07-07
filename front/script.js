@@ -759,8 +759,8 @@ class DocumentTypography {
         el.contentEditable = 'false';
         if (d.alignment) el.dataset.align = d.alignment;
         const line = '<div class="div-line"></div>';
-        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 35,15 20,27" fill="none" stroke="#d0d0d0" stroke-width="1" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
-        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 20,5 35,15 20,25" fill="none" stroke="#d0d0d0" stroke-width="1" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 28 22" width="28" height="22"><polygon points="0,11 28,11 14,20" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 28 22" width="28" height="22"><polygon points="0,11 14,4 28,11 14,18" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>`;
         const inner = {
             full: line, short: line, bold: line, dotted: line,
             triangle: line + triangleSvg + line,
