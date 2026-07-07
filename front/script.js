@@ -706,15 +706,50 @@ class DocumentTypography {
 
     insertQuoteBlock(quoteStyle) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
-        const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
-        const style = { id: this._genId(), type: 'quote', quoteStyle, text, color: '', paraIndex, startOffset, endOffset, created_at: new Date().toISOString() };
-        this._pushHistory({ action: 'add', style });
-        this.styles.push(style);
-        this.logAction('add', style);
+        const { paraIndex, startOffset, endOffset } = this.savedSelection;
+        const fullText = this.content[paraIndex].text;
+        const quoted = fullText.slice(startOffset, endOffset);
+        if (!quoted) return;
+
+        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+
+        const origPara = this.content[paraIndex];
+        const quoteIdx = paraIndex + 1;
+        const afterIdx = paraIndex + 2;
+        this.content = [
+            ...this.content.slice(0, paraIndex),
+            { ...origPara, text: fullText.slice(0, startOffset) },
+            { text: quoted },
+            { ...origPara, text: fullText.slice(endOffset) },
+            ...this.content.slice(paraIndex + 1)
+        ];
+
+        const adjustedStyles = [];
+        for (const s of this.styles) {
+            if (s.paraIndex > paraIndex) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + 2 }); continue; }
+            if (s.paraIndex < paraIndex) { adjustedStyles.push(s); continue; }
+            // s.paraIndex === paraIndex
+            if (s.type === 'divider') { adjustedStyles.push(s); continue; }
+            if (s.type === 'inlineicon') {
+                if (s.startOffset < startOffset) adjustedStyles.push(s);
+                else if (s.startOffset >= endOffset) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.startOffset - endOffset });
+                continue;
+            }
+            if (s.endOffset <= startOffset) { adjustedStyles.push(s); }
+            else if (s.startOffset >= endOffset) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.endOffset - endOffset }); }
+            else if (s.startOffset >= startOffset && s.endOffset <= endOffset) { adjustedStyles.push({ ...s, paraIndex: quoteIdx, startOffset: s.startOffset - startOffset, endOffset: s.endOffset - startOffset }); }
+            else if (s.startOffset < startOffset) { adjustedStyles.push({ ...s, endOffset: startOffset }); }
+        }
+        const quoteStyleObj = { id: this._genId(), type: 'quote', quoteStyle, text: quoted, color: '', paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length, created_at: new Date().toISOString() };
+        adjustedStyles.push(quoteStyleObj);
+        this.styles = adjustedStyles;
+
+        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+        this._pushHistory({ action: 'quote_split', before: beforeState, after: afterState });
+        this.logAction('add', quoteStyleObj);
         this._closeToolPopovers();
         this._refreshViews();
-        this.restoreSelection(paraIndex, startOffset, endOffset);
-        this.promptApplyToAll(style);
+        this.restoreSelection(quoteIdx, 0, quoted.length);
     }
 
     buildDividerElement(d) {
@@ -1102,7 +1137,7 @@ class DocumentTypography {
             const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote');
             const borderStyles = textStyles.filter(s => borderTypes.has(s.type));
             const nonBorderStyles = textStyles.filter(s => !borderTypes.has(s.type));
-            const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...quoteStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
+            const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
             if (hasCursor) boundsSet.push(cursorOffset);
             const bounds = [...new Set(boundsSet)].sort((a, b) => a - b);
             const segments = [];
@@ -1116,36 +1151,17 @@ class DocumentTypography {
                 if (!seg) continue;
                 const active = nonBorderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
                 const activeBorders = borderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
-                const activeQuote = quoteStyles.filter(s => s.startOffset <= start && s.endOffset >= end).slice(-1)[0] || null;
-                segments.push({ kind: 'text', text: seg, styles: active, borders: activeBorders, quote: activeQuote });
+                segments.push({ kind: 'text', text: seg, styles: active, borders: activeBorders });
             }
             if (hasCursor && cursorOffset === text.length) segments.push({ kind: 'cursor' });
             let result = '';
             let openBorders = [];
-            let currentQuote = null;
             for (const seg of segments) {
-                if (seg.kind === 'cursor') {
-                    result += cursorHtml;
-                    continue;
-                }
-                if (seg.kind === 'icon') {
-                    result += this._iconHtml(seg.style);
-                    continue;
-                }
-                const segQuote = seg.quote || null;
-                if (segQuote?.id !== currentQuote?.id) {
-                    for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
-                    openBorders = [];
-                    if (currentQuote) result += '</span>';
-                    currentQuote = segQuote;
-                    if (currentQuote) result += `<span class="quote-inline-${currentQuote.quoteStyle}">`;
-                }
+                if (seg.kind === 'cursor') { result += cursorHtml; continue; }
+                if (seg.kind === 'icon') { result += this._iconHtml(seg.style); continue; }
                 const newBorderIds = new Set(seg.borders.map(b => b.id));
                 for (let j = openBorders.length - 1; j >= 0; j--) {
-                    if (!newBorderIds.has(openBorders[j].id)) {
-                        result += '</span>';
-                        openBorders.splice(j, 1);
-                    }
+                    if (!newBorderIds.has(openBorders[j].id)) { result += '</span>'; openBorders.splice(j, 1); }
                 }
                 for (const b of seg.borders) {
                     if (!openBorders.some(ob => ob.id === b.id)) {
@@ -1156,7 +1172,6 @@ class DocumentTypography {
                 result += seg.styles.length ? this.buildStyledSpan(seg.styles, seg.text) : this.escapeHtml(seg.text);
             }
             for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
-            if (currentQuote) result += '</span>';
             iconStyles.filter(s => s.startOffset >= text.length).forEach(s => result += this._iconHtml(s));
             para.innerHTML = result;
             if (calloutStyles.length) {
@@ -1164,6 +1179,10 @@ class DocumentTypography {
                 para.classList.add('callout-block');
                 para.style.borderColor = cs.color;
                 if (cs.bgColor) para.style.backgroundColor = cs.bgColor;
+            }
+            if (quoteStyles.length) {
+                const qs = quoteStyles[quoteStyles.length - 1];
+                para.classList.add(`quote-${qs.quoteStyle}`);
             }
         }
 
@@ -1352,6 +1371,7 @@ class DocumentTypography {
         else if (action === 'clear') this.styles = last.styles;
         else if (action === 'batch_add') last.styles.forEach(s => this._removeById(s.id));
         else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
+        else if (action === 'quote_split') { this.content = last.before.content; this.styles = last.before.styles; }
         this.redoStack.push(last);
         this._refreshViews();
         this.undoBtn.disabled = !this.history.length;
@@ -1367,6 +1387,7 @@ class DocumentTypography {
         else if (action === 'clear') this.styles = [];
         else if (action === 'batch_add') last.styles.forEach(s => this.styles.push(s));
         else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
+        else if (action === 'quote_split') { this.content = last.after.content; this.styles = last.after.styles; }
         this.history.push(last);
         this._refreshViews();
         this.undoBtn.disabled = false;
