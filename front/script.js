@@ -36,7 +36,7 @@ const TRANSLATIONS = {
         divider_tooltip: 'Divider',
         divider_label: 'Divider',
         div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted',
-        div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Cross', div_vertical: 'Vertical',
+        div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical',
         quote_tooltip: 'Quote Block', quote_label: 'Quote Block', quote_marks_label: 'Marks', quote_line_label: 'Line',
         actions: 'Actions',
         clear_all: 'Clear All',
@@ -134,7 +134,7 @@ const TRANSLATIONS = {
         divider_tooltip: '구분선',
         divider_label: '구분선',
         div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선',
-        div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '십자', div_vertical: '세로선',
+        div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선',
         quote_tooltip: '인용 블록', quote_label: '인용 블록', quote_marks_label: '인용부호', quote_line_label: '세로선',
         actions: '작업',
         clear_all: '모두 지우기',
@@ -198,8 +198,8 @@ const TRANSLATIONS = {
 };
 
 const TYPE_LABELS_ALL = {
-    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Cross', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line' },
-    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '십자', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형' }
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line' },
+    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형' }
 };
 
 const FONT_OPTIONS = {
@@ -724,8 +724,8 @@ class DocumentTypography {
         el.contentEditable = 'false';
         if (d.alignment) el.dataset.align = d.alignment;
         const line = '<div class="div-line"></div>';
-        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 35,15 20,27" fill="none" stroke="#c0c0c0" stroke-width="1.5" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
-        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 20,5 35,15 20,25" fill="none" stroke="#c0c0c0" stroke-width="1.5" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const triangleSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 35,15 20,27" fill="none" stroke="#d0d0d0" stroke-width="1" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
+        const diamondSvg = `<svg class="div-sym-svg" viewBox="0 0 40 30" width="40" height="30"><line x1="0" y1="15" x2="5" y2="15" stroke="#d0d0d0" stroke-width="1"/><polygon points="5,15 20,5 35,15 20,25" fill="none" stroke="#d0d0d0" stroke-width="1" stroke-linejoin="round"/><line x1="35" y1="15" x2="40" y2="15" stroke="#d0d0d0" stroke-width="1"/></svg>`;
         const inner = {
             full: line, short: line, bold: line, dotted: line,
             triangle: line + triangleSvg + line,
@@ -1102,7 +1102,7 @@ class DocumentTypography {
             const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote');
             const borderStyles = textStyles.filter(s => borderTypes.has(s.type));
             const nonBorderStyles = textStyles.filter(s => !borderTypes.has(s.type));
-            const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
+            const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...quoteStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
             if (hasCursor) boundsSet.push(cursorOffset);
             const bounds = [...new Set(boundsSet)].sort((a, b) => a - b);
             const segments = [];
@@ -1116,11 +1116,13 @@ class DocumentTypography {
                 if (!seg) continue;
                 const active = nonBorderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
                 const activeBorders = borderStyles.filter(s => s.startOffset <= start && s.endOffset >= end);
-                segments.push({ kind: 'text', text: seg, styles: active, borders: activeBorders });
+                const activeQuote = quoteStyles.filter(s => s.startOffset <= start && s.endOffset >= end).slice(-1)[0] || null;
+                segments.push({ kind: 'text', text: seg, styles: active, borders: activeBorders, quote: activeQuote });
             }
             if (hasCursor && cursorOffset === text.length) segments.push({ kind: 'cursor' });
             let result = '';
             let openBorders = [];
+            let currentQuote = null;
             for (const seg of segments) {
                 if (seg.kind === 'cursor') {
                     result += cursorHtml;
@@ -1129,6 +1131,14 @@ class DocumentTypography {
                 if (seg.kind === 'icon') {
                     result += this._iconHtml(seg.style);
                     continue;
+                }
+                const segQuote = seg.quote || null;
+                if (segQuote?.id !== currentQuote?.id) {
+                    for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
+                    openBorders = [];
+                    if (currentQuote) result += '</span>';
+                    currentQuote = segQuote;
+                    if (currentQuote) result += `<span class="quote-inline-${currentQuote.quoteStyle}">`;
                 }
                 const newBorderIds = new Set(seg.borders.map(b => b.id));
                 for (let j = openBorders.length - 1; j >= 0; j--) {
@@ -1145,9 +1155,8 @@ class DocumentTypography {
                 }
                 result += seg.styles.length ? this.buildStyledSpan(seg.styles, seg.text) : this.escapeHtml(seg.text);
             }
-            for (let j = openBorders.length - 1; j >= 0; j--) {
-                result += '</span>';
-            }
+            for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
+            if (currentQuote) result += '</span>';
             iconStyles.filter(s => s.startOffset >= text.length).forEach(s => result += this._iconHtml(s));
             para.innerHTML = result;
             if (calloutStyles.length) {
@@ -1155,10 +1164,6 @@ class DocumentTypography {
                 para.classList.add('callout-block');
                 para.style.borderColor = cs.color;
                 if (cs.bgColor) para.style.backgroundColor = cs.bgColor;
-            }
-            if (quoteStyles.length) {
-                const qs = quoteStyles[quoteStyles.length - 1];
-                para.classList.add(`quote-${qs.quoteStyle}`);
             }
         }
 
