@@ -39,6 +39,7 @@ const TRANSLATIONS = {
         div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical',
         quote_tooltip: 'Quote Block', quote_label: 'Quote Block', quote_marks_label: 'Marks', quote_line_label: 'Line',
         list_tooltip: 'List', list_label: 'List', list_bullet_label: 'Bullet', list_numbered_label: 'Numbered',
+        code_tooltip: 'Code Block', code_label: 'Code Block', code_white_label: 'White', code_gray_label: 'Gray', code_black_label: 'Black',
         actions: 'Actions',
         clear_all: 'Clear All',
         save: 'Save',
@@ -138,6 +139,7 @@ const TRANSLATIONS = {
         div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선',
         quote_tooltip: '인용 블록', quote_label: '인용 블록', quote_marks_label: '인용부호', quote_line_label: '세로선',
         list_tooltip: '목록', list_label: '목록', list_bullet_label: '불렛 포인트', list_numbered_label: '번호',
+        code_tooltip: '코드 블록', code_label: '코드 블록', code_white_label: '흰색', code_gray_label: '회색', code_black_label: '검정',
         actions: '작업',
         clear_all: '모두 지우기',
         save: '저장',
@@ -200,8 +202,8 @@ const TRANSLATIONS = {
 };
 
 const TYPE_LABELS_ALL = {
-    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line', list: 'List', list_bullet: 'Bullet List', list_numbered: 'Numbered List' },
-    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형', list: '목록', list_bullet: '불릿 목록', list_numbered: '번호 목록' }
+    en: { fontsize: 'font size', inlineicon: 'inline icon', letterspacing: 'letter spacing', callout: 'callout', dropcap: 'drop cap', wavyunderline: 'wavy underline', smallcaps: 'small caps', sansserif: 'sans-serif', textcolor: 'text color', bold: 'Bold', italic: 'Italic', underline: 'Underline', strikethrough: 'Strikethrough', highlight: 'Highlight', border: 'Border', circle: 'Circle', mono: 'Monospace', rounded: 'Rounded', superscript: 'Superscript', subscript: 'Subscript', overline: 'Overline', serif: 'Serif', arial: 'Arial', courier: 'Courier', georgia: 'Georgia', helvetica: 'Helvetica', times: 'Times', trebuchet: 'Trebuchet', verdana: 'Verdana', comicsans: 'Comic Sans', cursivefont: 'Cursive', link: 'Link Style', divider: 'Divider', div_full: 'Full', div_short: 'Short', div_bold: 'Bold', div_dotted: 'Dotted', div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical', quote: 'Quote Block', quote_marks: 'Quote Marks', quote_line: 'Quote Line', list: 'List', list_bullet: 'Bullet List', list_numbered: 'Numbered List', code: 'Code Block', code_white: 'White', code_gray: 'Gray', code_black: 'Black' },
+    ko: { fontsize: '글자 크기', inlineicon: '인라인 아이콘', letterspacing: '자간', callout: '콜아웃', dropcap: '드롭캡', wavyunderline: '물결 밑줄', smallcaps: '소형 대문자', sansserif: '산세리프', textcolor: '글자 색', bold: '굵게', italic: '기울임', underline: '밑줄', strikethrough: '취소선', highlight: '형광펜', border: '테두리', circle: '원형 테두리', mono: '고정폭', rounded: '둥근 글꼴', superscript: '위첨자', subscript: '아래첨자', overline: '윗줄', bongothic: '본고딕', nanumgothic: '나눔고딕', bonmyeongjo: '본명조', nanummyeongjo: '나눔명조', nanumbarungothic: '나눔바른고딕', nanumsquare: '나눔스퀘어', maruburi: '마루부리', gungseo: '궁서', helvetica: 'Helvetica', georgia: 'Georgia', link: '링크 스타일', divider: '구분선', div_full: '전체', div_short: '짧게', div_bold: '굵게', div_dotted: '점선', div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선', quote: '인용 블록', quote_marks: '인용부호형', quote_line: '세로선형', list: '목록', list_bullet: '불릿 목록', list_numbered: '번호 목록', code: '코드 블록', code_white: '흰색', code_gray: '회색', code_black: '검정' }
 };
 
 const FONT_OPTIONS = {
@@ -295,7 +297,7 @@ class DocumentTypography {
     }
 
     initLanguage() {
-        // Always show the overlay on page load — no persistence across refreshes
+        
     }
 
     selectLanguage(lang) {
@@ -370,7 +372,7 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover listBtn listPopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover codeBtn codePopover listBtn listPopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
@@ -430,6 +432,10 @@ class DocumentTypography {
         this.quoteBtn.addEventListener('click', () => this.toggleQuotePopover());
         this.quotePopover.querySelectorAll('[data-quote]').forEach(opt => {
             opt.addEventListener('click', () => this.insertQuoteBlock(opt.dataset.quote));
+        });
+        this.codeBtn.addEventListener('click', () => this.toggleCodePopover());
+        this.codePopover.querySelectorAll('[data-code]').forEach(opt => {
+            opt.addEventListener('click', () => this.insertCodeBlock(opt.dataset.code));
         });
         this.listBtn.addEventListener('click', () => this.toggleListPopover());
         this.listPopover.querySelectorAll('[data-list]').forEach(opt => {
@@ -712,39 +718,59 @@ class DocumentTypography {
 
     insertQuoteBlock(quoteStyle) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
-        const { paraIndex, startOffset, endOffset } = this.savedSelection;
-        const fullText = this.content[paraIndex].text;
-        const quoted = fullText.slice(startOffset, endOffset);
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const startPara = spans[0].paraIndex;
+        const endPara = spans[spans.length - 1].paraIndex;
+        const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
+        const quoted = pieces.join(' ');
         if (!quoted) return;
 
         const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
 
-        const origPara = this.content[paraIndex];
-        const quoteIdx = paraIndex + 1;
-        const afterIdx = paraIndex + 2;
+        const firstPara = this.content[startPara];
+        const lastPara = this.content[endPara];
+        const quoteIdx = startPara + 1;
+        const afterIdx = startPara + 2;
         this.content = [
-            ...this.content.slice(0, paraIndex),
-            { ...origPara, text: fullText.slice(0, startOffset) },
+            ...this.content.slice(0, startPara),
+            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
             { text: quoted },
-            { ...origPara, text: fullText.slice(endOffset) },
-            ...this.content.slice(paraIndex + 1)
+            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
+            ...this.content.slice(endPara + 1)
         ];
+
+        let cum = 0;
+        const spanRanges = spans.map((sp, i) => {
+            const mergedStart = cum;
+            cum += pieces[i].length + 1; 
+            return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
+        });
+        const numOriginal = endPara - startPara + 1;
+        const delta = 3 - numOriginal;
 
         const adjustedStyles = [];
         for (const s of this.styles) {
-            if (s.paraIndex > paraIndex) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + 2 }); continue; }
-            if (s.paraIndex < paraIndex) { adjustedStyles.push(s); continue; }
-            // s.paraIndex === paraIndex
-            if (s.type === 'divider') { adjustedStyles.push(s); continue; }
-            if (s.type === 'inlineicon') {
-                if (s.startOffset < startOffset) adjustedStyles.push(s);
-                else if (s.startOffset >= endOffset) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.startOffset - endOffset });
+            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
+            const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
+            if (!range) continue;
+            if (s.type === 'divider') {
+                if (s.paraIndex === startPara) adjustedStyles.push(s);
                 continue;
             }
-            if (s.endOffset <= startOffset) { adjustedStyles.push(s); }
-            else if (s.startOffset >= endOffset) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.endOffset - endOffset }); }
-            else if (s.startOffset >= startOffset && s.endOffset <= endOffset) { adjustedStyles.push({ ...s, paraIndex: quoteIdx, startOffset: s.startOffset - startOffset, endOffset: s.endOffset - startOffset }); }
-            else if (s.startOffset < startOffset) { adjustedStyles.push({ ...s, endOffset: startOffset }); }
+            if (s.type === 'inlineicon') {
+                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
+                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
+                continue;
+            }
+            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
+            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: quoteIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
+            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
+            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
         }
         const quoteStyleObj = { id: this._genId(), type: 'quote', quoteStyle, text: quoted, color: '', paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length, created_at: new Date().toISOString() };
         adjustedStyles.push(quoteStyleObj);
@@ -756,6 +782,112 @@ class DocumentTypography {
         this._closeToolPopovers();
         this._refreshViews();
         this.restoreSelection(quoteIdx, 0, quoted.length);
+    }
+
+    toggleCodePopover() {
+        const isVisible = this.codePopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+            this.codePopover.classList.add('visible');
+            this.codeBtn.classList.add('active');
+        }
+        this.adjustFloatingToolbarForPopovers();
+    }
+
+    detectLanguage(code) {
+        const trimmed = code.trim();
+        if (!trimmed) return 'Plain Text';
+        if (/^[\[{]/.test(trimmed)) {
+            try { JSON.parse(trimmed); return 'JSON'; } catch (e) { /* not JSON */ }
+        }
+        const rules = [
+            { lang: 'HTML', re: [/<!doctype html/i, /<\/[a-z][a-z0-9]*>/i, /<[a-z][a-z0-9]*(\s+[\w-]+(=("[^"]*"|'[^']*'))?)*\s*\/?>/i] },
+            { lang: 'CSS', re: [/[.#]?[\w-]+\s*\{[^{}]*:[^{}]*;[^{}]*\}/, /@media\s*\(/, /^\s*[.#][\w-]+\s*\{/m] },
+            { lang: 'Python', re: [/\bdef\s+\w+\s*\([^)]*\)\s*:/, /\bimport\s+\w+/, /\bself\b/, /\belif\b/, /\bprint\(/, /\bNone\b/, /:\s*$/m] },
+            { lang: 'Java', re: [/\bpublic\s+(static\s+)?(final\s+)?class\b/, /\bSystem\.out\.println\(/, /\bpublic\s+static\s+void\s+main\s*\(/, /\bprivate\s+\w+\s+\w+\s*\(/] },
+            { lang: 'C++', re: [/#include\s*<\w+>/, /\bstd::\w+/, /\bcout\s*<</, /\bnamespace\s+\w+/] },
+            { lang: 'C', re: [/#include\s*<\w+\.h>/, /\bprintf\s*\(/, /\bmalloc\s*\(/, /\bstruct\s+\w+\s*\{/] },
+            { lang: 'SQL', re: [/\bSELECT\b[\s\S]{0,300}\bFROM\b/i, /\bINSERT\s+INTO\b/i, /\bCREATE\s+TABLE\b/i, /\bUPDATE\b[\s\S]*\bSET\b/i] },
+            { lang: 'Bash', re: [/^#!.*\/(ba)?sh/m, /\becho\s+["'$]/, /\bfi\b/, /\bdone\b/, /\$\{?\w+\}?/] },
+            { lang: 'TypeScript', re: [/:\s*(string|number|boolean|any|void)\b/, /\binterface\s+\w+/, /\btype\s+\w+\s*=/] },
+            { lang: 'JavaScript', re: [/\bfunction\s*\w*\s*\(/, /=>\s*[{(]?/, /\bconst\s+\w+\s*=/, /\blet\s+\w+\s*=/, /\bconsole\.log\(/, /\brequire\(/, /\bdocument\.\w+/] },
+        ];
+        let best = { lang: 'Plain Text', score: 0 };
+        for (const rule of rules) {
+            const score = rule.re.reduce((acc, re) => acc + (re.test(trimmed) ? 1 : 0), 0);
+            if (score > best.score) best = { lang: rule.lang, score };
+        }
+        return best.score > 0 ? best.lang : 'Plain Text';
+    }
+
+    insertCodeBlock(bgStyle) {
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const startPara = spans[0].paraIndex;
+        const endPara = spans[spans.length - 1].paraIndex;
+        const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
+        const code = pieces.join('\n');
+        if (!code) return;
+        const language = this.detectLanguage(code);
+
+        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+
+        const firstPara = this.content[startPara];
+        const lastPara = this.content[endPara];
+        const codeIdx = startPara + 1;
+        const afterIdx = startPara + 2;
+        this.content = [
+            ...this.content.slice(0, startPara),
+            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
+            { text: code },
+            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
+            ...this.content.slice(endPara + 1)
+        ];
+
+        let cum = 0;
+        const spanRanges = spans.map((sp, i) => {
+            const mergedStart = cum;
+            cum += pieces[i].length + 1;
+            return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
+        });
+        const numOriginal = endPara - startPara + 1;
+        const delta = 3 - numOriginal;
+
+        const adjustedStyles = [];
+        for (const s of this.styles) {
+            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
+            const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
+            if (!range) continue;
+            if (s.type === 'divider') {
+                if (s.paraIndex === startPara) adjustedStyles.push(s);
+                continue;
+            }
+            if (s.type === 'inlineicon') {
+                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
+                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
+                continue;
+            }
+            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
+            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: codeIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
+            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
+            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
+        }
+        const codeStyleObj = { id: this._genId(), type: 'code', bgStyle, language, text: code, color: '', paraIndex: codeIdx, startOffset: 0, endOffset: code.length, created_at: new Date().toISOString() };
+        adjustedStyles.push(codeStyleObj);
+        this.styles = adjustedStyles;
+
+        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+        this._pushHistory({ action: 'code_split', before: beforeState, after: afterState });
+        this.logAction('add', codeStyleObj);
+        this._closeToolPopovers();
+        this._refreshViews();
+        this.restoreSelection(codeIdx, 0, code.length);
     }
 
     toggleListPopover() {
@@ -770,49 +902,86 @@ class DocumentTypography {
 
     insertListBlock(listStyle) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
-        const { paraIndex, startOffset, endOffset } = this.savedSelection;
-        const fullText = this.content[paraIndex].text;
-        const listed = fullText.slice(startOffset, endOffset);
-        if (!listed) return;
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const startPara = spans[0].paraIndex;
+        const endPara = spans[spans.length - 1].paraIndex;
+
+        const entries = [];
+        spans.forEach((sp, spanIdx) => {
+            const paraText = this.content[sp.paraIndex].text;
+            const isFirst = spanIdx === 0;
+            const isLast = spanIdx === spans.length - 1;
+            if (isFirst) {
+                entries.push({ srcPara: sp.paraIndex, srcStart: 0, srcEnd: sp.startOffset, kind: 'prefix', text: paraText.slice(0, sp.startOffset), orig: this.content[sp.paraIndex] });
+            }
+            let cursor = sp.startOffset;
+            paraText.slice(sp.startOffset, sp.endOffset).split('\n').forEach(part => {
+                const segStart = cursor, segEnd = cursor + part.length;
+                entries.push({ srcPara: sp.paraIndex, srcStart: segStart, srcEnd: segEnd, kind: 'list', text: part });
+                cursor = segEnd + 1;
+            });
+            if (isLast) {
+                entries.push({ srcPara: sp.paraIndex, srcStart: sp.endOffset, srcEnd: paraText.length, kind: 'suffix', text: paraText.slice(sp.endOffset), orig: this.content[sp.paraIndex] });
+            }
+        });
+
+        const filteredEntries = entries.filter(r => r.kind !== 'list' || r.text.length > 0);
+        if (!filteredEntries.some(r => r.kind === 'list')) return;
 
         const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
 
-        const origPara = this.content[paraIndex];
-        const listIdx = paraIndex + 1;
-        const afterIdx = paraIndex + 2;
+        const newContentSection = filteredEntries.map(r => r.kind === 'list' ? { text: r.text } : { ...r.orig, text: r.text });
         this.content = [
-            ...this.content.slice(0, paraIndex),
-            { ...origPara, text: fullText.slice(0, startOffset) },
-            { text: listed },
-            { ...origPara, text: fullText.slice(endOffset) },
-            ...this.content.slice(paraIndex + 1)
+            ...this.content.slice(0, startPara),
+            ...newContentSection,
+            ...this.content.slice(endPara + 1)
         ];
+        filteredEntries.forEach((r, i) => { r.newParaIndex = startPara + i; });
+
+        const numOriginal = endPara - startPara + 1;
+        const delta = filteredEntries.length - numOriginal;
+        const entriesByPara = new Map();
+        filteredEntries.forEach(r => { if (!entriesByPara.has(r.srcPara)) entriesByPara.set(r.srcPara, []); entriesByPara.get(r.srcPara).push(r); });
 
         const adjustedStyles = [];
         for (const s of this.styles) {
-            if (s.paraIndex > paraIndex) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + 2 }); continue; }
-            if (s.paraIndex < paraIndex) { adjustedStyles.push(s); continue; }
-            if (s.type === 'divider') { adjustedStyles.push(s); continue; }
-            if (s.type === 'inlineicon') {
-                if (s.startOffset < startOffset) adjustedStyles.push(s);
-                else if (s.startOffset >= endOffset) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.startOffset - endOffset });
+            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
+            const paraEntries = entriesByPara.get(s.paraIndex);
+            if (!paraEntries) continue;
+            if (s.type === 'divider') {
+                const prefixEntry = paraEntries.find(r => r.kind === 'prefix');
+                if (prefixEntry) adjustedStyles.push({ ...s, paraIndex: prefixEntry.newParaIndex });
                 continue;
             }
-            if (s.endOffset <= startOffset) { adjustedStyles.push(s); }
-            else if (s.startOffset >= endOffset) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - endOffset, endOffset: s.endOffset - endOffset }); }
-            else if (s.startOffset >= startOffset && s.endOffset <= endOffset) { adjustedStyles.push({ ...s, paraIndex: listIdx, startOffset: s.startOffset - startOffset, endOffset: s.endOffset - startOffset }); }
-            else if (s.startOffset < startOffset) { adjustedStyles.push({ ...s, endOffset: startOffset }); }
+            if (s.type === 'inlineicon') {
+                const containing = paraEntries.find(r => s.startOffset >= r.srcStart && s.startOffset <= r.srcEnd);
+                if (containing) adjustedStyles.push({ ...s, paraIndex: containing.newParaIndex, startOffset: s.startOffset - containing.srcStart, endOffset: s.startOffset - containing.srcStart });
+                continue;
+            }
+            const contained = paraEntries.find(r => s.startOffset >= r.srcStart && s.endOffset <= r.srcEnd);
+            if (contained) { adjustedStyles.push({ ...s, paraIndex: contained.newParaIndex, startOffset: s.startOffset - contained.srcStart, endOffset: s.endOffset - contained.srcStart }); continue; }
+            const overlapping = paraEntries.find(r => s.startOffset < r.srcEnd && s.endOffset > r.srcStart);
+            if (overlapping) {
+                const clipStart = Math.max(s.startOffset, overlapping.srcStart), clipEnd = Math.min(s.endOffset, overlapping.srcEnd);
+                if (clipEnd > clipStart) adjustedStyles.push({ ...s, paraIndex: overlapping.newParaIndex, startOffset: clipStart - overlapping.srcStart, endOffset: clipEnd - overlapping.srcStart });
+            }
         }
-        const listStyleObj = { id: this._genId(), type: 'list', listStyle, text: listed, color: '', paraIndex: listIdx, startOffset: 0, endOffset: listed.length, created_at: new Date().toISOString() };
-        adjustedStyles.push(listStyleObj);
+
+        const newListStyles = filteredEntries.filter(r => r.kind === 'list').map(r => ({ id: this._genId(), type: 'list', listStyle, text: r.text, color: '', paraIndex: r.newParaIndex, startOffset: 0, endOffset: r.text.length, created_at: new Date().toISOString() }));
+        newListStyles.forEach(s => adjustedStyles.push(s));
         this.styles = adjustedStyles;
 
         const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
         this._pushHistory({ action: 'list_split', before: beforeState, after: afterState });
-        this.logAction('add', listStyleObj);
+        newListStyles.forEach(s => this.logAction('add', s));
         this._closeToolPopovers();
         this._refreshViews();
-        this.restoreSelection(listIdx, 0, listed.length);
+        if (newListStyles.length === 1) this.restoreSelection(newListStyles[0].paraIndex, 0, newListStyles[0].text.length);
+        else if (newListStyles.length > 1) this.restoreSelectionSpans(newListStyles.map(s => ({ paraIndex: s.paraIndex, startOffset: 0, endOffset: s.text.length })));
     }
 
     buildDividerElement(d) {
@@ -928,7 +1097,7 @@ class DocumentTypography {
             this._updateFloatingToolbarStyles();
             if (!keepSelection) { this.promptApplyToAll(style); }
         } else {
-            // Multi-paragraph path — create one style entry per span
+            // Multi-paragraph path 
             const activeSpans = isDropcap ? [spans[0]] : spans;
             if (keepSelection) {
                 let anyUpdated = false;
@@ -1215,12 +1384,13 @@ class DocumentTypography {
         this.ftFontFamilyPopover.classList.remove('visible');
         this.ftScriptSizePopover.classList.remove('visible');
         this.ftLetterSpacingPopover.classList.remove('visible');
+        this.ftHeadingSizePopover.classList.remove('visible');
     }
 
     _closeToolPopovers() {
         this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
-        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn], [this.quotePopover, this.quoteBtn], [this.listPopover, this.listBtn]]) {
+        for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn], [this.quotePopover, this.quoteBtn], [this.codePopover, this.codeBtn], [this.listPopover, this.listBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
         }
         this.dividerAlignPanel.style.display = 'none';
@@ -1236,7 +1406,19 @@ class DocumentTypography {
         return null;
     }
 
+    _normalizeRangeBoundary(node, offset) {
+        while (node.nodeType === Node.ELEMENT_NODE) {
+            if (offset < node.childNodes.length) { node = node.childNodes[offset]; offset = 0; }
+            else if (node.childNodes.length > 0) {
+                node = node.childNodes[node.childNodes.length - 1];
+                offset = node.nodeType === Node.TEXT_NODE ? node.textContent.length : node.childNodes.length;
+            } else break;
+        }
+        return { node, offset };
+    }
+
     getTextOffset(paragraph, node, offset) {
+        if (node.nodeType !== Node.TEXT_NODE) ({ node, offset } = this._normalizeRangeBoundary(node, offset));
         const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT, {
             acceptNode: n => n.parentElement?.closest('.inline-icon') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
         });
@@ -1272,7 +1454,8 @@ class DocumentTypography {
             const calloutStyles = paraStyles.filter(s => s.type === 'callout');
             const quoteStyles = paraStyles.filter(s => s.type === 'quote');
             const listStyles = paraStyles.filter(s => s.type === 'list');
-            const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote' && s.type !== 'list');
+            const codeStyles = paraStyles.filter(s => s.type === 'code');
+            const textStyles = paraStyles.filter(s => s.type !== 'inlineicon' && s.type !== 'callout' && s.type !== 'quote' && s.type !== 'list' && s.type !== 'code');
             const borderStyles = textStyles.filter(s => borderTypes.has(s.type));
             const nonBorderStyles = textStyles.filter(s => !borderTypes.has(s.type));
             const boundsSet = [0, text.length, ...textStyles.flatMap(s => [Math.max(0, Math.min(s.startOffset, text.length)), Math.max(0, Math.min(s.endOffset, text.length))]), ...iconStyles.map(s => Math.max(0, Math.min(s.startOffset, text.length)))];
@@ -1326,6 +1509,11 @@ class DocumentTypography {
                 const ls = listStyles[listStyles.length - 1];
                 para.classList.add(`list-${ls.listStyle}`);
             }
+            if (codeStyles.length) {
+                const cds = codeStyles[codeStyles.length - 1];
+                para.classList.add(`code-${cds.bgStyle}`);
+                para.dataset.codeLang = cds.language;
+            }
         }
 
         this.styles.filter(s => s.type === 'divider').forEach(d => {
@@ -1355,15 +1543,16 @@ class DocumentTypography {
         const divIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>';
         const quoteIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><text x="1" y="12" font-size="14" font-family="Georgia,serif">&#8220;</text><text x="13" y="12" font-size="14" font-family="Georgia,serif">&#8221;</text></svg>';
         const listIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>';
-        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>', link: linkIcon, divider: divIcon, quote: quoteIcon, list: listIcon };
-        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'link', 'divider', 'quote', 'list', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
+        const codeIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
+        const icons = { bold: '<strong>B</strong>', italic: '<em>I</em>', underline: '<u>U</u>', wavyunderline: '<span style="text-decoration:underline wavy">W</span>', strikethrough: '<s>S</s>', superscript: 'X²', subscript: 'X₂', highlight: '▮', textcolor: 'A', border: '□', circle: '○', serif: fontIcon, sansserif: fontIcon, mono: fontIcon, rounded: fontIcon, smallcaps: fontIcon, arial: fontIcon, courier: fontIcon, georgia: fontIcon, helvetica: fontIcon, times: fontIcon, trebuchet: fontIcon, verdana: fontIcon, comicsans: fontIcon, cursivefont: fontIcon, bongothic: fontIcon, nanumgothic: fontIcon, bonmyeongjo: fontIcon, nanummyeongjo: fontIcon, nanumbarungothic: fontIcon, nanumsquare: fontIcon, maruburi: fontIcon, gungseo: fontIcon, fontsize: 'Tt', inlineicon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>', letterspacing: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="14" font-size="12" fill="currentColor" stroke="none">A</text><text x="15" y="14" font-size="12" fill="currentColor" stroke="none">V</text><line x1="2" y1="20" x2="22" y2="20"/><polyline points="5 22 2 20 5 18"/><polyline points="19 22 22 20 19 18"/></svg>', overline: 'O̅', callout: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="3"/><text x="12" y="16" font-size="13" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">T</text></svg>', dropcap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="17" font-size="20" font-weight="bold" fill="currentColor" stroke="none">A</text><line x1="15" y1="5" x2="23" y2="5"/><line x1="15" y1="10" x2="23" y2="10"/><line x1="15" y1="15" x2="23" y2="15"/><line x1="1" y1="22" x2="23" y2="22"/></svg>', link: linkIcon, divider: divIcon, quote: quoteIcon, list: listIcon, code: codeIcon };
+        const noColorIcon = ['fontsize', 'inlineicon', 'letterspacing', 'dropcap', 'link', 'divider', 'quote', 'list', 'code', 'serif', 'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont', 'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo', 'sansserif', 'mono', 'rounded', 'smallcaps'];
         const typeOrder = [
             'bold', 'italic', 'underline', 'overline', 'wavyunderline', 'strikethrough', 'link',
             'superscript', 'subscript', 'fontsize',
             'serif', 'sansserif', 'mono', 'rounded', 'smallcaps',
             'arial', 'courier', 'georgia', 'helvetica', 'times', 'trebuchet', 'verdana', 'comicsans', 'cursivefont',
             'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo',
-            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'quote', 'list', 'inlineicon', 'divider'
+            'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'quote', 'list', 'code', 'inlineicon', 'divider'
         ];
         const renderItem = s => {
             if (s.type === 'divider') {
@@ -1385,6 +1574,13 @@ class DocumentTypography {
                 return `<div class=”style-item” data-id=”${s.id}”>
                     <div class=”style-details”><div class=”style-preview”>• ${subLabel}</div></div>
                     <button class=”style-delete” title=”Delete”><svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2”><line x1=”18” y1=”6” x2=”6” y2=”18”/><line x1=”6” y1=”6” x2=”18” y2=”18”/></svg></button>
+                </div>`;
+            }
+            if (s.type === 'code') {
+                const subLabel = this.TYPE_LABELS['code_' + s.bgStyle] || s.bgStyle;
+                return `<div class="style-item" data-id="${s.id}">
+                    <div class="style-details"><div class="style-preview">&lt;/&gt; ${s.language} &middot; ${subLabel}</div></div>
+                    <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                 </div>`;
             }
             let detail = '';
@@ -1523,6 +1719,7 @@ class DocumentTypography {
         else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
         else if (action === 'quote_split') { this.content = last.before.content; this.styles = last.before.styles; }
         else if (action === 'list_split') { this.content = last.before.content; this.styles = last.before.styles; }
+        else if (action === 'code_split') { this.content = last.before.content; this.styles = last.before.styles; }
         this.redoStack.push(last);
         this._refreshViews();
         this.undoBtn.disabled = !this.history.length;
@@ -1540,6 +1737,7 @@ class DocumentTypography {
         else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
         else if (action === 'quote_split') { this.content = last.after.content; this.styles = last.after.styles; }
         else if (action === 'list_split') { this.content = last.after.content; this.styles = last.after.styles; }
+        else if (action === 'code_split') { this.content = last.after.content; this.styles = last.after.styles; }
         this.history.push(last);
         this._refreshViews();
         this.undoBtn.disabled = false;
