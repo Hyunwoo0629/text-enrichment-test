@@ -628,14 +628,22 @@ class DocumentTypography {
     }
 
     toggleLetterSpacingPopover() {
-        this.letterSpacingPopover.classList.toggle('visible');
-        this.letterSpacingBtn.classList.toggle('active');
+        const isVisible = this.letterSpacingPopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            this.letterSpacingPopover.classList.add('visible');
+            this.letterSpacingBtn.classList.add('active');
+        }
         this.adjustFloatingToolbarForPopovers();
     }
 
     toggleLineHeightPopover() {
-        this.lineHeightPopover.classList.toggle('visible');
-        this.lineHeightBtn.classList.toggle('active');
+        const isVisible = this.lineHeightPopover.classList.contains('visible');
+        this._closeToolPopovers();
+        if (!isVisible) {
+            this.lineHeightPopover.classList.add('visible');
+            this.lineHeightBtn.classList.add('active');
+        }
         this.adjustFloatingToolbarForPopovers();
     }
 
