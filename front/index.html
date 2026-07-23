@@ -49,7 +49,7 @@
                 <span class="logo-text" data-i18n="studio">Studio</span>
             </div>
             <div class="header-actions">
-<button id="uploadBtn" class="btn btn-outline">
+                <button id="uploadBtn" class="btn btn-outline">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
@@ -296,29 +296,38 @@
                             </button>
                             <div class="tool-popover list-type-popover" id="listPopover">
                                 <div class="popover-label" data-i18n="list_label">List</div>
-                                <div class="list-type-options">
-                                    <button class="list-type-opt" data-list="bullet">
-                                        <svg width="56" height="36" style="flex-shrink:0">
-                                            <circle cx="8" cy="8" r="2" fill="#bbb"/>
-                                            <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
-                                            <circle cx="8" cy="18" r="2" fill="#bbb"/>
-                                            <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
-                                            <circle cx="8" cy="28" r="2" fill="#bbb"/>
-                                            <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
-                                        </svg>
-                                        <span data-i18n="list_bullet_label">Bullet</span>
-                                    </button>
-                                    <button class="list-type-opt" data-list="numbered">
-                                        <svg width="56" height="36" style="flex-shrink:0">
-                                            <text x="3" y="12" font-size="9" fill="#bbb" font-family="sans-serif">1.</text>
-                                            <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
-                                            <text x="3" y="22" font-size="9" fill="#bbb" font-family="sans-serif">2.</text>
-                                            <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
-                                            <text x="3" y="32" font-size="9" fill="#bbb" font-family="sans-serif">3.</text>
-                                            <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
-                                        </svg>
-                                        <span data-i18n="list_numbered_label">Numbered</span>
-                                    </button>
+                                <div id="listTypePanel">
+                                    <div class="list-type-options">
+                                        <button class="list-type-opt" data-list="bullet">
+                                            <svg width="56" height="36" style="flex-shrink:0">
+                                                <circle cx="8" cy="8" r="2" fill="#bbb"/>
+                                                <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
+                                                <circle cx="8" cy="18" r="2" fill="#bbb"/>
+                                                <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
+                                                <circle cx="8" cy="28" r="2" fill="#bbb"/>
+                                                <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
+                                            </svg>
+                                            <span data-i18n="list_bullet_label">Bullet</span>
+                                        </button>
+                                        <button class="list-type-opt" data-list="numbered">
+                                            <svg width="56" height="36" style="flex-shrink:0">
+                                                <text x="3" y="12" font-size="9" fill="#bbb" font-family="sans-serif">1.</text>
+                                                <line x1="16" y1="8" x2="52" y2="8" stroke="#ccc" stroke-width="1"/>
+                                                <text x="3" y="22" font-size="9" fill="#bbb" font-family="sans-serif">2.</text>
+                                                <line x1="16" y1="18" x2="44" y2="18" stroke="#ccc" stroke-width="1"/>
+                                                <text x="3" y="32" font-size="9" fill="#bbb" font-family="sans-serif">3.</text>
+                                                <line x1="16" y1="28" x2="48" y2="28" stroke="#ccc" stroke-width="1"/>
+                                            </svg>
+                                            <span data-i18n="list_numbered_label">Numbered</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="listNumberedPanel" class="list-numbered-panel" style="display:none">
+                                    <div class="divider-align-back" id="listNumberedBack">&larr; Back</div>
+                                    <div class="list-numbered-options">
+                                        <button class="list-numbered-opt" data-list-restart="continue" data-i18n="list_continue_label">Continue Numbering</button>
+                                        <button class="list-numbered-opt" data-list-restart="new" data-i18n="list_restart_label">Start New List (1)</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

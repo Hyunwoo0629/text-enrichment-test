@@ -7,10 +7,6 @@ const TRANSLATIONS = {
         redo: 'Redo',
         text_style: 'Text Style',
         font_family: 'Font Family',
-        sans_serif: 'Sans-Serif',
-        monospace: 'Monospace',
-        rounded: 'Rounded',
-        small_caps: 'Small Caps',
         script_size: 'Script Size',
         heading_size: 'Heading Size',
         superscript: 'Superscript',
@@ -39,6 +35,7 @@ const TRANSLATIONS = {
         div_triangle: 'Triangle', div_diamond: 'Diamond', div_cross: 'Tilted', div_vertical: 'Vertical',
         quote_tooltip: 'Quote Block', quote_label: 'Quote Block', quote_marks_label: 'Marks', quote_line_label: 'Line',
         list_tooltip: 'List', list_label: 'List', list_bullet_label: 'Bullet', list_numbered_label: 'Numbered',
+        list_continue_label: 'Continue Numbering', list_restart_label: 'Start New List (1)',
         code_tooltip: 'Code Block', code_label: 'Code Block', code_white_label: 'White', code_gray_label: 'Gray', code_black_label: 'Black',
         actions: 'Actions',
         clear_all: 'Clear All',
@@ -107,10 +104,6 @@ const TRANSLATIONS = {
         redo: '다시 실행',
         text_style: '텍스트 스타일',
         font_family: '글꼴',
-        sans_serif: '산세리프',
-        monospace: '고정폭',
-        rounded: '둥근',
-        small_caps: '소형 대문자',
         script_size: '위아래 첨자',
         heading_size: '제목 크기',
         superscript: '위첨자',
@@ -139,6 +132,7 @@ const TRANSLATIONS = {
         div_triangle: '삼각형', div_diamond: '다이아몬드', div_cross: '기울임', div_vertical: '세로선',
         quote_tooltip: '인용 블록', quote_label: '인용 블록', quote_marks_label: '인용부호', quote_line_label: '세로선',
         list_tooltip: '목록', list_label: '목록', list_bullet_label: '불렛 포인트', list_numbered_label: '번호',
+        list_continue_label: '번호 이어서', list_restart_label: '새 목록 시작',
         code_tooltip: '코드 블록', code_label: '코드 블록', code_white_label: '흰색', code_gray_label: '회색', code_black_label: '검정',
         actions: '작업',
         clear_all: '모두 지우기',
@@ -286,7 +280,6 @@ class DocumentTypography {
         this.initEventListeners();
         this.initColorBoards();
         this.initCustomColorPicker();
-        this.initLanguage();
     }
 
     t(key, ...args) {
@@ -294,10 +287,6 @@ class DocumentTypography {
         if (str === undefined) str = TRANSLATIONS.en[key] || key;
         args.forEach((arg, i) => { str = str.replace(new RegExp(`\\{${i}\\}`, 'g'), arg); });
         return str;
-    }
-
-    initLanguage() {
-        
     }
 
     selectLanguage(lang) {
@@ -372,7 +361,7 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover codeBtn codePopover listBtn listPopover iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
     }
@@ -439,7 +428,22 @@ class DocumentTypography {
         });
         this.listBtn.addEventListener('click', () => this.toggleListPopover());
         this.listPopover.querySelectorAll('[data-list]').forEach(opt => {
-            opt.addEventListener('click', () => this.insertListBlock(opt.dataset.list));
+            opt.addEventListener('click', () => {
+                const type = opt.dataset.list;
+                if (type === 'numbered') {
+                    this.listTypePanel.style.display = 'none';
+                    this.listNumberedPanel.style.display = '';
+                } else {
+                    this.insertListBlock(type);
+                }
+            });
+        });
+        this.listNumberedBack.addEventListener('click', () => {
+            this.listNumberedPanel.style.display = 'none';
+            this.listTypePanel.style.display = '';
+        });
+        this.listNumberedPanel.querySelectorAll('[data-list-restart]').forEach(opt => {
+            opt.addEventListener('click', () => this.insertListBlock('numbered', opt.dataset.listRestart === 'new'));
         });
         this.documentContent.addEventListener('mousedown', e => {
             const para = this.getParentParagraph(e.target);
@@ -724,8 +728,32 @@ class DocumentTypography {
         this.adjustFloatingToolbarForPopovers();
     }
 
+    _findWholeParaStyles(type) {
+        if (!this.savedSelection) return null;
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+        const matched = [];
+        for (const sp of spans) {
+            const paraText = this.content[sp.paraIndex]?.text ?? '';
+            if (!paraText.length || sp.startOffset !== 0 || sp.endOffset !== paraText.length) return null;
+            const existing = this.styles.find(s => s.type === type && s.paraIndex === sp.paraIndex && s.startOffset === 0 && s.endOffset === paraText.length);
+            if (!existing) return null;
+            matched.push(existing);
+        }
+        return { spans, matched };
+    }
+
     insertQuoteBlock(quoteStyle) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const reapplied = this._findWholeParaStyles('quote');
+        if (reapplied) {
+            reapplied.matched.forEach(s => { s.quoteStyle = quoteStyle; });
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(reapplied.spans);
+            return;
+        }
         const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
@@ -753,7 +781,7 @@ class DocumentTypography {
         let cum = 0;
         const spanRanges = spans.map((sp, i) => {
             const mergedStart = cum;
-            cum += pieces[i].length + 1; 
+            cum += pieces[i].length + 1;
             return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
         });
         const numOriginal = endPara - startPara + 1;
@@ -789,6 +817,7 @@ class DocumentTypography {
         this.logAction('add', quoteStyleObj);
         this._closeToolPopovers();
         this._refreshViews();
+        this.savedSelection = { paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length, text: quoted, rect: this.savedSelection?.rect, spans: [{ paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length }] };
         this.restoreSelection(quoteIdx, 0, quoted.length);
     }
 
@@ -831,6 +860,14 @@ class DocumentTypography {
 
     insertCodeBlock(bgStyle) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const reapplied = this._findWholeParaStyles('code');
+        if (reapplied) {
+            reapplied.matched.forEach(s => { s.bgStyle = bgStyle; });
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(reapplied.spans);
+            return;
+        }
         const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
@@ -895,6 +932,7 @@ class DocumentTypography {
         this.logAction('add', codeStyleObj);
         this._closeToolPopovers();
         this._refreshViews();
+        this.savedSelection = { paraIndex: codeIdx, startOffset: 0, endOffset: code.length, text: code, rect: this.savedSelection?.rect, spans: [{ paraIndex: codeIdx, startOffset: 0, endOffset: code.length }] };
         this.restoreSelection(codeIdx, 0, code.length);
     }
 
@@ -908,8 +946,20 @@ class DocumentTypography {
         }
     }
 
-    insertListBlock(listStyle) {
+    insertListBlock(listStyle, restart = false) {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const reapplied = this._findWholeParaStyles('list');
+        if (reapplied) {
+            reapplied.matched.forEach((s, i) => {
+                s.listStyle = listStyle;
+                if (listStyle === 'numbered' && restart && i === 0) s.restart = true;
+                else delete s.restart;
+            });
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(reapplied.spans);
+            return;
+        }
         const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
@@ -980,6 +1030,7 @@ class DocumentTypography {
         }
 
         const newListStyles = filteredEntries.filter(r => r.kind === 'list').map(r => ({ id: this._genId(), type: 'list', listStyle, text: r.text, color: '', paraIndex: r.newParaIndex, startOffset: 0, endOffset: r.text.length, created_at: new Date().toISOString() }));
+        if (listStyle === 'numbered' && restart && newListStyles.length) newListStyles[0].restart = true;
         newListStyles.forEach(s => adjustedStyles.push(s));
         this.styles = adjustedStyles;
 
@@ -988,8 +1039,14 @@ class DocumentTypography {
         newListStyles.forEach(s => this.logAction('add', s));
         this._closeToolPopovers();
         this._refreshViews();
-        if (newListStyles.length === 1) this.restoreSelection(newListStyles[0].paraIndex, 0, newListStyles[0].text.length);
-        else if (newListStyles.length > 1) this.restoreSelectionSpans(newListStyles.map(s => ({ paraIndex: s.paraIndex, startOffset: 0, endOffset: s.text.length })));
+        const listSpans = newListStyles.map(s => ({ paraIndex: s.paraIndex, startOffset: 0, endOffset: s.text.length }));
+        if (newListStyles.length === 1) {
+            this.savedSelection = { paraIndex: listSpans[0].paraIndex, startOffset: 0, endOffset: listSpans[0].endOffset, text: newListStyles[0].text, rect: this.savedSelection?.rect, spans: listSpans };
+            this.restoreSelection(newListStyles[0].paraIndex, 0, newListStyles[0].text.length);
+        } else if (newListStyles.length > 1) {
+            this.savedSelection = { paraIndex: listSpans[0].paraIndex, startOffset: 0, endOffset: listSpans[0].endOffset, text: newListStyles.map(s => s.text).join('\n'), rect: this.savedSelection?.rect, spans: listSpans };
+            this.restoreSelectionSpans(listSpans);
+        }
     }
 
     buildDividerElement(d) {
@@ -1105,7 +1162,7 @@ class DocumentTypography {
             this._updateFloatingToolbarStyles();
             if (!keepSelection) { this.promptApplyToAll(style); }
         } else {
-            // Multi-paragraph path 
+            // Multi-paragraph path
             const activeSpans = isDropcap ? [spans[0]] : spans;
             if (keepSelection) {
                 let anyUpdated = false;
@@ -1403,6 +1460,8 @@ class DocumentTypography {
         }
         this.dividerAlignPanel.style.display = 'none';
         this.dividerTypePanel.style.display = '';
+        this.listNumberedPanel.style.display = 'none';
+        this.listTypePanel.style.display = '';
         this.closeSharedColorPopover();
     }
 
@@ -1516,6 +1575,7 @@ class DocumentTypography {
             if (listStyles.length) {
                 const ls = listStyles[listStyles.length - 1];
                 para.classList.add(`list-${ls.listStyle}`);
+                if (ls.listStyle === 'numbered' && ls.restart) para.style.counterReset = 'list-num 0';
             }
             if (codeStyles.length) {
                 const cds = codeStyles[codeStyles.length - 1];
@@ -1562,44 +1622,23 @@ class DocumentTypography {
             'bongothic', 'nanumgothic', 'bonmyeongjo', 'nanummyeongjo', 'nanumbarungothic', 'nanumsquare', 'maruburi', 'gungseo',
             'highlight', 'textcolor', 'border', 'circle', 'letterspacing', 'dropcap', 'callout', 'quote', 'list', 'code', 'inlineicon', 'divider'
         ];
+        const blockPreviews = {
+            divider: s => `— ${this.TYPE_LABELS['div_' + s.dividerType] || s.dividerType}`,
+            quote: s => `" ${this.TYPE_LABELS['quote_' + s.quoteStyle] || s.quoteStyle} "`,
+            list: s => `• ${this.TYPE_LABELS['list_' + s.listStyle] || s.listStyle}`,
+            code: s => `&lt;/&gt; ${s.language} &middot; ${this.TYPE_LABELS['code_' + s.bgStyle] || s.bgStyle}`,
+        };
         const renderItem = s => {
-            if (s.type === 'divider') {
-                const subLabel = this.TYPE_LABELS['div_' + s.dividerType] || s.dividerType;
-                return `<div class="style-item" data-id="${s.id}">
-                    <div class="style-details"><div class="style-preview">— ${subLabel}</div></div>
-                    <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                </div>`;
+            let preview;
+            if (blockPreviews[s.type]) {
+                preview = blockPreviews[s.type](s);
+            } else {
+                const detail = (s.type === 'fontsize' || s.type === 'letterspacing') ? ` <span class="style-item-param">(${s.color})</span>` : '';
+                preview = `"${s.text.substring(0, 30)}${s.text.length > 30 ? '...' : ''}"${detail}`;
             }
-            if (s.type === 'quote') {
-                const subLabel = this.TYPE_LABELS['quote_' + s.quoteStyle] || s.quoteStyle;
-                return `<div class=”style-item” data-id=”${s.id}”>
-                    <div class=”style-details”><div class=”style-preview”>” ${subLabel} “</div></div>
-                    <button class=”style-delete” title=”Delete”><svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2”><line x1=”18” y1=”6” x2=”6” y2=”18”/><line x1=”6” y1=”6” x2=”18” y2=”18”/></svg></button>
-                </div>`;
-            }
-            if (s.type === 'list') {
-                const subLabel = this.TYPE_LABELS['list_' + s.listStyle] || s.listStyle;
-                return `<div class=”style-item” data-id=”${s.id}”>
-                    <div class=”style-details”><div class=”style-preview”>• ${subLabel}</div></div>
-                    <button class=”style-delete” title=”Delete”><svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2”><line x1=”18” y1=”6” x2=”6” y2=”18”/><line x1=”6” y1=”6” x2=”18” y2=”18”/></svg></button>
-                </div>`;
-            }
-            if (s.type === 'code') {
-                const subLabel = this.TYPE_LABELS['code_' + s.bgStyle] || s.bgStyle;
-                return `<div class="style-item" data-id="${s.id}">
-                    <div class="style-details"><div class="style-preview">&lt;/&gt; ${s.language} &middot; ${subLabel}</div></div>
-                    <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                </div>`;
-            }
-            let detail = '';
-            if (s.type === 'fontsize' || s.type === 'letterspacing') detail = ` <span class="style-item-param">(${s.color})</span>`;
             return `<div class="style-item" data-id="${s.id}">
-                <div class="style-details">
-                    <div class="style-preview">"${s.text.substring(0, 30)}${s.text.length > 30 ? '...' : ''}"${detail}</div>
-                </div>
-                <button class="style-delete" title="Delete">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
+                <div class="style-details"><div class="style-preview">${preview}</div></div>
+                <button class="style-delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>`;
         };
         const typeCounts = {};
