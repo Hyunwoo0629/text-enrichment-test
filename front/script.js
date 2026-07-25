@@ -54,7 +54,13 @@ const TRANSLATIONS = {
         applied_styles: 'Applied Styles',
         no_styles: 'No styles applied',
         select_apply_styles: 'Select text and apply styles',
-        generate_icon: 'Generate Inline Icon',
+        generate_icon: 'Inline Icon',
+        icon_tab_library: 'Icon Library',
+        icon_tab_ai: 'Describe with AI',
+        icon_cat_symbols: 'Symbols',
+        icon_cat_emoji: 'Emoji',
+        icon_style_outline: 'Outline',
+        icon_style_filled: 'Filled',
         describe_icon: 'Describe the icon you want',
         icon_placeholder: 'e.g., a check mark, a star, ...',
         icon_hint: 'SVG icon will be generated according to the description. Click in the text to place it after generating.',
@@ -151,7 +157,13 @@ const TRANSLATIONS = {
         applied_styles: '적용된 스타일',
         no_styles: '적용된 스타일 없음',
         select_apply_styles: '텍스트를 선택하고 스타일을 적용하세요',
-        generate_icon: '인라인 아이콘 생성',
+        generate_icon: '인라인 아이콘',
+        icon_tab_library: '아이콘 라이브러리',
+        icon_tab_ai: 'AI로 설명',
+        icon_cat_symbols: '심볼',
+        icon_cat_emoji: '이모지',
+        icon_style_outline: '아웃라인',
+        icon_style_filled: '채우기',
         describe_icon: '원하는 아이콘을 설명하세요',
         icon_placeholder: '예: 체크 표시, 별, ...',
         icon_hint: '설명에 따라 SVG 아이콘이 생성됩니다. 생성 후 텍스트를 클릭하여 배치하세요.',
@@ -231,6 +243,197 @@ const FONT_OPTIONS = {
     ]
 };
 
+const ICON_LIBRARY = [
+    { key: 'heart', label: 'Heart', label_ko: '하트', blob: true,
+        d: 'M12 20.5C12 20.5 3.8 15.4 3.8 9.6C3.8 6.5 6.1 4.5 8.7 4.5C10.2 4.5 11.4 5.2 12 6.3C12.6 5.2 13.8 4.5 15.3 4.5C17.9 4.5 20.2 6.5 20.2 9.6C20.2 15.4 12 20.5 12 20.5Z' },
+    { key: 'star', label: 'Star', label_ko: '별', blob: true,
+        poly: '12,2.5 14.7,8.6 21.5,9.4 16.5,14 18,20.7 12,17.1 6,20.7 7.5,14 2.5,9.4 9.3,8.6' },
+    { key: 'home', label: 'Home', label_ko: '홈', blob: true,
+        d: 'M12 3.2L3 11H5.5V20H9.7V14H14.3V20H18.5V11H21L12 3.2Z' },
+    { key: 'bell', label: 'Bell', label_ko: '알림', blob: true,
+        extra: '<path d="M12 3A1 1 0 0 1 13 4V4.7C16.1 5.5 18.3 8.2 18.3 11.3V15L20.3 18H3.7L5.7 15V11.3C5.7 8.2 7.9 5.5 11 4.7V4A1 1 0 0 1 12 3Z"/><circle cx="12" cy="20.3" r="1.3"/>' },
+    { key: 'gear', label: 'Settings', label_ko: '설정', blob: true,
+        extra: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/>' + [0, 45, 90, 135, 180, 225, 270, 315].map(a => `<rect x="10.8" y="1.2" width="2.4" height="3.4" rx="0.6" transform="rotate(${a} 12 12)"/>`).join('') },
+    { key: 'plus', label: 'Add', label_ko: '추가', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>' },
+    { key: 'minus', label: 'Remove', label_ko: '제거', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.2"/><line x1="8" y1="12" x2="16" y2="12"/>' },
+    { key: 'check', label: 'Check', label_ko: '체크', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.2"/><polyline points="8,12.3 10.8,15 16,9"/>' },
+    { key: 'close', label: 'Close', label_ko: '닫기', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/>' },
+    { key: 'info', label: 'Info', label_ko: '정보', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.2"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r="1" fill="currentColor" stroke="none"/>' },
+    { key: 'search', label: 'Search', label_ko: '검색', blob: false,
+        extra: '<circle cx="10.5" cy="10.5" r="6"/><line x1="15.2" y1="15.2" x2="20" y2="20"/>' },
+    { key: 'mail', label: 'Mail', label_ko: '메일', blob: false,
+        extra: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><polyline points="3.5,6 12,13 20.5,6"/>' },
+    { key: 'calendar', label: 'Calendar', label_ko: '달력', blob: false,
+        extra: '<rect x="3.5" y="5" width="17" height="16" rx="1.5"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>' },
+    { key: 'clock', label: 'Clock', label_ko: '시계', blob: false,
+        extra: '<circle cx="12" cy="12" r="8.5"/><line x1="12" y1="12" x2="12" y2="7.5"/><line x1="12" y1="12" x2="15.5" y2="14"/>' },
+    { key: 'pin', label: 'Location', label_ko: '위치', blob: true,
+        extra: '<path d="M12 2.5C7.9 2.5 4.5 5.8 4.5 9.9C4.5 15.3 12 21.5 12 21.5C12 21.5 19.5 15.3 19.5 9.9C19.5 5.8 16.1 2.5 12 2.5Z"/><circle cx="12" cy="9.8" r="2.6"/>' },
+    { key: 'flag', label: 'Flag', label_ko: '깃발', blob: true,
+        extra: '<line x1="5" y1="3" x2="5" y2="21" stroke="currentColor" stroke-width="1.8"/><path d="M5 4H17L14 8L17 12H5Z"/>' },
+    { key: 'folder', label: 'Folder', label_ko: '폴더', blob: true,
+        d: 'M3 6.5C3 5.7 3.7 5 4.5 5H9.5L11.5 7H19.5C20.3 7 21 7.7 21 8.5V17.5C21 18.3 20.3 19 19.5 19H4.5C3.7 19 3 18.3 3 17.5Z' },
+    { key: 'document', label: 'Document', label_ko: '문서', blob: true,
+        extra: '<path d="M6 3H14L18 7V21H6Z"/><polyline points="14,3 14,7 18,7"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/>' },
+    { key: 'trash', label: 'Delete', label_ko: '삭제', blob: true,
+        extra: '<path d="M5 7H19L18 21H6Z"/><line x1="9" y1="7" x2="9" y2="4"/><line x1="9" y1="4" x2="15" y2="4"/><line x1="15" y1="4" x2="15" y2="7"/><line x1="3" y1="7" x2="21" y2="7"/>' },
+    { key: 'lock', label: 'Lock', label_ko: '잠금', blob: true,
+        extra: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8A4 4 0 0 1 16 8V11" fill="none" stroke="currentColor" stroke-width="1.8"/>' },
+    { key: 'sun', label: 'Sun', label_ko: '해', blob: true,
+        extra: '<circle cx="12" cy="12" r="4.2"/>' + [0, 45, 90, 135, 180, 225, 270, 315].map(a => `<line x1="12" y1="1.5" x2="12" y2="4" stroke="currentColor" stroke-width="1.8" transform="rotate(${a} 12 12)"/>`).join('') },
+    { key: 'moon', label: 'Moon', label_ko: '달', blob: true,
+        d: 'M20 14.5A8.5 8.5 0 1 1 9.5 4A7 7 0 0 0 20 14.5Z' },
+    { key: 'cloud', label: 'Cloud', label_ko: '구름', blob: true,
+        d: 'M7 18A4.5 4.5 0 0 1 6.5 9.1A6 6 0 0 1 18 8.5A4 4 0 0 1 17.5 18Z' },
+    { key: 'music', label: 'Music', label_ko: '음악', blob: true,
+        extra: '<circle cx="7.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/><rect x="9.8" y="5" width="1.8" height="13"/><rect x="18.8" y="3" width="1.8" height="13"/><rect x="9.8" y="5" width="10.6" height="2.2"/>' },
+    { key: 'play', label: 'Play', label_ko: '재생',
+        outlineOverride: '<circle cx="12" cy="12" r="8.2"/><polygon points="10,8.3 16.5,12 10,15.7"/>',
+        filledOverride: '<path fill-rule="evenodd" fill="currentColor" stroke="none" d="M3.5,12A8.5,8.5 0 1,0 20.5,12A8.5,8.5 0 1,0 3.5,12ZM10,8.3L16.5,12L10,15.7Z"/>' },
+    { key: 'bookmark', label: 'Bookmark', label_ko: '북마크', blob: true,
+        d: 'M6 3H18V21L12 16.5L6 21Z' },
+    { key: 'tag', label: 'Tag', label_ko: '태그', blob: true,
+        extra: '<path d="M3 3H12L21 12L12 21L3 12Z"/><circle cx="7.5" cy="7.5" r="1.4"/>' },
+    { key: 'camera', label: 'Camera', label_ko: '카메라', blob: false,
+        extra: '<path d="M4 8H8L9.5 5.5H14.5L16 8H20A1 1 0 0 1 21 9V18A1 1 0 0 1 20 19H4A1 1 0 0 1 3 18V9A1 1 0 0 1 4 8Z"/><circle cx="12" cy="13.5" r="3.6"/>' },
+    { key: 'user', label: 'User', label_ko: '사용자', blob: true,
+        extra: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5C4.5 16.4 7.8 13.5 12 13.5C16.2 13.5 19.5 16.4 19.5 20.5Z"/>' },
+    { key: 'message', label: 'Message', label_ko: '메시지', blob: true,
+        d: 'M3 5H21V16H8L4 20V16H3Z' },
+];
+
+const EMOJI_LIBRARY = [
+    { char: '😀', label: 'Grinning Face', label_ko: '활짝 웃는 얼굴' },
+    { char: '😄', label: 'Smiling Face', label_ko: '미소 짓는 얼굴' },
+    { char: '😁', label: 'Beaming Face', label_ko: '함박웃음' },
+    { char: '😆', label: 'Laughing', label_ko: '웃음 터짐' },
+    { char: '🤣', label: 'Rolling on Floor', label_ko: '데굴데굴 웃음' },
+    { char: '😂', label: 'Tears of Joy', label_ko: '눈물 나는 웃음' },
+    { char: '🙂', label: 'Slightly Smiling', label_ko: '살짝 웃는 얼굴' },
+    { char: '🙃', label: 'Upside-Down Face', label_ko: '뒤집힌 얼굴' },
+    { char: '😉', label: 'Winking', label_ko: '윙크' },
+    { char: '😊', label: 'Blushing', label_ko: '수줍은 미소' },
+    { char: '🥰', label: 'In Love', label_ko: '사랑스러운 얼굴' },
+    { char: '😍', label: 'Heart Eyes', label_ko: '하트 눈' },
+    { char: '😘', label: 'Blowing Kiss', label_ko: '뽀뽀' },
+    { char: '😜', label: 'Winking Tongue', label_ko: '윙크 메롱' },
+    { char: '🤪', label: 'Zany Face', label_ko: '엉뚱한 얼굴' },
+    { char: '🤔', label: 'Thinking', label_ko: '생각하는 얼굴' },
+    { char: '🤨', label: 'Raised Eyebrow', label_ko: '한쪽 눈썹 올림' },
+    { char: '😎', label: 'Cool', label_ko: '선글라스' },
+    { char: '🥳', label: 'Party', label_ko: '파티' },
+    { char: '🥹', label: 'Holding Back Tears', label_ko: '울먹이는 얼굴' },
+    { char: '😢', label: 'Crying', label_ko: '우는 얼굴' },
+    { char: '😭', label: 'Sobbing', label_ko: '대성통곡' },
+    { char: '😤', label: 'Huffing', label_ko: '씩씩거림' },
+    { char: '😡', label: 'Angry', label_ko: '화난 얼굴' },
+    { char: '🤯', label: 'Mind Blown', label_ko: '멘붕' },
+    { char: '😱', label: 'Screaming', label_ko: '놀란 얼굴' },
+    { char: '🥺', label: 'Pleading', label_ko: '애원하는 얼굴' },
+    { char: '😴', label: 'Sleeping', label_ko: '자는 얼굴' },
+    { char: '🤗', label: 'Hugging', label_ko: '포옹' },
+    { char: '🙄', label: 'Eye Roll', label_ko: '눈 굴리기' },
+    { char: '😏', label: 'Smirking', label_ko: '능글맞은 미소' },
+    { char: '🫠', label: 'Melting Face', label_ko: '녹아내리는 얼굴' },
+    { char: '💀', label: 'Skull', label_ko: '해골' },
+    { char: '🤡', label: 'Clown', label_ko: '광대' },
+    { char: '👍', label: 'Thumbs Up', label_ko: '좋아요' },
+    { char: '👎', label: 'Thumbs Down', label_ko: '싫어요' },
+    { char: '👏', label: 'Clapping', label_ko: '박수' },
+    { char: '🙌', label: 'Raising Hands', label_ko: '만세' },
+    { char: '🙏', label: 'Thanks', label_ko: '감사' },
+    { char: '✌️', label: 'Peace', label_ko: '브이' },
+    { char: '🤞', label: 'Fingers Crossed', label_ko: '행운을 빌어요' },
+    { char: '💪', label: 'Muscle', label_ko: '힘' },
+    { char: '🤝', label: 'Handshake', label_ko: '악수' },
+    { char: '🫶', label: 'Heart Hands', label_ko: '하트 손' },
+    { char: '👋', label: 'Waving Hand', label_ko: '손 흔들기' },
+    { char: '❤️', label: 'Red Heart', label_ko: '빨간 하트' },
+    { char: '🧡', label: 'Orange Heart', label_ko: '주황 하트' },
+    { char: '💛', label: 'Yellow Heart', label_ko: '노란 하트' },
+    { char: '💚', label: 'Green Heart', label_ko: '초록 하트' },
+    { char: '💙', label: 'Blue Heart', label_ko: '파란 하트' },
+    { char: '💜', label: 'Purple Heart', label_ko: '보라 하트' },
+    { char: '🖤', label: 'Black Heart', label_ko: '검정 하트' },
+    { char: '🤍', label: 'White Heart', label_ko: '하얀 하트' },
+    { char: '💔', label: 'Broken Heart', label_ko: '상심한 하트' },
+    { char: '💕', label: 'Two Hearts', label_ko: '두 개의 하트' },
+    { char: '🔥', label: 'Fire', label_ko: '불꽃' },
+    { char: '✨', label: 'Sparkles', label_ko: '반짝임' },
+    { char: '💯', label: 'Hundred Points', label_ko: '100점' },
+    { char: '🚀', label: 'Rocket', label_ko: '로켓' },
+    { char: '📌', label: 'Pushpin', label_ko: '압정' },
+    { char: '📍', label: 'Location Pin', label_ko: '위치 핀' },
+    { char: '💡', label: 'Idea', label_ko: '아이디어' },
+    { char: '⚡', label: 'Lightning', label_ko: '번개' },
+    { char: '🎯', label: 'Target', label_ko: '목표' },
+    { char: '🏆', label: 'Trophy', label_ko: '트로피' },
+    { char: '🎉', label: 'Party Popper', label_ko: '축하' },
+    { char: '🎊', label: 'Confetti Ball', label_ko: '색종이' },
+    { char: '🎁', label: 'Gift', label_ko: '선물' },
+    { char: '🛍️', label: 'Shopping Bags', label_ko: '쇼핑백' },
+    { char: '💰', label: 'Money Bag', label_ko: '돈 주머니' },
+    { char: '📈', label: 'Chart Increasing', label_ko: '상승 그래프' },
+    { char: '📊', label: 'Bar Chart', label_ko: '막대 그래프' },
+    { char: '👀', label: 'Eyes', label_ko: '눈' },
+    { char: '💬', label: 'Speech Balloon', label_ko: '말풍선' },
+    { char: '🔔', label: 'Bell', label_ko: '알림' },
+    { char: '🔗', label: 'Link', label_ko: '링크' },
+    { char: '✅', label: 'Check Mark', label_ko: '체크 표시' },
+    { char: '❌', label: 'Cross Mark', label_ko: '엑스 표시' },
+    { char: '❓', label: 'Question Mark', label_ko: '물음표' },
+    { char: '📝', label: 'Memo', label_ko: '메모' },
+    { char: '📷', label: 'Camera', label_ko: '카메라' },
+    { char: '🎥', label: 'Movie Camera', label_ko: '영화 카메라' },
+    { char: '🎬', label: 'Clapper Board', label_ko: '슬레이트' },
+    { char: '🎧', label: 'Headphone', label_ko: '헤드폰' },
+    { char: '🎵', label: 'Musical Note', label_ko: '음표' },
+    { char: '☕', label: 'Coffee', label_ko: '커피' },
+    { char: '🍕', label: 'Pizza', label_ko: '피자' },
+    { char: '🍰', label: 'Cake', label_ko: '케이크' },
+    { char: '🍺', label: 'Beer', label_ko: '맥주' },
+    { char: '✈️', label: 'Airplane', label_ko: '비행기' },
+    { char: '🚗', label: 'Car', label_ko: '자동차' },
+    { char: '🏠', label: 'House', label_ko: '집' },
+    { char: '🎓', label: 'Graduation Cap', label_ko: '학사모' },
+    { char: '💼', label: 'Briefcase', label_ko: '서류가방' },
+    { char: '⏰', label: 'Alarm Clock', label_ko: '알람시계' },
+    { char: '🔒', label: 'Locked', label_ko: '잠김' },
+    { char: '🔑', label: 'Key', label_ko: '열쇠' },
+    { char: '⭐', label: 'Star', label_ko: '별' },
+    { char: '☀️', label: 'Sun', label_ko: '태양' },
+    { char: '🌙', label: 'Crescent Moon', label_ko: '초승달' },
+    { char: '☁️', label: 'Cloud', label_ko: '구름' },
+    { char: '🌈', label: 'Rainbow', label_ko: '무지개' },
+    { char: '🍀', label: 'Four Leaf Clover', label_ko: '네잎클로버' },
+];
+
+function iconLibraryMarkup(icon) {
+    if (icon.d) return `<path d="${icon.d}"/>`;
+    if (icon.poly) return `<polygon points="${icon.poly}"/>`;
+    return icon.extra || '';
+}
+
+function iconLibrarySvg(icon, style) {
+    if (style === 'outline' && icon.outlineOverride) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icon.outlineOverride}</svg>`;
+    }
+    if (style === 'filled' && icon.filledOverride) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${icon.filledOverride}</svg>`;
+    }
+    const inner = iconLibraryMarkup(icon);
+    if (style === 'filled' && icon.blob) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none">${inner}</svg>`;
+    }
+    const strokeWidth = style === 'filled' ? 3 : 1.6;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+}
+
 class DocumentTypography {
     constructor() {
         this.lang = 'en';
@@ -243,6 +446,8 @@ class DocumentTypography {
         this.currentTool = null;
         this.savedSelection = null;
         this.pendingIconData = null;
+        this.iconStyle = 'outline';
+        this.iconCategory = 'symbols';
         this.cursorPosition = null;
         this._instantStyleId = null;
         this.textColor = '#E53935';
@@ -361,9 +566,10 @@ class DocumentTypography {
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn dividerBtn dividerPopover dividerTypePanel dividerAlignPanel dividerAlignBack quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconTabLibrary iconTabAi iconLibraryPanel iconAiPanel iconLibraryGrid iconStyleToggle iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
+        this.iconCategoryOpts = document.querySelectorAll('.icon-category-opt');
     }
 
     initEventListeners() {
@@ -396,6 +602,18 @@ class DocumentTypography {
         this.iconUploadBtn.addEventListener('click', () => {
             if (!this.docId) { this.showToast(this.t('load_doc_first'), 'error'); return; }
             this.openIconModal();
+        });
+        this.iconTabLibrary.addEventListener('click', () => this.selectIconTab('library'));
+        this.iconTabAi.addEventListener('click', () => this.selectIconTab('ai'));
+        this.iconCategoryOpts.forEach(btn => {
+            btn.addEventListener('click', () => this.selectIconCategory(btn.dataset.iconCategory));
+        });
+        this.iconLibraryPanel.querySelectorAll('.icon-style-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.iconStyle = btn.dataset.iconStyle;
+                this.iconLibraryPanel.querySelectorAll('.icon-style-opt').forEach(b => b.classList.toggle('active', b === btn));
+                this.renderIconLibraryGrid();
+            });
         });
         this.dividerBtn.addEventListener('click', () => this.toggleDividerPopover());
         const ALIGNABLE_DIVIDERS = new Set(['short', 'bold', 'dotted', 'cross', 'vertical']);
@@ -568,9 +786,11 @@ class DocumentTypography {
     }
 
     _iconHtml(s) {
-        return s.svgCode
-            ? `<span class="inline-icon" data-style-id="${s.id}" title="${this.escapeHtml(s.iconName)}">${s.svgCode}</span>`
-            : `<img src="${s.iconData}" class="inline-icon" data-style-id="${s.id}" alt="">`;
+        if (s.svgCode) {
+            const cls = s.isEmoji ? 'inline-icon inline-icon-emoji' : 'inline-icon';
+            return `<span class="${cls}" data-style-id="${s.id}" title="${this.escapeHtml(s.iconName)}">${s.svgCode}</span>`;
+        }
+        return `<img src="${s.iconData}" class="inline-icon" data-style-id="${s.id}" alt="">`;
     }
 
     _initStepperWithInput(minusBtn, plusBtn, input, min, max, prop, tool, validate, syncInput) {
@@ -733,15 +953,20 @@ class DocumentTypography {
         const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const touchedParaIndices = [...new Set(spans.map(sp => sp.paraIndex))];
         const matched = [];
-        for (const sp of spans) {
-            const paraText = this.content[sp.paraIndex]?.text ?? '';
-            if (!paraText.length || sp.startOffset !== 0 || sp.endOffset !== paraText.length) return null;
-            const existing = this.styles.find(s => s.type === type && s.paraIndex === sp.paraIndex && s.startOffset === 0 && s.endOffset === paraText.length);
-            if (!existing) return null;
-            matched.push(existing);
+        for (const paraIndex of touchedParaIndices) {
+            const paraText = this.content[paraIndex]?.text ?? '';
+            if (!paraText.length) continue;
+            const existing = this.styles.find(s => s.type === type && s.paraIndex === paraIndex && s.startOffset === 0 && s.endOffset === paraText.length);
+            if (existing) matched.push(existing);
         }
-        return { spans, matched };
+        if (!matched.length) return null;
+
+        if (!matched.some(m => m.paraIndex === spans[0].paraIndex)) return null;
+        const matchedSpans = matched.map(m => ({ paraIndex: m.paraIndex, startOffset: 0, endOffset: this.content[m.paraIndex].text.length }));
+        return { spans: matchedSpans, matched };
     }
 
     insertQuoteBlock(quoteStyle) {
@@ -1225,8 +1450,9 @@ class DocumentTypography {
     openIconModal() {
         this.iconDescription.value = '';
         this.iconModal.style.display = 'flex';
-        this.iconDescription.focus();
         this.setIconModalLoading(false);
+        this.selectIconTab('library');
+        this.renderIconLibraryGrid();
     }
 
     closeIconModal() {
@@ -1239,6 +1465,56 @@ class DocumentTypography {
         this.iconModalSubmit.disabled = loading;
         this.iconModalSubmitText.textContent = loading ? this.t('generating') : this.t('generate');
         this.iconModalSpinner.style.display = loading ? 'inline-block' : 'none';
+    }
+
+    selectIconTab(tab) {
+        const isLibrary = tab === 'library';
+        this.iconTabLibrary.classList.toggle('active', isLibrary);
+        this.iconTabAi.classList.toggle('active', !isLibrary);
+        this.iconLibraryPanel.style.display = isLibrary ? '' : 'none';
+        this.iconAiPanel.style.display = isLibrary ? 'none' : '';
+        this.iconModalSubmit.style.display = isLibrary ? 'none' : '';
+        if (!isLibrary) this.iconDescription.focus();
+    }
+
+    selectIconCategory(category) {
+        this.iconCategory = category;
+        this.iconCategoryOpts.forEach(b => b.classList.toggle('active', b.dataset.iconCategory === category));
+        this.iconStyleToggle.style.display = category === 'emoji' ? 'none' : '';
+        this.renderIconLibraryGrid();
+    }
+
+    renderIconLibraryGrid() {
+        this.iconLibraryGrid.innerHTML = '';
+        if (this.iconCategory === 'emoji') {
+            EMOJI_LIBRARY.forEach(emoji => {
+                const label = (this.lang === 'ko' && emoji.label_ko) ? emoji.label_ko : emoji.label;
+                const btn = document.createElement('button');
+                btn.className = 'icon-library-item icon-library-item-emoji';
+                btn.title = label;
+                btn.textContent = emoji.char;
+                btn.addEventListener('click', () => this.pickLibraryIcon(emoji.char, label, true));
+                this.iconLibraryGrid.appendChild(btn);
+            });
+            return;
+        }
+        ICON_LIBRARY.forEach(icon => {
+            const label = (this.lang === 'ko' && icon.label_ko) ? icon.label_ko : icon.label;
+            const svgCode = iconLibrarySvg(icon, this.iconStyle);
+            const btn = document.createElement('button');
+            btn.className = 'icon-library-item';
+            btn.title = label;
+            btn.innerHTML = svgCode;
+            btn.addEventListener('click', () => this.pickLibraryIcon(svgCode, label));
+            this.iconLibraryGrid.appendChild(btn);
+        });
+    }
+
+    pickLibraryIcon(svgCode, label, isEmoji = false) {
+        this.closeIconModal();
+        const iconInfo = { iconName: label, svgCode, isEmoji };
+        if (this.cursorPosition) this.placeIconAtCursor(iconInfo);
+        else { this.pendingIconData = iconInfo; this.enterIconPlacementMode(); }
     }
 
     async generateIcon() {
@@ -1505,6 +1781,23 @@ class DocumentTypography {
         this.documentContent.innerHTML = this.content.map((p, i) => `<p data-para="${i}">${this.escapeHtml(p.text)}</p>`).join('');
         const stylesByPara = {};
         this.styles.filter(s => s.type !== 'divider').forEach(s => (stylesByPara[s.paraIndex] ??= []).push(s));
+
+        const numberedListValues = new Map();
+        {
+            const numberedParaIndices = [...new Set(
+                this.styles.filter(s => s.type === 'list').map(s => s.paraIndex)
+            )].filter(paraIndex => {
+                const listStyles = stylesByPara[paraIndex].filter(s => s.type === 'list');
+                return listStyles[listStyles.length - 1].listStyle === 'numbered';
+            }).sort((a, b) => a - b);
+            let running = 0;
+            for (const paraIndex of numberedParaIndices) {
+                const listStyles = stylesByPara[paraIndex].filter(s => s.type === 'list');
+                const ls = listStyles[listStyles.length - 1];
+                running = ls.restart ? 1 : running + 1;
+                numberedListValues.set(paraIndex, running);
+            }
+        }
         const borderTypes = new Set(['border', 'circle']);
         const cursorHtml = '<span class="text-cursor"></span>';
         const cp = this.cursorPosition;
@@ -1575,7 +1868,7 @@ class DocumentTypography {
             if (listStyles.length) {
                 const ls = listStyles[listStyles.length - 1];
                 para.classList.add(`list-${ls.listStyle}`);
-                if (ls.listStyle === 'numbered' && ls.restart) para.style.counterReset = 'list-num 0';
+                if (ls.listStyle === 'numbered') para.dataset.listNum = numberedListValues.get(paraIndex);
             }
             if (codeStyles.length) {
                 const cds = codeStyles[codeStyles.length - 1];
@@ -1701,9 +1994,21 @@ class DocumentTypography {
         this.stylesList.querySelectorAll('.style-delete').forEach(btn => {
             btn.addEventListener('click', e => { e.stopPropagation(); this.deleteStyle(e.currentTarget.closest('.style-item').dataset.id); });
         });
+        const blockAppliers = {
+            list: s => this.insertListBlock(s.listStyle, false),
+            code: s => this.insertCodeBlock(s.bgStyle),
+            quote: s => this.insertQuoteBlock(s.quoteStyle),
+        };
         this.stylesList.querySelectorAll('.frequent-tag').forEach(tag => {
             tag.addEventListener('click', () => {
-                if (this.savedSelection) this.applyToolToSelection(tag.dataset.tool);
+                if (!this.savedSelection) return;
+                const type = tag.dataset.tool;
+                if (blockAppliers[type]) {
+                    const last = [...this.styles].reverse().find(s => s.type === type);
+                    if (last) blockAppliers[type](last);
+                } else {
+                    this.applyToolToSelection(type);
+                }
             });
         });
     }

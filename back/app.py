@@ -5,6 +5,7 @@ from docx import Document
 from playwright.sync_api import sync_playwright
 from datetime import datetime
 import os, json, uuid, html as html_module, base64, re
+import xml.etree.ElementTree as ET
 import openai
 app = Flask(__name__)
 CORS(app)
@@ -57,7 +58,8 @@ def _export_info(doc_id, doc):
     return name, os.path.join(EXPORT_FOLDER, f"{doc_id}_{name}")
 def _icon_html(s):
     if s.get('svgCode'):
-        return f'<span class="inline-icon">{s["svgCode"]}</span>'
+        cls = 'inline-icon inline-icon-emoji' if s.get('isEmoji') else 'inline-icon'
+        return f'<span class="{cls}">{s["svgCode"]}</span>'
     if s.get('iconData'):
         return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
     return ''
@@ -169,6 +171,7 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
 .inline-icon{{display:inline-block;height:1em;width:auto;vertical-align:middle;margin:0 2px}}
 .inline-icon svg{{height:1em;width:auto;display:block}}
+.inline-icon-emoji{{height:auto;font-size:1.15em;line-height:1;vertical-align:-0.2em}}
 </style>
 </head>
 <body>
@@ -228,6 +231,31 @@ def log_enrichment_action(doc_id):
     doc.setdefault('enrichment_log', []).append(entry)
     save_doc(doc_id, doc)
     return jsonify({"success": True, "message": "Action logged", "log_count": len(doc['enrichment_log'])})
+
+SVG_DISALLOWED_TAGS = {'script', 'foreignobject', 'iframe', 'image', 'style', 'animate', 'animatetransform', 'animatemotion', 'set'}
+
+def validate_svg(svg_text):
+    """Reject anything that isn't a clean, self-contained SVG: catches the malformed/truncated
+    markup an LLM occasionally returns (the 'icons break' bug) as well as unsafe content."""
+    try:
+        root = ET.fromstring(svg_text)
+    except ET.ParseError:
+        return False
+    tag = root.tag.rsplit('}', 1)[-1].lower()
+    if tag != 'svg':
+        return False
+    for el in root.iter():
+        local = el.tag.rsplit('}', 1)[-1].lower()
+        if local in SVG_DISALLOWED_TAGS:
+            return False
+        for attr, value in el.attrib.items():
+            attr_local = attr.rsplit('}', 1)[-1].lower()
+            if attr_local.startswith('on'):
+                return False
+            if attr_local in ('href', 'xlink:href') and not value.startswith('#'):
+                return False
+    return True
+
 @app.route('/api/generate-icon', methods=['POST'])
 def generate_icon():
     data = request.get_json()
@@ -240,44 +268,48 @@ def generate_icon():
     if not api_key:
         return jsonify({"error": "OpenAI API key not configured"}), 500
     client = openai.OpenAI(api_key=api_key)
-    try:
+    system_prompt = (
+        "You are an expert SVG icon designer. Create a single, high-quality SVG icon.\n"
+        "Requirements:\n"
+        "- Output ONLY valid, complete, well-formed, and intent-aligned SVG code. No explanation, no markdown, no comments.\n"
+        "- Use <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" "
+        "stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n"
+        "- Color rules:\n"
+        "- If the user mentions a color (e.g., 'red star', 'blue arrow'), use that exact color as hex values.\n "
+        "- If no color is mentioned, use stroke=\"currentColor\" fill=\"none\" as defaults on the <svg> element.\n"
+        "- The icon must be immediately recognizable when displayed at 16px size.\n"
+        "- Keep the design clean with minimal elements. Avoid excessive detail.\n"
+        "- Stay within coordinates 2-22 to ensure padding inside the viewBox.\n"
+        "- Use well-known visual metaphors (e.g., checkmark=success, star=favorite, heart=love, gear=settings).\n"
+        "- Every path/shape must be fully closed and syntactically complete; double-check before answering.\n"
+    )
+
+    def request_svg(extra_note=None):
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Generate an SVG icon for: {description}"},
+        ]
+        if extra_note:
+            messages.append({"role": "user", "content": extra_note})
         response = client.chat.completions.create(
             model="gpt-5.2",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are an expert SVG icon designer. Create a single, high-quality SVG icon.\n"
-                        "Requirements:\n"
-                        "- Output ONLY valid SVG code. No explanation, no markdown, no comments.\n"
-                        "- Use <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" "
-                        "stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n"
-                        "- Color rules:\n"
-                        "- If the user mentions a color (e.g., 'red star', 'blue arrow'), use that exact color as hex values.\n "
-                        "- If no color is mentioned, use stroke=\"currentColor\" fill=\"none\" as defaults on the <svg> element.\n"
-                        "- The icon must be immediately recognizable when displayed at 16px size.\n"
-                        "- Keep the design clean with minimal elements. Avoid excessive detail.\n"
-                        "- Stay within coordinates 2-22 to ensure padding inside the viewBox.\n"
-                        "- Use well-known visual metaphors (e.g., checkmark=success, star=favorite, heart=love, gear=settings).\n"
-                    )
-                },
-                {
-                    "role": "user",
-                    "content": f"Generate an SVG icon for: {description}"
-                }
-            ],
+            messages=messages,
             max_completion_tokens=800,
             temperature=0.5
         )
-        svg_text = response.choices[0].message.content.strip()
-        if svg_text.startswith('```'):
-            svg_text = re.sub(r'^```(?:svg|xml)?\s*\n?', '', svg_text)
-            svg_text = re.sub(r'\n?```\s*$', '', svg_text)
-            svg_text = svg_text.strip()
-        if not svg_text.startswith('<svg') or not svg_text.endswith('</svg>'):
+        text = response.choices[0].message.content.strip()
+        if text.startswith('```'):
+            text = re.sub(r'^```(?:svg|xml)?\s*\n?', '', text)
+            text = re.sub(r'\n?```\s*$', '', text)
+            text = text.strip()
+        return text
+
+    try:
+        svg_text = request_svg()
+        if not validate_svg(svg_text):
+            svg_text = request_svg("Your previous response was not valid, complete SVG. Return only one single well-formed <svg>...</svg> element.")
+        if not validate_svg(svg_text):
             return jsonify({"error": "Failed to generate valid SVG"}), 500
-        if '<script' in svg_text.lower():
-            return jsonify({"error": "Invalid SVG content"}), 500
         data_url = f"data:image/svg+xml;base64,{base64.b64encode(svg_text.encode()).decode()}"
         return jsonify({
             "success": True,

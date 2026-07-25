@@ -490,9 +490,9 @@
             </div>
         </div>
         <div class="modal-overlay" id="iconModal" style="display:none">
-            <div class="modal-dialog">
+            <div class="modal-dialog icon-modal-dialog">
                 <div class="modal-header">
-                    <h3 data-i18n="generate_icon">Generate Inline Icon</h3>
+                    <h3 data-i18n="generate_icon">Inline Icon</h3>
                     <button class="modal-close" id="iconModalClose">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -500,14 +500,29 @@
                         </svg>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="icon-modal-tabs">
+                    <button class="icon-modal-tab active" id="iconTabLibrary" data-i18n="icon_tab_library">Icon Library</button>
+                    <button class="icon-modal-tab" id="iconTabAi" data-i18n="icon_tab_ai">Describe with AI</button>
+                </div>
+                <div class="modal-body" id="iconLibraryPanel">
+                    <div class="icon-category-toggle">
+                        <button class="icon-category-opt active" data-icon-category="symbols" data-i18n="icon_cat_symbols">Symbols</button>
+                        <button class="icon-category-opt" data-icon-category="emoji" data-i18n="icon_cat_emoji">Emoji</button>
+                    </div>
+                    <div class="icon-style-toggle" id="iconStyleToggle">
+                        <button class="icon-style-opt active" data-icon-style="outline" data-i18n="icon_style_outline">Outline</button>
+                        <button class="icon-style-opt" data-icon-style="filled" data-i18n="icon_style_filled">Filled</button>
+                    </div>
+                    <div class="icon-library-grid" id="iconLibraryGrid"></div>
+                </div>
+                <div class="modal-body" id="iconAiPanel" style="display:none">
                     <label class="modal-label" for="iconDescription" data-i18n="describe_icon">Describe the icon you want</label>
                     <input type="text" id="iconDescription" class="modal-input" placeholder="e.g., a check mark, a star, ..." data-i18n-placeholder="icon_placeholder" maxlength="200" autocomplete="off">
                     <div class="modal-hint" data-i18n="icon_hint">SVG icon will be generated according to the description. Click in the text to place it after generating.</div>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn modal-btn-secondary" id="iconModalCancel" data-i18n="cancel">Cancel</button>
-                    <button class="modal-btn modal-btn-primary" id="iconModalSubmit">
+                    <button class="modal-btn modal-btn-primary" id="iconModalSubmit" style="display:none">
                         <span id="iconModalSubmitText" data-i18n="generate">Generate</span>
                         <span id="iconModalSpinner" class="spinner" style="display:none"></span>
                     </button>
