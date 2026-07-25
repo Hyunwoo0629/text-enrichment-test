@@ -234,10 +234,10 @@ const FONT_OPTIONS = {
         { key: 'nanumgothic',      label: '나눔고딕',    css: "'Nanum Gothic', sans-serif" },
         { key: 'bonmyeongjo',      label: '본명조',      css: "'Noto Serif KR', serif" },
         { key: 'nanummyeongjo',    label: '나눔명조',    css: "'Nanum Myeongjo', serif" },
-        { key: 'nanumbarungothic', label: '나눔바른고딕', css: "'Nanum Barun Gothic', 'Nanum Gothic', sans-serif" },
-        { key: 'nanumsquare',      label: '나눔스퀘어',  css: "'NanumSquare', 'Nanum Square', 'Nanum Gothic', sans-serif" },
-        { key: 'maruburi',         label: '마루부리',    css: "'Maruburiâ€‹', serif" },
-        { key: 'gungseo',          label: '궁서',        css: "'GungsuhChe', '궁서체', 'Gungsuh', serif" },
+        { key: 'nanumbarungothic', label: '나눔바른고딕', css: "'Nanum Barun Gothic', sans-serif" },
+        { key: 'nanumsquare',      label: '나눔스퀘어',  css: "'NanumSquare', sans-serif" },
+        { key: 'maruburi',         label: '마루부리',    css: "'MaruBuri', serif" },
+        { key: 'gungseo',          label: '궁서',        css: "'ChosunGs', serif" },
         { key: 'helvetica',        label: 'Helvetica',   css: 'Helvetica, Arial, sans-serif' },
         { key: 'georgia',          label: 'Georgia',     css: "Georgia, 'Times New Roman', serif" },
     ]
@@ -470,6 +470,7 @@ class DocumentTypography {
         this._activeColorAnchor = null;
         this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough']);
         this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border', 'circle']);
+        this.FONT_FAMILY_TOOLS = new Set([...FONT_OPTIONS.en, ...FONT_OPTIONS.ko].map(o => o.key));
         this.TOOL_COLOR_MAP = { textcolor: 'text', highlight: 'bg', border: 'border', circle: 'border', underline: 'border', overline: 'border', wavyunderline: 'border', strikethrough: 'border' };
         this.COLOR_PALETTE = [
             ['#000000','#434343','#666666','#999999','#b7b7b7','#cccccc','#d9d9d9','#efefef','#f3f3f3','#ffffff'],
@@ -903,16 +904,82 @@ class DocumentTypography {
 
     applyCallout() {
         if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
-        const { paraIndex, startOffset, endOffset, text } = this.savedSelection;
-        const style = { id: this._genId(), type: 'callout', text, color: this.calloutBorderColor || '#000000', bgColor: this.calloutBgColor || '#ffffff', paraIndex, startOffset, endOffset, created_at: new Date().toISOString() };
-        this._pushHistory({ action: 'add', style });
-        this.styles.push(style);
-        this.logAction('add', style);
-        this._refreshViews();
+        const calloutColor = this.calloutBorderColor || '#000000';
+        const calloutBgColor = this.calloutBgColor || '#ffffff';
+        const reapplied = this._findWholeParaStyles('callout');
+        if (reapplied) {
+            reapplied.matched.forEach(s => { s.color = calloutColor; s.bgColor = calloutBgColor; });
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(reapplied.spans);
+            return;
+        }
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const startPara = spans[0].paraIndex;
+        const endPara = spans[spans.length - 1].paraIndex;
+        const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
+        const combined = pieces.join('\n');
+        if (!combined) return;
+
+        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+
+        const firstPara = this.content[startPara];
+        const lastPara = this.content[endPara];
+        const calloutIdx = startPara + 1;
+        const afterIdx = startPara + 2;
+        this.content = [
+            ...this.content.slice(0, startPara),
+            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
+            { text: combined },
+            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
+            ...this.content.slice(endPara + 1)
+        ];
+
+        let cum = 0;
+        const spanRanges = spans.map((sp, i) => {
+            const mergedStart = cum;
+            cum += pieces[i].length + 1;
+            return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
+        });
+        const numOriginal = endPara - startPara + 1;
+        const delta = 3 - numOriginal;
+
+        const adjustedStyles = [];
+        for (const s of this.styles) {
+            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
+            const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
+            if (!range) continue;
+            if (s.type === 'divider') {
+                if (s.paraIndex === startPara) adjustedStyles.push(s);
+                continue;
+            }
+            if (s.type === 'inlineicon') {
+                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
+                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
+                continue;
+            }
+            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
+            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
+            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: calloutIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
+            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
+            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
+        }
+        const calloutStyleObj = { id: this._genId(), type: 'callout', text: combined, color: calloutColor, bgColor: calloutBgColor, paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() };
+        adjustedStyles.push(calloutStyleObj);
+        this.styles = adjustedStyles;
+
+        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
+        this._pushHistory({ action: 'callout_split', before: beforeState, after: afterState });
+        this.logAction('add', calloutStyleObj);
         this._closeToolPopovers();
-        this._clearSelection();
-        this.hideFloatingToolbar();
-        this.promptApplyToAll(style);
+        this._refreshViews();
+        this.savedSelection = { paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length, text: combined, rect: this.savedSelection?.rect, spans: [{ paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length }] };
+        this.restoreSelection(calloutIdx, 0, combined.length);
+        this.promptApplyToAll(calloutStyleObj);
     }
 
     toggleDividerPopover() {
@@ -1377,9 +1444,18 @@ class DocumentTypography {
             }
             const existingIdx = this.styles.findIndex(s => s.type === tool && s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff);
             const replaced = existingIdx !== -1 ? this.styles.splice(existingIdx, 1)[0] : null;
+            const replacedFontStyles = [];
+            if (this.FONT_FAMILY_TOOLS.has(tool)) {
+                for (let i = this.styles.length - 1; i >= 0; i--) {
+                    const s = this.styles[i];
+                    if (s.paraIndex === paraIndex && s.startOffset === sOff && s.endOffset === eOff && this.FONT_FAMILY_TOOLS.has(s.type)) {
+                        replacedFontStyles.push(this.styles.splice(i, 1)[0]);
+                    }
+                }
+            }
             const style = { id: this._genId(), type: tool, text: sText, color, paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
             if (tool === 'callout') style.bgColor = this.bgColor;
-            this._pushHistory({ action: 'add', style, replaced });
+            this._pushHistory({ action: 'add', style, replaced, replacedFontStyles });
             this.styles.push(style);
             this.logAction('add', style);
             this._refreshViews();
@@ -1405,7 +1481,19 @@ class DocumentTypography {
                 if (tool === 'callout') style.bgColor = this.bgColor;
                 return style;
             });
-            this._pushHistory({ action: 'batch_add', styles: newStyles });
+            const replacedStyles = [];
+            if (this.FONT_FAMILY_TOOLS.has(tool)) {
+                for (const sp of activeSpans) {
+                    const sOff = isDropcap ? 0 : sp.startOffset, eOff = isDropcap ? 1 : sp.endOffset;
+                    for (let i = this.styles.length - 1; i >= 0; i--) {
+                        const s = this.styles[i];
+                        if (s.paraIndex === sp.paraIndex && s.startOffset === sOff && s.endOffset === eOff && this.FONT_FAMILY_TOOLS.has(s.type)) {
+                            replacedStyles.push(this.styles.splice(i, 1)[0]);
+                        }
+                    }
+                }
+            }
+            this._pushHistory({ action: 'batch_add', styles: newStyles, replacedStyles });
             newStyles.forEach(s => { this.styles.push(s); this.logAction('add', s); });
             this._refreshViews();
             this.restoreSelectionSpans(spans);
@@ -1582,7 +1670,10 @@ class DocumentTypography {
         if (e.target.closest('.toolbar') || e.target.closest('.styles-panel') || e.target.closest('.app-header') || e.target.closest('.modal-overlay') || e.target.closest('.floating-toolbar') || e.target.closest('.shared-color-popover')) return;
         const selection = window.getSelection();
         const range = selection.rangeCount ? selection.getRangeAt(0) : null;
-        const selectedText = range ? selection.toString().trim() : '';
+        const rawSelectedText = range ? selection.toString() : '';
+        const selectedText = rawSelectedText.trim();
+        const leadingTrim = rawSelectedText.length - rawSelectedText.replace(/^\s+/, '').length;
+        const trailingTrim = rawSelectedText.length - rawSelectedText.replace(/\s+$/, '').length;
         if (!range || selection.isCollapsed || !selectedText || !this.documentContent.contains(range.commonAncestorContainer)) {
             this.savedSelection = null;
             this.resetStepperDefaults();
@@ -1609,11 +1700,11 @@ class DocumentTypography {
         if (!startNode) return;
         const startParaIndex = parseInt(startNode.dataset.para);
         const endParaIndex = endNode ? parseInt(endNode.dataset.para) : startParaIndex;
-        const startOffset = this.getTextOffset(startNode, range.startContainer, range.startOffset);
+        const startOffset = this.getTextOffset(startNode, range.startContainer, range.startOffset) + leadingTrim;
 
         let spans;
         if (startParaIndex === endParaIndex) {
-            const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset);
+            const endOffset = this.getTextOffset(startNode, range.endContainer, range.endOffset) - trailingTrim;
             spans = [{ paraIndex: startParaIndex, startOffset, endOffset }];
         } else {
             spans = [];
@@ -1623,7 +1714,7 @@ class DocumentTypography {
                     spans.push({ paraIndex: pi, startOffset, endOffset: paraText.length });
                 } else if (pi === endParaIndex) {
                     const endPara = this.documentContent.querySelector(`p[data-para="${pi}"]`);
-                    const endOff = endPara ? this.getTextOffset(endPara, range.endContainer, range.endOffset) : paraText.length;
+                    const endOff = (endPara ? this.getTextOffset(endPara, range.endContainer, range.endOffset) : paraText.length) - trailingTrim;
                     spans.push({ paraIndex: pi, startOffset: 0, endOffset: endOff });
                 } else {
                     spans.push({ paraIndex: pi, startOffset: 0, endOffset: paraText.length });
@@ -1631,8 +1722,13 @@ class DocumentTypography {
             }
         }
 
+        // Source text from content offsets, not selection.toString(), so it's byte-exact with what findOccurrences searches for.
+        const exactText = spans.length === 1
+            ? (this.content[spans[0].paraIndex]?.text ?? '').slice(spans[0].startOffset, spans[0].endOffset)
+            : spans.map(sp => (this.content[sp.paraIndex]?.text ?? '').slice(sp.startOffset, sp.endOffset)).join(' ');
+
         const firstSpan = spans[0];
-        this.savedSelection = { paraIndex: firstSpan.paraIndex, startOffset: firstSpan.startOffset, endOffset: firstSpan.endOffset, text: selectedText, rect: range.getBoundingClientRect(), spans };
+        this.savedSelection = { paraIndex: firstSpan.paraIndex, startOffset: firstSpan.startOffset, endOffset: firstSpan.endOffset, text: exactText, rect: range.getBoundingClientRect(), spans };
         this.selectionHint.textContent = `"${selectedText.substring(0, 20)}${selectedText.length > 20 ? '...' : ''}"${this.t('selected_suffix')}`;
         const fs = this.styles.find(s => s.type === 'fontsize' && s.paraIndex === firstSpan.paraIndex && s.startOffset <= firstSpan.startOffset && s.endOffset >= firstSpan.endOffset);
         if (fs) { const v = parseInt(fs.color); if (v > 0) { this.fontSize = fs.color; this.fontSizeInput.value = v; } }
@@ -2064,12 +2160,13 @@ class DocumentTypography {
         if (!this.history.length) return;
         const last = this.history.pop();
         const { action } = last;
-        if (action === 'add') { this._removeById(last.style.id); if (last.replaced) this.styles.push(last.replaced); }
+        if (action === 'add') { this._removeById(last.style.id); if (last.replaced) this.styles.push(last.replaced); if (last.replacedFontStyles) last.replacedFontStyles.forEach(s => this.styles.push(s)); }
         else if (action === 'delete') this.styles.push(last.style);
         else if (action === 'clear') this.styles = last.styles;
-        else if (action === 'batch_add') last.styles.forEach(s => this._removeById(s.id));
+        else if (action === 'batch_add') { last.styles.forEach(s => this._removeById(s.id)); if (last.replacedStyles) last.replacedStyles.forEach(s => this.styles.push(s)); }
         else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
         else if (action === 'quote_split') { this.content = last.before.content; this.styles = last.before.styles; }
+        else if (action === 'callout_split') { this.content = last.before.content; this.styles = last.before.styles; }
         else if (action === 'list_split') { this.content = last.before.content; this.styles = last.before.styles; }
         else if (action === 'code_split') { this.content = last.before.content; this.styles = last.before.styles; }
         this.redoStack.push(last);
@@ -2082,12 +2179,13 @@ class DocumentTypography {
         if (!this.redoStack.length) return;
         const last = this.redoStack.pop();
         const { action } = last;
-        if (action === 'add') { if (last.replaced) this._removeById(last.replaced.id); this.styles.push(last.style); }
+        if (action === 'add') { if (last.replaced) this._removeById(last.replaced.id); if (last.replacedFontStyles) last.replacedFontStyles.forEach(s => this._removeById(s.id)); this.styles.push(last.style); }
         else if (action === 'delete') this._removeById(last.style.id);
         else if (action === 'clear') this.styles = [];
-        else if (action === 'batch_add') last.styles.forEach(s => this.styles.push(s));
+        else if (action === 'batch_add') { if (last.replacedStyles) last.replacedStyles.forEach(s => this._removeById(s.id)); last.styles.forEach(s => this.styles.push(s)); }
         else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
         else if (action === 'quote_split') { this.content = last.after.content; this.styles = last.after.styles; }
+        else if (action === 'callout_split') { this.content = last.after.content; this.styles = last.after.styles; }
         else if (action === 'list_split') { this.content = last.after.content; this.styles = last.after.styles; }
         else if (action === 'code_split') { this.content = last.after.content; this.styles = last.after.styles; }
         this.history.push(last);
