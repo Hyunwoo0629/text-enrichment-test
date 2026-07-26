@@ -44,14 +44,10 @@ def load_doc(doc_id):
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        # Recover files left with trailing bytes by an interrupted or interleaved write:
-        # decode the first complete JSON document and ignore the extra data.
         return json.JSONDecoder().raw_decode(text.lstrip())[0]
 def save_doc(doc_id, data):
     data['updated_at'] = datetime.now().isoformat()
     path = get_data_path(doc_id)
-    # Write to a temp file then atomically replace, so concurrent writers never
-    # corrupt the target with partial or interleaved content.
     fd, tmp = tempfile.mkstemp(dir=DATA_FOLDER, suffix='.tmp')
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
@@ -107,29 +103,187 @@ def _icon_html(s):
     if s.get('iconData'):
         return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
     return ''
+# Document-rendering CSS, copied verbatim from front/styles.css so the exported PNG matches the
+# on-screen document exactly. Only the app-shell rules (toolbar, panels, html/body overflow) are
+# omitted, and body is made export-friendly so full-page screenshots aren't clipped.
+_DOC_CSS = r"""
+:root {
+    --color-white: #fff;
+    --color-bg: #fafafa;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #666;
+    --color-text-muted: #999;
+    --color-border: #e0e0e0;
+    --color-border-dark: #1a1a1a;
+    --color-primary: #1a1a1a;
+    --color-primary-hover: #333;
+    --space-2xl: 32px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --radius-lg: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; }
+.document-container { max-width: 800px; margin: 24px auto; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.document-content { padding: var(--space-2xl) 48px; font-size: 15px; line-height: 1.8; color: var(--color-text); }
+.document-content p { margin-bottom: 1em; position: relative; }
+.document-content p:last-child { margin-bottom: 0; }
+.styled-text { position: relative; display: inline; }
+.styled-text.bold { font-weight: 700; }
+.styled-text.italic { font-style: italic; }
+.styled-text.underline { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 2px; z-index: 1; }
+.styled-text.strikethrough { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.styled-text.link { color: #0066cc; text-decoration: underline; text-decoration-color: #0066cc; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
+.styled-text.highlight { padding: 1px 2px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.styled-text.border { border: 1.5px solid; border-radius: 3px; padding: 0 1px; margin: 0 2px; }
+.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 2px 3px; margin: 0 2px; }
+.styled-text.border .styled-text.highlight { padding: 0 1px; margin: 0 -1px; border-radius: 3px; }
+.styled-text.circle .styled-text.highlight { padding: 2px 1px; margin: -2px -3px; border-radius: 100px; }
+.styled-text.serif { font-family: Georgia, 'Times New Roman', serif; }
+.styled-text.arial { font-family: Arial, sans-serif; }
+.styled-text.courier { font-family: 'Courier New', Courier, monospace; }
+.styled-text.georgia { font-family: Georgia, 'Times New Roman', serif; }
+.styled-text.helvetica { font-family: Helvetica, Arial, sans-serif; }
+.styled-text.times { font-family: 'Times New Roman', Times, serif; }
+.styled-text.trebuchet { font-family: 'Trebuchet MS', Helvetica, sans-serif; }
+.styled-text.verdana { font-family: Verdana, Geneva, sans-serif; }
+.styled-text.comicsans { font-family: 'Comic Sans MS', 'Comic Sans', cursive; }
+.styled-text.cursivefont { font-family: cursive; }
+.styled-text.bongothic { font-family: 'Noto Sans KR', sans-serif; }
+.styled-text.nanumgothic { font-family: 'Nanum Gothic', sans-serif; }
+.styled-text.bonmyeongjo { font-family: 'Noto Serif KR', serif; }
+.styled-text.nanummyeongjo { font-family: 'Nanum Myeongjo', serif; }
+.styled-text.nanumbarungothic { font-family: 'Nanum Barun Gothic', sans-serif; }
+.styled-text.nanumsquare { font-family: 'NanumSquare', sans-serif; }
+.styled-text.maruburi { font-family: 'MaruBuri', serif; }
+.styled-text.gungseo { font-family: 'ChosunGs', serif; }
+.styled-text.sansserif { font-family: 'Helvetica Neue', Arial, sans-serif; }
+.styled-text.rounded { font-family: 'Nunito', 'Varela Round', sans-serif; }
+.styled-text.mono { font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace; }
+.styled-text.smallcaps { font-variant: small-caps; letter-spacing: 0.05em; }
+.styled-text.superscript { font-size: 0.7em; vertical-align: super; }
+.styled-text.subscript { font-size: 0.7em; vertical-align: sub; }
+.styled-text.overline { text-decoration: overline; text-decoration-thickness: 1.5px; }
+.styled-text.wavyunderline { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 1.5px; z-index: 1; }
+.styled-text.dropcap { float: left; font-size: 3.2em; line-height: 0.8; padding-right: 8px; padding-top: 4px; font-weight: 700; }
+.document-content p.callout-block { border: 2px solid; border-radius: 8px; padding: 12px 16px; margin-bottom: 1em; white-space: pre-wrap; }
+.document-content p.callout-block + p.callout-block { margin-top: -2px; border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
+.document-content p.callout-block:has(+ p.callout-block) { margin-bottom: -1px; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.document-content p.quote-marks { text-align: center; padding: 48px 32px; font-style: italic; position: relative; }
+.document-content p.quote-marks::before { content: '\201C'; position: absolute; top: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
+.document-content p.quote-marks::after  { content: '\201D'; position: absolute; bottom: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
+.document-content p.quote-line { border-left: 3px solid #c0c0c0; padding: 4px 0 4px 18px; margin-left: 8px; font-style: italic; color: #555; }
+.document-content p.list-bullet,
+.document-content p.list-numbered { padding-left: 28px; position: relative; }
+.document-content p.list-bullet::before { content: '\2022'; position: absolute; left: 10px; color: #666; }
+.document-content p.list-numbered::before { content: attr(data-list-num) '.'; position: absolute; left: 6px; color: #666; font-size: 0.9em; }
+.document-content p.code-white,
+.document-content p.code-gray,
+.document-content p.code-black {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.85em;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    padding: 18px 16px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+.document-content p.code-white { background: #f6f8fa; color: #24292e; border: 1px solid #e1e4e8; }
+.document-content p.code-gray  { background: #e5e5e7; color: #1f1f1f; border: 1px solid #d0d0d3; }
+.document-content p.code-black { background: #1e1e1e; color: #d4d4d4; border: 1px solid #000000; }
+.document-content p.code-white::before,
+.document-content p.code-gray::before,
+.document-content p.code-black::before {
+    content: attr(data-code-lang);
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 100px;
+}
+.document-content p.code-white::before,
+.document-content p.code-gray::before { background: #ffffff; color: #666666; border: 1px solid #d8d8d8; }
+.document-content p.code-black::before { background: #2d2d2d; color: #aaaaaa; border: 1px solid #000000; }
+.inline-icon { display: inline-block; height: 1em; width: auto; vertical-align: middle; margin: 0 2px; }
+.inline-icon svg { height: 1em; width: auto; display: block; }
+.inline-icon-emoji { height: auto; font-size: 1.15em; line-height: 1; vertical-align: -0.2em; }
+.divider-block { display: flex; align-items: center; margin: 16px 0; }
+.div-line { flex: 1; border-top: 1px solid #d0d0d0; }
+.div-sym-svg { flex-shrink: 0; display: block; }
+.div-vline { width: 1px; height: 40px; background: #d0d0d0; }
+.div-slash { width: 1px; height: 40px; background: #d0d0d0; transform: rotate(20deg); }
+.divider-short .div-line,
+.divider-bold .div-line,
+.divider-dotted .div-line { flex: none; width: 28%; }
+.divider-bold .div-line { border-top-width: 3px; border-top-color: #aaa; }
+.divider-dotted .div-line { border-top-style: dotted; border-top-width: 2px; border-top-color: #d0d0d0; }
+.divider-block[data-align="left"]   { justify-content: flex-start; }
+.divider-block[data-align="center"] { justify-content: center; }
+.divider-block[data-align="right"]  { justify-content: flex-end; }
+"""
+def _divider_html(d):
+    line = '<div class="div-line"></div>'
+    triangle_svg = '<svg class="div-sym-svg" viewBox="0 0 20 18" width="20" height="18"><polygon points="0,9 20,9 10,17" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>'
+    diamond_svg = '<svg class="div-sym-svg" viewBox="0 0 20 18" width="20" height="18"><polygon points="0,9 10,3 20,9 10,15" fill="none" stroke="#d0d0d0" stroke-width="1"/></svg>'
+    inner = {
+        'full': line, 'short': line, 'bold': line, 'dotted': line,
+        'triangle': line + triangle_svg + line,
+        'diamond': line + diamond_svg + line,
+        'cross': '<div class="div-slash"></div>',
+        'vertical': '<div class="div-vline"></div>',
+    }.get(d.get('dividerType'), line)
+    align = f' data-align="{d["alignment"]}"' if d.get('alignment') else ''
+    return f'<div class="divider-block divider-{d.get("dividerType")}"{align}>{inner}</div>'
 def build_styled_html(content, styles):
     border_types = {'border', 'circle'}
+    block_types = {'inlineicon', 'callout', 'quote', 'list', 'code'}
     styles_by_para = {}
     for s in styles:
+        if s['type'] == 'divider':
+            continue
         styles_by_para.setdefault(s['paraIndex'], []).append(s)
+    dividers_by_para = {}
+    for d in styles:
+        if d['type'] == 'divider':
+            dividers_by_para.setdefault(d['paraIndex'], []).append(d)
+    numbered_para_indices = sorted(
+        pi for pi in {s['paraIndex'] for s in styles if s['type'] == 'list'}
+        if [s for s in styles_by_para.get(pi, []) if s['type'] == 'list'][-1].get('listStyle') == 'numbered'
+    )
+    numbered_list_values = {}
+    running = 0
+    for pi in numbered_para_indices:
+        ls = [s for s in styles_by_para[pi] if s['type'] == 'list'][-1]
+        running = 1 if ls.get('restart') else running + 1
+        numbered_list_values[pi] = running
     paragraphs = []
     for i, para in enumerate(content):
         text = para['text']
         para_styles = styles_by_para.get(i, [])
         if not para_styles:
             paragraphs.append(f'<p>{html_module.escape(text)}</p>')
+            paragraphs.extend(_divider_html(d) for d in reversed(dividers_by_para.get(i, [])))
             continue
+        n = len(text)
         icon_styles = [s for s in para_styles if s['type'] == 'inlineicon']
         callout_styles = [s for s in para_styles if s['type'] == 'callout']
-        text_styles = [s for s in para_styles if s['type'] not in ('inlineicon', 'callout')]
+        quote_styles = [s for s in para_styles if s['type'] == 'quote']
+        list_styles = [s for s in para_styles if s['type'] == 'list']
+        code_styles = [s for s in para_styles if s['type'] == 'code']
+        text_styles = [s for s in para_styles if s['type'] not in block_types]
         border_styles = [s for s in text_styles if s['type'] in border_types]
         non_border_styles = [s for s in text_styles if s['type'] not in border_types]
-        offsets = {0, len(text)}
+        offsets = {0, n}
         for s in text_styles:
-            offsets.add(max(0, min(s['startOffset'], len(text))))
-            offsets.add(max(0, min(s['endOffset'], len(text))))
+            offsets.add(max(0, min(s['startOffset'], n)))
+            offsets.add(max(0, min(s['endOffset'], n)))
         for s in icon_styles:
-            offsets.add(max(0, min(s['startOffset'], len(text))))
+            offsets.add(max(0, min(s['startOffset'], n)))
         bounds = sorted(offsets)
         segments = []
         for j in range(len(bounds) - 1):
@@ -169,16 +323,32 @@ def build_styled_html(content, styles):
         for _ in open_borders:
             parts += '</span>'
         for s in icon_styles:
-            if s['startOffset'] >= len(text):
+            if s['startOffset'] >= n:
                 parts += _icon_html(s)
+        p_classes = []
+        p_inline = []
+        p_attrs = ''
         if callout_styles:
             cs = callout_styles[-1]
-            p_inline = [f'border-color:{cs["color"]}']
+            p_classes.append('callout-block')
+            p_inline.append(f'border-color:{cs["color"]}')
             if cs.get('bgColor'):
                 p_inline.append(f'background-color:{cs["bgColor"]}')
-            paragraphs.append(f'<p class="callout-block" style="{";".join(p_inline)}">{parts}</p>')
-        else:
-            paragraphs.append(f'<p>{parts}</p>')
+        if quote_styles:
+            p_classes.append(f'quote-{quote_styles[-1]["quoteStyle"]}')
+        if list_styles:
+            ls = list_styles[-1]
+            p_classes.append(f'list-{ls["listStyle"]}')
+            if ls.get('listStyle') == 'numbered':
+                p_attrs += f' data-list-num="{numbered_list_values.get(i, "")}"'
+        if code_styles:
+            cds = code_styles[-1]
+            p_classes.append(f'code-{cds["bgStyle"]}')
+            p_attrs += f' data-code-lang="{html_module.escape(cds.get("language", ""), quote=True)}"'
+        class_attr = f' class="{" ".join(p_classes)}"' if p_classes else ''
+        style_attr = f' style="{";".join(p_inline)}"' if p_inline else ''
+        paragraphs.append(f'<p{class_attr}{style_attr}{p_attrs}>{parts}</p>')
+        paragraphs.extend(_divider_html(d) for d in reversed(dividers_by_para.get(i, [])))
     return f'''<!DOCTYPE html>
 <html>
 <head>
@@ -188,55 +358,7 @@ def build_styled_html(content, styles):
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
 <style>
 {_local_font_faces()}
-*{{box-sizing:border-box;margin:0;padding:0}}
-body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a;background:#fafafa;-webkit-font-smoothing:antialiased}}
-.document-container{{max-width:800px;margin:24px auto;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}}
-.document-content{{padding:32px 48px;font-size:15px;line-height:1.8;color:#1a1a1a}}
-.document-content p{{margin-bottom:1em;position:relative}}
-.document-content p:last-child{{margin-bottom:0}}
-.styled-text{{position:relative;display:inline}}
-.styled-text.bold{{font-weight:700}}
-.styled-text.italic{{font-style:italic}}
-.styled-text.underline{{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:1.5px;z-index:1}}
-.styled-text.strikethrough{{text-decoration:line-through;text-decoration-thickness:1px}}
-.styled-text.highlight{{padding:1px 2px;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}}
-.styled-text.border{{border:1.5px solid;border-radius:3px;padding:0 4px;margin:0 2px}}
-.styled-text.circle{{border:1.5px solid;border-radius:100px;padding:2px 8px;margin:0 2px}}
-.styled-text.border .styled-text.highlight{{padding:0 4px;margin:0 -4px;border-radius:3px}}
-.styled-text.circle .styled-text.highlight{{padding:2px 8px;margin:-2px -8px;border-radius:100px}}
-.styled-text.serif{{font-family:Georgia,'Times New Roman',serif}}
-.styled-text.arial{{font-family:Arial,sans-serif}}
-.styled-text.courier{{font-family:'Courier New',Courier,monospace}}
-.styled-text.georgia{{font-family:Georgia,'Times New Roman',serif}}
-.styled-text.helvetica{{font-family:Helvetica,Arial,sans-serif}}
-.styled-text.times{{font-family:'Times New Roman',Times,serif}}
-.styled-text.trebuchet{{font-family:'Trebuchet MS',Helvetica,sans-serif}}
-.styled-text.verdana{{font-family:Verdana,Geneva,sans-serif}}
-.styled-text.comicsans{{font-family:'Comic Sans MS','Comic Sans',cursive}}
-.styled-text.cursivefont{{font-family:cursive}}
-.styled-text.bongothic{{font-family:'Noto Sans KR',sans-serif}}
-.styled-text.nanumgothic{{font-family:'Nanum Gothic',sans-serif}}
-.styled-text.bonmyeongjo{{font-family:'Noto Serif KR',serif}}
-.styled-text.nanummyeongjo{{font-family:'Nanum Myeongjo',serif}}
-.styled-text.nanumbarungothic{{font-family:'Nanum Barun Gothic',sans-serif}}
-.styled-text.nanumsquare{{font-family:'NanumSquare',sans-serif}}
-.styled-text.maruburi{{font-family:'MaruBuri',serif}}
-.styled-text.gungseo{{font-family:'ChosunGs',serif}}
-.styled-text.sansserif{{font-family:'Helvetica Neue',Arial,sans-serif}}
-.styled-text.rounded{{font-family:'Nunito','Varela Round',sans-serif}}
-.styled-text.mono{{font-family:'SF Mono','Consolas','Monaco','Courier New',monospace}}
-.styled-text.smallcaps{{font-variant:small-caps;letter-spacing:.05em}}
-.styled-text.superscript{{font-size:0.7em;vertical-align:super}}
-.styled-text.subscript{{font-size:0.7em;vertical-align:sub}}
-.styled-text.overline{{text-decoration:overline;text-decoration-thickness:1px}}
-.styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1px;text-underline-offset:1.5px;z-index:1}}
-.styled-text.dropcap{{float:left;font-size:3.2em;line-height:0.8;padding-right:8px;padding-top:4px;font-weight:700}}
-.document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
-.document-content p.callout-block + p.callout-block{{margin-top:-2px;border-top:none;border-top-left-radius:0;border-top-right-radius:0}}
-.document-content p.callout-block:has(+ p.callout-block){{margin-bottom:-1px;border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0}}
-.inline-icon{{display:inline-block;height:1em;width:auto;vertical-align:middle;margin:0 2px}}
-.inline-icon svg{{height:1em;width:auto;display:block}}
-.inline-icon-emoji{{height:auto;font-size:1.15em;line-height:1;vertical-align:-0.2em}}
+{_DOC_CSS}
 </style>
 </head>
 <body>
@@ -280,7 +402,13 @@ def save_styles(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-    doc['styles'] = request.get_json().get('styles', [])
+    data = request.get_json()
+    doc['styles'] = data.get('styles', [])
+    # The client rewrites its content array when inserting block styles (list/quote/code/callout),
+    # so its styles' paraIndex/offsets reference that layout. Persist the client's content as the
+    # source of truth so the export renders against the exact same paragraphs the user sees.
+    if data.get('content') is not None:
+        doc['content'] = data['content']
     save_doc(doc_id, doc)
     return jsonify({"success": True, "message": "Styles saved successfully", "updated_at": doc['updated_at']})
 @app.route('/api/document/<doc_id>/log', methods=['POST'])
@@ -392,8 +520,12 @@ def export_document(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-    styles = request.get_json().get('styles', [])
+    data = request.get_json()
+    styles = data.get('styles', [])
     doc['styles'] = styles
+    # Render against the client's current content (see save_styles) so block styles land correctly.
+    if data.get('content') is not None:
+        doc['content'] = data['content']
     save_doc(doc_id, doc)
     export_paths = _export_paths(doc_id, doc)
     export_filename, export_path = export_paths['png']

@@ -2118,7 +2118,7 @@ class DocumentTypography {
 
     async saveStyles() {
         if (!this.docId) { this.showToast(this.t('no_doc_loaded'), 'error'); return; }
-        const post = body => fetch(`${this.apiBase}/document/${this.docId}/${body}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ styles: this.styles }) }).then(r => r.json());
+        const post = body => fetch(`${this.apiBase}/document/${this.docId}/${body}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ styles: this.styles, content: this.content }) }).then(r => r.json());
         try {
             const data = await post('styles');
             if (!data.success) throw new Error(data.error);
