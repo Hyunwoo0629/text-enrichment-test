@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from docx import Document
 from playwright.sync_api import sync_playwright
 from datetime import datetime
-import os, json, uuid, html as html_module, base64, re
+import os, json, uuid, html as html_module, base64, re, tempfile
 import xml.etree.ElementTree as ET
 import openai
 app = Flask(__name__)
@@ -40,11 +40,27 @@ def load_doc(doc_id):
     if not os.path.exists(path):
         return None
     with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        text = f.read()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Recover files left with trailing bytes by an interrupted or interleaved write:
+        # decode the first complete JSON document and ignore the extra data.
+        return json.JSONDecoder().raw_decode(text.lstrip())[0]
 def save_doc(doc_id, data):
     data['updated_at'] = datetime.now().isoformat()
-    with open(get_data_path(doc_id), 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    path = get_data_path(doc_id)
+    # Write to a temp file then atomically replace, so concurrent writers never
+    # corrupt the target with partial or interleaved content.
+    fd, tmp = tempfile.mkstemp(dir=DATA_FOLDER, suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 def extract_text_from_docx(filepath):
     doc = Document(filepath)
     content = []
