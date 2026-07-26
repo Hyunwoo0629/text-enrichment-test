@@ -443,7 +443,6 @@ class DocumentTypography {
         this.styles = [];
         this.history = [];
         this.redoStack = [];
-        this.currentTool = null;
         this.savedSelection = null;
         this.pendingIconData = null;
         this.iconStyle = 'outline';
@@ -467,7 +466,6 @@ class DocumentTypography {
         this.RECENT_COLORS_MAX = 10;
         this.expandedTypeGroups = new Set();
         this._activeColorTool = null;
-        this._activeColorAnchor = null;
         this.COLOR_TOOLS = new Set(['highlight', 'textcolor', 'border', 'circle', 'underline', 'overline', 'wavyunderline', 'strikethrough']);
         this.INSTANT_APPLY_TOOLS = new Set(['underline', 'overline', 'wavyunderline', 'strikethrough', 'border', 'circle']);
         this.FONT_FAMILY_TOOLS = new Set([...FONT_OPTIONS.en, ...FONT_OPTIONS.ko].map(o => o.key));
@@ -902,33 +900,18 @@ class DocumentTypography {
         this.adjustFloatingToolbarForPopovers();
     }
 
-    applyCallout() {
-        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
-        const calloutColor = this.calloutBorderColor || '#000000';
-        const calloutBgColor = this.calloutBgColor || '#ffffff';
-        const reapplied = this._findWholeParaStyles('callout');
-        if (reapplied) {
-            reapplied.matched.forEach(s => { s.color = calloutColor; s.bgColor = calloutBgColor; });
-            this._closeToolPopovers();
-            this._refreshViews();
-            this.restoreSelectionSpans(reapplied.spans);
-            return;
-        }
-        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
-            ? this.savedSelection.spans
-            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
-
+    _splitSelectionIntoBlock(spans, { joinChar, action, makeStyle }) {
         const startPara = spans[0].paraIndex;
         const endPara = spans[spans.length - 1].paraIndex;
         const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
-        const combined = pieces.join('\n');
-        if (!combined) return;
+        const combined = pieces.join(joinChar);
+        if (!combined) return null;
 
         const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
 
         const firstPara = this.content[startPara];
         const lastPara = this.content[endPara];
-        const calloutIdx = startPara + 1;
+        const blockIdx = startPara + 1;
         const afterIdx = startPara + 2;
         this.content = [
             ...this.content.slice(0, startPara),
@@ -964,21 +947,63 @@ class DocumentTypography {
             }
             if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
             if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
-            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: calloutIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
+            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: blockIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
             if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
             if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
         }
-        const calloutStyleObj = { id: this._genId(), type: 'callout', text: combined, color: calloutColor, bgColor: calloutBgColor, paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() };
-        adjustedStyles.push(calloutStyleObj);
+        const styleObj = makeStyle(combined, blockIdx);
+        adjustedStyles.push(styleObj);
         this.styles = adjustedStyles;
 
         const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
-        this._pushHistory({ action: 'callout_split', before: beforeState, after: afterState });
-        this.logAction('add', calloutStyleObj);
+        this._pushHistory({ action, before: beforeState, after: afterState });
+        this.logAction('add', styleObj);
         this._closeToolPopovers();
         this._refreshViews();
-        this.savedSelection = { paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length, text: combined, rect: this.savedSelection?.rect, spans: [{ paraIndex: calloutIdx, startOffset: 0, endOffset: combined.length }] };
-        this.restoreSelection(calloutIdx, 0, combined.length);
+        this.savedSelection = { paraIndex: blockIdx, startOffset: 0, endOffset: combined.length, text: combined, rect: this.savedSelection?.rect, spans: [{ paraIndex: blockIdx, startOffset: 0, endOffset: combined.length }] };
+        this.restoreSelection(blockIdx, 0, combined.length);
+        return styleObj;
+    }
+
+    applyCallout() {
+        if (!this.savedSelection) { this.showToast(this.t('select_text_first'), 'error'); return; }
+        const calloutColor = this.calloutBorderColor || '#000000';
+        const calloutBgColor = this.calloutBgColor || '#ffffff';
+        const reapplied = this._findWholeParaStyles('callout');
+        if (reapplied) {
+            reapplied.matched.forEach(s => { s.color = calloutColor; s.bgColor = calloutBgColor; });
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(reapplied.spans);
+            return;
+        }
+        const spans = (this.savedSelection.spans && this.savedSelection.spans.length)
+            ? this.savedSelection.spans
+            : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
+
+        const allWholeParas = spans.length > 1 && spans.every(sp => sp.startOffset === 0 && sp.endOffset === (this.content[sp.paraIndex]?.text.length ?? -1));
+        const wholeParasHaveLists = allWholeParas && spans.every(sp => this.styles.some(s => s.type === 'list' && s.paraIndex === sp.paraIndex && s.startOffset === 0 && s.endOffset === this.content[sp.paraIndex].text.length));
+        if (wholeParasHaveLists) {
+            const newCalloutStyles = spans.map(sp => ({
+                id: this._genId(), type: 'callout', text: this.content[sp.paraIndex].text, color: calloutColor, bgColor: calloutBgColor,
+                paraIndex: sp.paraIndex, startOffset: 0, endOffset: this.content[sp.paraIndex].text.length, created_at: new Date().toISOString()
+            }));
+            newCalloutStyles.forEach(s => this.styles.push(s));
+            this._pushHistory({ action: 'batch_add', styles: newCalloutStyles });
+            newCalloutStyles.forEach(s => this.logAction('add', s));
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(spans);
+            this.promptApplyToAll(newCalloutStyles[newCalloutStyles.length - 1]);
+            return;
+        }
+
+        const calloutStyleObj = this._splitSelectionIntoBlock(spans, {
+            joinChar: '\n',
+            action: 'callout_split',
+            makeStyle: (combined, blockIdx) => ({ id: this._genId(), type: 'callout', text: combined, color: calloutColor, bgColor: calloutBgColor, paraIndex: blockIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() })
+        });
+        if (!calloutStyleObj) return;
         this.promptApplyToAll(calloutStyleObj);
     }
 
@@ -1050,67 +1075,11 @@ class DocumentTypography {
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
 
-        const startPara = spans[0].paraIndex;
-        const endPara = spans[spans.length - 1].paraIndex;
-        const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
-        const quoted = pieces.join(' ');
-        if (!quoted) return;
-
-        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
-
-        const firstPara = this.content[startPara];
-        const lastPara = this.content[endPara];
-        const quoteIdx = startPara + 1;
-        const afterIdx = startPara + 2;
-        this.content = [
-            ...this.content.slice(0, startPara),
-            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
-            { text: quoted },
-            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
-            ...this.content.slice(endPara + 1)
-        ];
-
-        let cum = 0;
-        const spanRanges = spans.map((sp, i) => {
-            const mergedStart = cum;
-            cum += pieces[i].length + 1;
-            return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
+        this._splitSelectionIntoBlock(spans, {
+            joinChar: ' ',
+            action: 'quote_split',
+            makeStyle: (combined, blockIdx) => ({ id: this._genId(), type: 'quote', quoteStyle, text: combined, color: '', paraIndex: blockIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() })
         });
-        const numOriginal = endPara - startPara + 1;
-        const delta = 3 - numOriginal;
-
-        const adjustedStyles = [];
-        for (const s of this.styles) {
-            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
-            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
-            const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
-            if (!range) continue;
-            if (s.type === 'divider') {
-                if (s.paraIndex === startPara) adjustedStyles.push(s);
-                continue;
-            }
-            if (s.type === 'inlineicon') {
-                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
-                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
-                continue;
-            }
-            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
-            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
-            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: quoteIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
-            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
-            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
-        }
-        const quoteStyleObj = { id: this._genId(), type: 'quote', quoteStyle, text: quoted, color: '', paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length, created_at: new Date().toISOString() };
-        adjustedStyles.push(quoteStyleObj);
-        this.styles = adjustedStyles;
-
-        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
-        this._pushHistory({ action: 'quote_split', before: beforeState, after: afterState });
-        this.logAction('add', quoteStyleObj);
-        this._closeToolPopovers();
-        this._refreshViews();
-        this.savedSelection = { paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length, text: quoted, rect: this.savedSelection?.rect, spans: [{ paraIndex: quoteIdx, startOffset: 0, endOffset: quoted.length }] };
-        this.restoreSelection(quoteIdx, 0, quoted.length);
     }
 
     toggleCodePopover() {
@@ -1164,68 +1133,11 @@ class DocumentTypography {
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
 
-        const startPara = spans[0].paraIndex;
-        const endPara = spans[spans.length - 1].paraIndex;
-        const pieces = spans.map(sp => this.content[sp.paraIndex].text.slice(sp.startOffset, sp.endOffset));
-        const code = pieces.join('\n');
-        if (!code) return;
-        const language = this.detectLanguage(code);
-
-        const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
-
-        const firstPara = this.content[startPara];
-        const lastPara = this.content[endPara];
-        const codeIdx = startPara + 1;
-        const afterIdx = startPara + 2;
-        this.content = [
-            ...this.content.slice(0, startPara),
-            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
-            { text: code },
-            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
-            ...this.content.slice(endPara + 1)
-        ];
-
-        let cum = 0;
-        const spanRanges = spans.map((sp, i) => {
-            const mergedStart = cum;
-            cum += pieces[i].length + 1;
-            return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
+        this._splitSelectionIntoBlock(spans, {
+            joinChar: '\n',
+            action: 'code_split',
+            makeStyle: (combined, blockIdx) => ({ id: this._genId(), type: 'code', bgStyle, language: this.detectLanguage(combined), text: combined, color: '', paraIndex: blockIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() })
         });
-        const numOriginal = endPara - startPara + 1;
-        const delta = 3 - numOriginal;
-
-        const adjustedStyles = [];
-        for (const s of this.styles) {
-            if (s.paraIndex < startPara) { adjustedStyles.push(s); continue; }
-            if (s.paraIndex > endPara) { adjustedStyles.push({ ...s, paraIndex: s.paraIndex + delta }); continue; }
-            const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
-            if (!range) continue;
-            if (s.type === 'divider') {
-                if (s.paraIndex === startPara) adjustedStyles.push(s);
-                continue;
-            }
-            if (s.type === 'inlineicon') {
-                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
-                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
-                continue;
-            }
-            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
-            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
-            if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: codeIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
-            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
-            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
-        }
-        const codeStyleObj = { id: this._genId(), type: 'code', bgStyle, language, text: code, color: '', paraIndex: codeIdx, startOffset: 0, endOffset: code.length, created_at: new Date().toISOString() };
-        adjustedStyles.push(codeStyleObj);
-        this.styles = adjustedStyles;
-
-        const afterState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
-        this._pushHistory({ action: 'code_split', before: beforeState, after: afterState });
-        this.logAction('add', codeStyleObj);
-        this._closeToolPopovers();
-        this._refreshViews();
-        this.savedSelection = { paraIndex: codeIdx, startOffset: 0, endOffset: code.length, text: code, rect: this.savedSelection?.rect, spans: [{ paraIndex: codeIdx, startOffset: 0, endOffset: code.length }] };
-        this.restoreSelection(codeIdx, 0, code.length);
     }
 
     toggleListPopover() {
@@ -1314,11 +1226,11 @@ class DocumentTypography {
             }
             const contained = paraEntries.find(r => s.startOffset >= r.srcStart && s.endOffset <= r.srcEnd);
             if (contained) { adjustedStyles.push({ ...s, paraIndex: contained.newParaIndex, startOffset: s.startOffset - contained.srcStart, endOffset: s.endOffset - contained.srcStart }); continue; }
-            const overlapping = paraEntries.find(r => s.startOffset < r.srcEnd && s.endOffset > r.srcStart);
-            if (overlapping) {
-                const clipStart = Math.max(s.startOffset, overlapping.srcStart), clipEnd = Math.min(s.endOffset, overlapping.srcEnd);
-                if (clipEnd > clipStart) adjustedStyles.push({ ...s, paraIndex: overlapping.newParaIndex, startOffset: clipStart - overlapping.srcStart, endOffset: clipEnd - overlapping.srcStart });
-            }
+            const overlappingEntries = paraEntries.filter(r => s.startOffset < r.srcEnd && s.endOffset > r.srcStart);
+            overlappingEntries.forEach(r => {
+                const clipStart = Math.max(s.startOffset, r.srcStart), clipEnd = Math.min(s.endOffset, r.srcEnd);
+                if (clipEnd > clipStart) adjustedStyles.push({ ...s, paraIndex: r.newParaIndex, startOffset: clipStart - r.srcStart, endOffset: clipEnd - r.srcStart });
+            });
         }
 
         const newListStyles = filteredEntries.filter(r => r.kind === 'list').map(r => ({ id: this._genId(), type: 'list', listStyle, text: r.text, color: '', paraIndex: r.newParaIndex, startOffset: 0, endOffset: r.text.length, created_at: new Date().toISOString() }));
@@ -1825,7 +1737,6 @@ class DocumentTypography {
     }
 
     _closeToolPopovers() {
-        this.currentTool = null;
         this.toolButtons.forEach(btn => btn.classList.remove('active'));
         for (const [p, b] of [[this.fontFamilyPopover, this.fontFamilyBtn], [this.scriptSizePopover, this.scriptSizeBtn], [this.letterSpacingPopover, this.letterSpacingBtn], [this.lineHeightPopover, this.lineHeightBtn], [this.calloutPopover, this.calloutBtn], [this.headingSizePopover, this.headingSizeBtn], [this.dividerPopover, this.dividerBtn], [this.quotePopover, this.quoteBtn], [this.codePopover, this.codeBtn], [this.listPopover, this.listBtn]]) {
             p.classList.remove('visible'); b.classList.remove('active');
@@ -2221,9 +2132,19 @@ class DocumentTypography {
         }
     }
 
+    _describeLocation(style) {
+        if (!style || style.paraIndex == null || style.startOffset == null || style.startOffset < 0) return null;
+        const paraText = this.content[style.paraIndex]?.text ?? '';
+        const CONTEXT = 20;
+        const start = Math.max(0, style.startOffset - CONTEXT);
+        const end = Math.min(paraText.length, style.endOffset + CONTEXT);
+        const snippet = (start > 0 ? '…' : '') + paraText.slice(start, end) + (end < paraText.length ? '…' : '');
+        return { paragraph: style.paraIndex + 1, snippet };
+    }
+
     async logAction(action, style = null, stylesCleared = null) {
         if (!this.docId) return;
-        const entry = { log_id: this._genId('log'), action, timestamp: new Date().toISOString(), style: style ? { id: style.id, type: style.type, text: style.text, color: style.color, paraIndex: style.paraIndex, startOffset: style.startOffset, endOffset: style.endOffset, ...(style.bgColor ? { bgColor: style.bgColor } : {}) } : null, styles_cleared: stylesCleared };
+        const entry = { action, timestamp: new Date().toISOString(), style: style ? { id: style.id, type: style.type, text: style.text, color: style.color, paraIndex: style.paraIndex, startOffset: style.startOffset, endOffset: style.endOffset, ...(style.bgColor ? { bgColor: style.bgColor } : {}) } : null, location: this._describeLocation(style), styles_cleared: stylesCleared };
         try { await fetch(`${this.apiBase}/document/${this.docId}/log`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) }); }
         catch (e) { console.error('Failed to log action:', e); }
     }
@@ -2317,7 +2238,6 @@ class DocumentTypography {
         this._closeToolPopovers();
         this.closeFtPopovers();
         this._activeColorTool = tool;
-        this._activeColorAnchor = anchorBtn;
         const category = this.TOOL_COLOR_MAP[tool] || 'border';
         this.sharedColorBoard.innerHTML = '';
         this.buildColorBoard(this.sharedColorBoard, color => this._applyColorFromSharedPopover(color), category);
@@ -2378,7 +2298,6 @@ class DocumentTypography {
         const wasVisible = this.sharedColorPopover.classList.contains('visible');
         this.sharedColorPopover.classList.remove('visible');
         this._activeColorTool = null;
-        this._activeColorAnchor = null;
         if (this._instantStyleId && wasVisible) {
             const style = this.styles.find(s => s.id === this._instantStyleId);
             this._instantStyleId = null;

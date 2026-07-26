@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 from docx import Document
 from playwright.sync_api import sync_playwright
@@ -9,6 +10,17 @@ import xml.etree.ElementTree as ET
 import openai
 app = Flask(__name__)
 CORS(app)
+@app.errorhandler(HTTPException)
+def handle_http_exception(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": e.description}), e.code
+    return e
+@app.errorhandler(Exception)
+def handle_unexpected_exception(e):
+    if request.path.startswith('/api/'):
+        app.logger.exception(e)
+        return jsonify({"error": str(e)}), 500
+    raise e
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 DATA_FOLDER = os.path.join(BASE_DIR, 'data')
@@ -27,12 +39,12 @@ def load_doc(doc_id):
     path = get_data_path(doc_id)
     if not os.path.exists(path):
         return None
-    with open(path, 'r') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 def save_doc(doc_id, data):
     data['updated_at'] = datetime.now().isoformat()
-    with open(get_data_path(doc_id), 'w') as f:
-        json.dump(data, f, indent=2)
+    with open(get_data_path(doc_id), 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 def extract_text_from_docx(filepath):
     doc = Document(filepath)
     content = []
@@ -52,10 +64,26 @@ _CSS_PROP = {
     'strikethrough': 'text-decoration-color', 'overline': 'text-decoration-color',
     'fontsize': 'font-size', 'letterspacing': 'letter-spacing'
 }
-def _export_info(doc_id, doc):
+def _export_paths(doc_id, doc):
     base = os.path.splitext(doc['original_filename'])[0]
-    name = f"{base}_enriched.png"
-    return name, os.path.join(EXPORT_FOLDER, f"{doc_id}_{name}")
+    return {fmt: (f"{base}_enriched.{fmt}", os.path.join(EXPORT_FOLDER, f"{doc_id}_{base}_enriched.{fmt}")) for fmt in ('png', 'html', 'pdf')}
+_LOCAL_FONT_FILES = {
+    'Nanum Barun Gothic': 'NanumBarunGothic.woff2',
+    'NanumSquare': 'NanumSquare.woff2',
+    'MaruBuri': 'MaruBuri-Regular.woff2',
+    'ChosunGs': 'ChosunGs.woff2',
+}
+def _local_font_faces():
+    fonts_dir = os.path.join(FRONTEND_PATH, 'fonts')
+    faces = []
+    for family, filename in _LOCAL_FONT_FILES.items():
+        path = os.path.join(fonts_dir, filename)
+        if not os.path.exists(path) or os.path.getsize(path) == 0:
+            continue
+        with open(path, 'rb') as f:
+            b64 = base64.b64encode(f.read()).decode()
+        faces.append(f"@font-face{{font-family:'{family}';src:url(data:font/woff2;base64,{b64}) format('woff2');font-weight:400;font-style:normal}}")
+    return ''.join(faces)
 def _icon_html(s):
     if s.get('svgCode'):
         cls = 'inline-icon inline-icon-emoji' if s.get('isEmoji') else 'inline-icon'
@@ -141,8 +169,9 @@ def build_styled_html(content, styles):
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
 <style>
+{_local_font_faces()}
 *{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a;background:#fafafa;-webkit-font-smoothing:antialiased}}
 .document-container{{max-width:800px;margin:24px auto;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.05)}}
@@ -159,6 +188,24 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text.circle{{border:1.5px solid;border-radius:100px;padding:2px 8px;margin:0 2px}}
 .styled-text.border .styled-text.highlight{{padding:0 4px;margin:0 -4px;border-radius:3px}}
 .styled-text.circle .styled-text.highlight{{padding:2px 8px;margin:-2px -8px;border-radius:100px}}
+.styled-text.serif{{font-family:Georgia,'Times New Roman',serif}}
+.styled-text.arial{{font-family:Arial,sans-serif}}
+.styled-text.courier{{font-family:'Courier New',Courier,monospace}}
+.styled-text.georgia{{font-family:Georgia,'Times New Roman',serif}}
+.styled-text.helvetica{{font-family:Helvetica,Arial,sans-serif}}
+.styled-text.times{{font-family:'Times New Roman',Times,serif}}
+.styled-text.trebuchet{{font-family:'Trebuchet MS',Helvetica,sans-serif}}
+.styled-text.verdana{{font-family:Verdana,Geneva,sans-serif}}
+.styled-text.comicsans{{font-family:'Comic Sans MS','Comic Sans',cursive}}
+.styled-text.cursivefont{{font-family:cursive}}
+.styled-text.bongothic{{font-family:'Noto Sans KR',sans-serif}}
+.styled-text.nanumgothic{{font-family:'Nanum Gothic',sans-serif}}
+.styled-text.bonmyeongjo{{font-family:'Noto Serif KR',serif}}
+.styled-text.nanummyeongjo{{font-family:'Nanum Myeongjo',serif}}
+.styled-text.nanumbarungothic{{font-family:'Nanum Barun Gothic',sans-serif}}
+.styled-text.nanumsquare{{font-family:'NanumSquare',sans-serif}}
+.styled-text.maruburi{{font-family:'MaruBuri',serif}}
+.styled-text.gungseo{{font-family:'ChosunGs',serif}}
 .styled-text.sansserif{{font-family:'Helvetica Neue',Arial,sans-serif}}
 .styled-text.rounded{{font-family:'Nunito','Varela Round',sans-serif}}
 .styled-text.mono{{font-family:'SF Mono','Consolas','Monaco','Courier New',monospace}}
@@ -169,6 +216,8 @@ body{{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 .styled-text.wavyunderline{{text-decoration:underline wavy;text-decoration-thickness:1px;text-underline-offset:1.5px;z-index:1}}
 .styled-text.dropcap{{float:left;font-size:3.2em;line-height:0.8;padding-right:8px;padding-top:4px;font-weight:700}}
 .document-content p.callout-block{{border:2px solid;border-radius:8px;padding:12px 16px;margin-bottom:1em}}
+.document-content p.callout-block + p.callout-block{{margin-top:-2px;border-top:none;border-top-left-radius:0;border-top-right-radius:0}}
+.document-content p.callout-block:has(+ p.callout-block){{margin-bottom:-1px;border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0}}
 .inline-icon{{display:inline-block;height:1em;width:auto;vertical-align:middle;margin:0 2px}}
 .inline-icon svg{{height:1em;width:auto;display:block}}
 .inline-icon-emoji{{height:auto;font-size:1.15em;line-height:1;vertical-align:-0.2em}}
@@ -228,6 +277,7 @@ def log_enrichment_action(doc_id):
         return jsonify({"error": "Invalid log entry"}), 400
     if entry['action'] not in ('add', 'delete', 'clear'):
         return jsonify({"error": "Invalid action type"}), 400
+    entry['id'] = doc.get('original_filename')
     doc.setdefault('enrichment_log', []).append(entry)
     save_doc(doc_id, doc)
     return jsonify({"success": True, "message": "Action logged", "log_count": len(doc['enrichment_log'])})
@@ -329,11 +379,13 @@ def export_document(doc_id):
     styles = request.get_json().get('styles', [])
     doc['styles'] = styles
     save_doc(doc_id, doc)
-    export_filename, export_path = _export_info(doc_id, doc)
-    html_path = os.path.join(EXPORT_FOLDER, f"{doc_id}_temp.html")
-    with open(html_path, 'w', encoding='utf-8') as f:
-        f.write(build_styled_html(doc['content'], styles))
+    export_paths = _export_paths(doc_id, doc)
+    export_filename, export_path = export_paths['png']
+    html_filename, html_path = export_paths['html']
+    pdf_filename, pdf_path = export_paths['pdf']
     try:
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(build_styled_html(doc['content'], styles))
         with sync_playwright() as p:
             browser = p.chromium.launch(args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'] if os.environ.get('FLASK_ENV') == 'production' else [])
             page = browser.new_page(viewport={'width': 900, 'height': 800}, device_scale_factor=2)
@@ -341,19 +393,25 @@ def export_document(doc_id):
             page.wait_for_load_state('networkidle')
             page.wait_for_timeout(500)
             page.screenshot(path=export_path, full_page=True)
+            page.emulate_media(media="screen")
+            page.pdf(path=pdf_path, print_background=True, format='A4')
             browser.close()
+        doc.setdefault('enrichment_log', []).append({
+            'id': doc.get('original_filename'),
+            'action': 'export',
+            'timestamp': datetime.now().isoformat(),
+            'files': {'png': export_filename, 'html': html_filename, 'pdf': pdf_filename}
+        })
+        save_doc(doc_id, doc)
     except Exception as e:
         return jsonify({"success": False, "error": f"Export failed: {str(e)}"}), 500
-    finally:
-        if os.path.exists(html_path):
-            os.remove(html_path)
     return jsonify({"success": True, "message": "Document exported successfully", "export_filename": export_filename, "download_url": f"/api/document/{doc_id}/download"})
 @app.route('/api/document/<doc_id>/download', methods=['GET'])
 def download_document(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-    export_filename, export_path = _export_info(doc_id, doc)
+    export_filename, export_path = _export_paths(doc_id, doc)['png']
     if not os.path.exists(export_path):
         return jsonify({"error": "Export not found. Please save the document first."}), 404
     return send_file(export_path, as_attachment=True, download_name=export_filename)
@@ -362,7 +420,7 @@ def list_documents():
     docs = []
     for f in os.listdir(DATA_FOLDER):
         if f.endswith('.json'):
-            with open(os.path.join(DATA_FOLDER, f), 'r') as file:
+            with open(os.path.join(DATA_FOLDER, f), 'r', encoding='utf-8') as file:
                 d = json.load(file)
                 docs.append({"doc_id": d['doc_id'], "filename": d['original_filename'], "created_at": d['created_at'], "updated_at": d['updated_at']})
     return jsonify(docs)

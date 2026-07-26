@@ -248,6 +248,8 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text.wavyunderline { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 1.5px; z-index: 1; }
 .styled-text.dropcap { float: left; font-size: 3.2em; line-height: 0.8; padding-right: 8px; padding-top: 4px; font-weight: 700; }
 .document-content p.callout-block { border: 2px solid; border-radius: 8px; padding: 12px 16px; margin-bottom: 1em; white-space: pre-wrap; }
+.document-content p.callout-block + p.callout-block { margin-top: -2px; border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
+.document-content p.callout-block:has(+ p.callout-block) { margin-bottom: -1px; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .document-content p.quote-marks { text-align: center; padding: 48px 32px; font-style: italic; position: relative; }
 .document-content p.quote-marks::before { content: '\201C'; position: absolute; top: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
 .document-content p.quote-marks::after  { content: '\201D'; position: absolute; bottom: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
