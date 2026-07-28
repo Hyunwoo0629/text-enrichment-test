@@ -404,9 +404,6 @@ def save_styles(doc_id):
         return jsonify({"error": "Document not found"}), 404
     data = request.get_json()
     doc['styles'] = data.get('styles', [])
-    # The client rewrites its content array when inserting block styles (list/quote/code/callout),
-    # so its styles' paraIndex/offsets reference that layout. Persist the client's content as the
-    # source of truth so the export renders against the exact same paragraphs the user sees.
     if data.get('content') is not None:
         doc['content'] = data['content']
     save_doc(doc_id, doc)
@@ -523,7 +520,6 @@ def export_document(doc_id):
     data = request.get_json()
     styles = data.get('styles', [])
     doc['styles'] = styles
-    # Render against the client's current content (see save_styles) so block styles land correctly.
     if data.get('content') is not None:
         doc['content'] = data['content']
     save_doc(doc_id, doc)
