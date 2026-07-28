@@ -118,7 +118,7 @@ _DOC_CSS = r"""
     --color-primary: #1a1a1a;
     --color-primary-hover: #333;
     --space-2xl: 32px;
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-sans: 'Inter', 'Nanum Barun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --radius-lg: 8px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
