@@ -61,13 +61,15 @@ def extract_text_from_docx(filepath):
     doc = Document(filepath)
     content = []
     for i, p in enumerate(doc.paragraphs):
-        if p.text.strip():
-            content.append({'id': f'p-{i}', 'type': 'paragraph', 'text': p.text})
+        text = p.text.strip('\n')
+        if text.strip():
+            content.append({'id': f'p-{i}', 'type': 'paragraph', 'text': text})
     for ti, table in enumerate(doc.tables):
         for ri, row in enumerate(table.rows):
             for ci, cell in enumerate(row.cells):
-                if cell.text.strip():
-                    content.append({'id': f't-{ti}-{ri}-{ci}', 'type': 'table-cell', 'text': cell.text})
+                text = cell.text.strip('\n')
+                if text.strip():
+                    content.append({'id': f't-{ti}-{ri}-{ci}', 'type': 'table-cell', 'text': text})
     return content
 _CSS_PROP = {
     'highlight': 'background-color', 'textcolor': 'color', 'dropcap': 'color',
@@ -125,7 +127,7 @@ _DOC_CSS = r"""
 body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--color-text); background: var(--color-bg); -webkit-font-smoothing: antialiased; }
 .document-container { max-width: 800px; margin: 24px auto; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .document-content { padding: var(--space-2xl) 48px; font-size: 15px; line-height: 1.8; color: var(--color-text); }
-.document-content p { margin-bottom: 1em; position: relative; }
+.document-content p { margin-bottom: 1em; position: relative; white-space: pre-line; }
 .document-content p:last-child { margin-bottom: 0; }
 .styled-text { position: relative; display: inline; }
 .styled-text.bold { font-weight: 700; }

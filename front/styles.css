@@ -198,7 +198,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .empty-state p { font-size: 14px; margin-bottom: var(--space-xl); max-width: 300px; }
 .document-container { max-width: 800px; margin: 0 auto; background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); transform-origin: top center; transition: transform 0.15s ease; }
 .document-content { padding: var(--space-2xl) 48px; font-size: 15px; line-height: 1.8; color: var(--color-text); }
-.document-content p { margin-bottom: 1em; position: relative; }
+.document-content p { margin-bottom: 1em; position: relative; white-space: pre-line; }
 .document-content p:last-child { margin-bottom: 0; }
 .styled-text { position: relative; display: inline; }
 .styled-text.bold { font-weight: 700; }
