@@ -555,6 +555,44 @@ class DocumentTypography {
     _refreshViews() { this.applyAllStyles(); this.updateStylesList(); }
     _clearSelection() { this.savedSelection = null; this.resetStepperDefaults(); window.getSelection().removeAllRanges(); this.selectionHint.textContent = this.t('select_text_hint'); }
 
+    _hasBlockStyle(paraIndex) {
+        const blockTypes = new Set(['list', 'quote', 'callout', 'code']);
+        return this.styles.some(s => s.paraIndex === paraIndex && blockTypes.has(s.type));
+    }
+
+    _mergeParagraphs(paraIndex) {
+        const cur = this.content[paraIndex], next = this.content[paraIndex + 1];
+        const sep = cur.groupJoinAfter ?? '';
+        const merged = { ...cur, text: cur.text + sep + next.text, groupId: next.groupId, groupJoinAfter: next.groupJoinAfter };
+        if (!merged.groupId) { delete merged.groupId; delete merged.groupJoinAfter; }
+        this.content.splice(paraIndex, 2, merged);
+        const shiftAmount = cur.text.length + sep.length;
+        this.styles = this.styles.map(s => {
+            if (s.paraIndex === paraIndex + 1) {
+                return s.type === 'divider'
+                    ? { ...s, paraIndex }
+                    : { ...s, paraIndex, startOffset: s.startOffset + shiftAmount, endOffset: s.endOffset + shiftAmount };
+            }
+            if (s.paraIndex > paraIndex + 1) return { ...s, paraIndex: s.paraIndex - 1 };
+            return s;
+        });
+    }
+
+    _mergeAllPlainGroupNeighbors() {
+        let merged = false;
+        let i = 0;
+        while (i < this.content.length - 1) {
+            const cur = this.content[i], next = this.content[i + 1];
+            if (cur?.groupId && cur.groupId === next?.groupId && !this._hasBlockStyle(i) && !this._hasBlockStyle(i + 1)) {
+                this._mergeParagraphs(i);
+                merged = true;
+            } else {
+                i++;
+            }
+        }
+        return merged;
+    }
+
     initElements() {
         'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconTabLibrary iconTabAi iconLibraryPanel iconAiPanel iconLibraryGrid iconStyleToggle iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
@@ -883,24 +921,37 @@ class DocumentTypography {
 
         const firstPara = this.content[startPara];
         const lastPara = this.content[endPara];
-        const blockIdx = startPara + 1;
-        const afterIdx = startPara + 2;
+        // Strip a boundary '\n' inherited from the original text so this leftover piece
+        // doesn't render as an extra blank line (white-space: pre-line/pre-wrap shows it).
+        const prefixText = firstPara.text.slice(0, spans[0].startOffset).replace(/\n$/, '');
+        const suffixText = lastPara.text.slice(spans[spans.length - 1].endOffset).replace(/^\n/, '');
+        const hasPrefix = prefixText.length > 0;
+        const hasSuffix = suffixText.length > 0;
+        const groupId = (hasPrefix || hasSuffix) ? this._genId('group') : null;
+
+        const newContent = [];
+        if (hasPrefix) newContent.push({ ...firstPara, text: prefixText, ...(groupId ? { groupId, groupJoinAfter: '' } : {}) });
+        newContent.push(groupId ? { text: combined, groupId, ...(hasSuffix ? { groupJoinAfter: '' } : {}) } : { text: combined });
+        if (hasSuffix) newContent.push({ ...lastPara, text: suffixText, groupId });
+
+        const blockIdx = startPara + (hasPrefix ? 1 : 0);
+        const leftIdx = hasPrefix ? startPara : blockIdx;
+        const rightIdx = hasSuffix ? blockIdx + 1 : startPara + newContent.length;
+
         this.content = [
             ...this.content.slice(0, startPara),
-            { ...firstPara, text: firstPara.text.slice(0, spans[0].startOffset) },
-            { text: combined },
-            { ...lastPara, text: lastPara.text.slice(spans[spans.length - 1].endOffset) },
+            ...newContent,
             ...this.content.slice(endPara + 1)
         ];
 
         let cum = 0;
         const spanRanges = spans.map((sp, i) => {
             const mergedStart = cum;
-            cum += pieces[i].length + 1;
+            cum += pieces[i].length + joinChar.length;
             return { paraIndex: sp.paraIndex, srcStart: sp.startOffset, srcEnd: sp.endOffset, mergedStart, mergedEnd: mergedStart + pieces[i].length };
         });
         const numOriginal = endPara - startPara + 1;
-        const delta = 3 - numOriginal;
+        const delta = newContent.length - numOriginal;
 
         const adjustedStyles = [];
         for (const s of this.styles) {
@@ -909,19 +960,19 @@ class DocumentTypography {
             const range = spanRanges.find(r => r.paraIndex === s.paraIndex);
             if (!range) continue;
             if (s.type === 'divider') {
-                if (s.paraIndex === startPara) adjustedStyles.push(s);
+                if (s.paraIndex === startPara) adjustedStyles.push({ ...s, paraIndex: leftIdx });
                 continue;
             }
             if (s.type === 'inlineicon') {
-                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push(s);
-                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.startOffset - range.srcEnd });
+                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? s.startOffset : 0 });
+                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: rightIdx, startOffset: hasSuffix ? s.startOffset - range.srcEnd : 0, endOffset: hasSuffix ? s.startOffset - range.srcEnd : 0 });
                 continue;
             }
-            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push(s); continue; }
-            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: s.startOffset - range.srcEnd, endOffset: s.endOffset - range.srcEnd }); continue; }
+            if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? s.endOffset : 0 }); continue; }
+            if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: rightIdx, startOffset: hasSuffix ? s.startOffset - range.srcEnd : 0, endOffset: hasSuffix ? s.endOffset - range.srcEnd : 0 }); continue; }
             if (s.startOffset >= range.srcStart && s.endOffset <= range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: blockIdx, startOffset: s.startOffset - range.srcStart + range.mergedStart, endOffset: s.endOffset - range.srcStart + range.mergedStart }); continue; }
-            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, endOffset: range.srcStart }); continue; }
-            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: afterIdx, startOffset: 0, endOffset: s.endOffset - range.srcEnd }); continue; }
+            if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? range.srcStart : 0 }); continue; }
+            if (s.paraIndex === endPara && s.endOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: rightIdx, startOffset: 0, endOffset: hasSuffix ? s.endOffset - range.srcEnd : 0 }); continue; }
         }
         const styleObj = makeStyle(combined, blockIdx);
         adjustedStyles.push(styleObj);
@@ -1128,7 +1179,7 @@ class DocumentTypography {
             const isFirst = spanIdx === 0;
             const isLast = spanIdx === spans.length - 1;
             if (isFirst) {
-                entries.push({ srcPara: sp.paraIndex, srcStart: 0, srcEnd: sp.startOffset, kind: 'prefix', text: paraText.slice(0, sp.startOffset), orig: this.content[sp.paraIndex] });
+                entries.push({ srcPara: sp.paraIndex, srcStart: 0, srcEnd: sp.startOffset, kind: 'prefix', text: paraText.slice(0, sp.startOffset).replace(/\n$/, ''), orig: this.content[sp.paraIndex] });
             }
             let cursor = sp.startOffset;
             paraText.slice(sp.startOffset, sp.endOffset).split('\n').forEach(part => {
@@ -1137,27 +1188,58 @@ class DocumentTypography {
                 cursor = segEnd + 1;
             });
             if (isLast) {
-                entries.push({ srcPara: sp.paraIndex, srcStart: sp.endOffset, srcEnd: paraText.length, kind: 'suffix', text: paraText.slice(sp.endOffset), orig: this.content[sp.paraIndex] });
+                entries.push({ srcPara: sp.paraIndex, srcStart: sp.endOffset, srcEnd: paraText.length, kind: 'suffix', text: paraText.slice(sp.endOffset).replace(/^\n/, ''), orig: this.content[sp.paraIndex] });
             }
         });
 
-        const filteredEntries = entries.filter(r => r.kind !== 'list' || r.text.length > 0);
-        if (!filteredEntries.some(r => r.kind === 'list')) return;
+        entries.forEach((r, i) => {
+            const next = entries[i + 1];
+            if (next && next.srcPara === r.srcPara) r.srcEnd = next.srcStart;
+        });
+
+        const kept = [];
+        let carryStart = null, carryPara = null;
+        entries.forEach(r => {
+            if (r.text.length === 0) {
+                const prev = kept[kept.length - 1];
+                if (prev && prev.srcPara === r.srcPara) {
+                    prev.srcEnd = r.srcEnd;
+                } else if (carryStart === null || carryPara !== r.srcPara) {
+                    carryStart = r.srcStart; carryPara = r.srcPara;
+                }
+                return;
+            }
+            if (carryStart !== null && carryPara === r.srcPara) { r.srcStart = carryStart; }
+            carryStart = null; carryPara = null;
+            kept.push(r);
+        });
+        if (!kept.some(r => r.kind === 'list')) return;
 
         const beforeState = { content: JSON.parse(JSON.stringify(this.content)), styles: JSON.parse(JSON.stringify(this.styles)) };
 
-        const newContentSection = filteredEntries.map(r => r.kind === 'list' ? { text: r.text } : { ...r.orig, text: r.text });
+        const groupId = kept.length > 1 ? this._genId('group') : null;
+        kept.forEach((r, i) => {
+            if (!groupId) return;
+            r.groupId = groupId;
+            if (i < kept.length - 1) r.groupJoinAfter = (r.kind === 'prefix' || kept[i + 1].kind === 'suffix') ? '' : '\n';
+        });
+
+        const newContentSection = kept.map(r => {
+            const base = r.kind === 'list' ? { text: r.text } : { ...r.orig, text: r.text };
+            if (r.groupId) { base.groupId = r.groupId; if (r.groupJoinAfter !== undefined) base.groupJoinAfter = r.groupJoinAfter; }
+            return base;
+        });
         this.content = [
             ...this.content.slice(0, startPara),
             ...newContentSection,
             ...this.content.slice(endPara + 1)
         ];
-        filteredEntries.forEach((r, i) => { r.newParaIndex = startPara + i; });
+        kept.forEach((r, i) => { r.newParaIndex = startPara + i; });
 
         const numOriginal = endPara - startPara + 1;
-        const delta = filteredEntries.length - numOriginal;
+        const delta = kept.length - numOriginal;
         const entriesByPara = new Map();
-        filteredEntries.forEach(r => { if (!entriesByPara.has(r.srcPara)) entriesByPara.set(r.srcPara, []); entriesByPara.get(r.srcPara).push(r); });
+        kept.forEach(r => { if (!entriesByPara.has(r.srcPara)) entriesByPara.set(r.srcPara, []); entriesByPara.get(r.srcPara).push(r); });
 
         const adjustedStyles = [];
         for (const s of this.styles) {
@@ -1184,7 +1266,7 @@ class DocumentTypography {
             });
         }
 
-        const newListStyles = filteredEntries.filter(r => r.kind === 'list').map(r => ({ id: this._genId(), type: 'list', listStyle, text: r.text, color: '', paraIndex: r.newParaIndex, startOffset: 0, endOffset: r.text.length, created_at: new Date().toISOString() }));
+        const newListStyles = kept.filter(r => r.kind === 'list').map(r => ({ id: this._genId(), type: 'list', listStyle, text: r.text, color: '', paraIndex: r.newParaIndex, startOffset: 0, endOffset: r.text.length, created_at: new Date().toISOString() }));
         if (listStyle === 'numbered' && restart && newListStyles.length) newListStyles[0].restart = true;
         newListStyles.forEach(s => adjustedStyles.push(s));
         this.styles = adjustedStyles;
@@ -1797,8 +1879,15 @@ class DocumentTypography {
                 if (seg.kind === 'cursor') { result += cursorHtml; continue; }
                 if (seg.kind === 'icon') { result += this._iconHtml(seg.style); continue; }
                 const newBorderIds = new Set(seg.borders.map(b => b.id));
-                for (let j = openBorders.length - 1; j >= 0; j--) {
-                    if (!newBorderIds.has(openBorders[j].id)) { result += '</span>'; openBorders.splice(j, 1); }
+                const closeFrom = openBorders.findIndex(ob => !newBorderIds.has(ob.id));
+                if (closeFrom !== -1) {
+                    const toReopen = openBorders.slice(closeFrom + 1).filter(ob => newBorderIds.has(ob.id));
+                    for (let j = openBorders.length - 1; j >= closeFrom; j--) result += '</span>';
+                    openBorders = openBorders.slice(0, closeFrom);
+                    toReopen.forEach(b => {
+                        result += `<span class="styled-text ${b.type}" style="border-color:${b.color}" data-style-id="${b.id}">`;
+                        openBorders.push(b);
+                    });
                 }
                 for (const b of seg.borders) {
                     if (!openBorders.some(ob => ob.id === b.id)) {
@@ -2012,8 +2101,10 @@ class DocumentTypography {
         const index = this.styles.findIndex(s => s.id === id);
         if (index === -1) return;
         const style = this.styles[index];
-        this._pushHistory({ action: 'delete', style });
+        const beforeContent = JSON.parse(JSON.stringify(this.content));
         this.styles.splice(index, 1);
+        const merged = this._mergeAllPlainGroupNeighbors();
+        this._pushHistory({ action: 'delete', style, beforeContent: merged ? beforeContent : null, afterContent: merged ? JSON.parse(JSON.stringify(this.content)) : null });
         this.logAction('delete', style);
         this._refreshViews();
     }
@@ -2034,9 +2125,11 @@ class DocumentTypography {
 
     _doBatchDelete(styles) {
         const removed = [];
+        const beforeContent = JSON.parse(JSON.stringify(this.content));
         styles.forEach(s => { const idx = this.styles.findIndex(st => st.id === s.id); if (idx !== -1) { removed.push(this.styles[idx]); this.styles.splice(idx, 1); this.logAction('delete', s); } });
         if (!removed.length) return;
-        this._pushHistory({ action: 'batch_delete', styles: removed });
+        const merged = this._mergeAllPlainGroupNeighbors();
+        this._pushHistory({ action: 'batch_delete', styles: removed, beforeContent: merged ? beforeContent : null, afterContent: merged ? JSON.parse(JSON.stringify(this.content)) : null });
         this._refreshViews();
         this.showToast(this.t('removed_styles', removed.length, removed.length > 1 ? 's' : ''), 'success');
     }
@@ -2048,10 +2141,10 @@ class DocumentTypography {
         const last = this.history.pop();
         const { action } = last;
         if (action === 'add') { this._removeById(last.style.id); if (last.replaced) this.styles.push(last.replaced); if (last.replacedFontStyles) last.replacedFontStyles.forEach(s => this.styles.push(s)); }
-        else if (action === 'delete') this.styles.push(last.style);
-        else if (action === 'clear') this.styles = last.styles;
+        else if (action === 'delete') { this.styles.push(last.style); if (last.beforeContent) this.content = last.beforeContent; }
+        else if (action === 'clear') { this.styles = last.styles; if (last.beforeContent) this.content = last.beforeContent; }
         else if (action === 'batch_add') { last.styles.forEach(s => this._removeById(s.id)); if (last.replacedStyles) last.replacedStyles.forEach(s => this.styles.push(s)); }
-        else if (action === 'batch_delete') last.styles.forEach(s => this.styles.push(s));
+        else if (action === 'batch_delete') { last.styles.forEach(s => this.styles.push(s)); if (last.beforeContent) this.content = last.beforeContent; }
         else if (action === 'quote_split') { this.content = last.before.content; this.styles = last.before.styles; }
         else if (action === 'callout_split') { this.content = last.before.content; this.styles = last.before.styles; }
         else if (action === 'list_split') { this.content = last.before.content; this.styles = last.before.styles; }
@@ -2067,10 +2160,10 @@ class DocumentTypography {
         const last = this.redoStack.pop();
         const { action } = last;
         if (action === 'add') { if (last.replaced) this._removeById(last.replaced.id); if (last.replacedFontStyles) last.replacedFontStyles.forEach(s => this._removeById(s.id)); this.styles.push(last.style); }
-        else if (action === 'delete') this._removeById(last.style.id);
-        else if (action === 'clear') this.styles = [];
+        else if (action === 'delete') { this._removeById(last.style.id); if (last.afterContent) this.content = last.afterContent; }
+        else if (action === 'clear') { this.styles = []; if (last.afterContent) this.content = last.afterContent; }
         else if (action === 'batch_add') { if (last.replacedStyles) last.replacedStyles.forEach(s => this._removeById(s.id)); last.styles.forEach(s => this.styles.push(s)); }
-        else if (action === 'batch_delete') last.styles.forEach(s => this._removeById(s.id));
+        else if (action === 'batch_delete') { last.styles.forEach(s => this._removeById(s.id)); if (last.afterContent) this.content = last.afterContent; }
         else if (action === 'quote_split') { this.content = last.after.content; this.styles = last.after.styles; }
         else if (action === 'callout_split') { this.content = last.after.content; this.styles = last.after.styles; }
         else if (action === 'list_split') { this.content = last.after.content; this.styles = last.after.styles; }
@@ -2084,9 +2177,12 @@ class DocumentTypography {
     async clearAllStyles() {
         if (!this.styles.length) { this.showToast(this.t('no_styles_to_clear'), 'error'); return; }
         if (!confirm(this.t('confirm_clear'))) return;
-        this._pushHistory({ action: 'clear', styles: [...this.styles] });
+        const oldStyles = [...this.styles];
+        const beforeContent = JSON.parse(JSON.stringify(this.content));
         const count = this.styles.length;
         this.styles = [];
+        const merged = this._mergeAllPlainGroupNeighbors();
+        this._pushHistory({ action: 'clear', styles: oldStyles, beforeContent: merged ? beforeContent : null, afterContent: merged ? JSON.parse(JSON.stringify(this.content)) : null });
         this.logAction('clear', null, count);
         this._refreshViews();
         this.showToast(this.t('all_cleared'), 'success');

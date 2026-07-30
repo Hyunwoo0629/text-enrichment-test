@@ -78,9 +78,15 @@ _CSS_PROP = {
     'strikethrough': 'text-decoration-color', 'overline': 'text-decoration-color',
     'fontsize': 'font-size', 'letterspacing': 'letter-spacing'
 }
-def _export_paths(doc_id, doc):
+def _export_paths(doc_id, doc, version=1):
     base = os.path.splitext(doc['original_filename'])[0]
-    return {fmt: (f"{base}_enriched.{fmt}", os.path.join(EXPORT_FOLDER, f"{doc_id}_{base}_enriched.{fmt}")) for fmt in ('png', 'html', 'pdf')}
+    suffix = '' if version <= 1 else f' ({version})'
+    return {fmt: (f"{base}_enriched{suffix}.{fmt}", os.path.join(EXPORT_FOLDER, f"{doc_id}_{base}_enriched{suffix}.{fmt}")) for fmt in ('png', 'html', 'pdf')}
+def _next_export_version(doc_id, doc):
+    version = 1
+    while os.path.exists(_export_paths(doc_id, doc, version)['png'][1]):
+        version += 1
+    return version
 _LOCAL_FONT_FILES = {
     'Nanum Barun Gothic': 'NanumBarunGothic.woff2',
     'NanumSquare': 'NanumSquare.woff2',
@@ -105,9 +111,7 @@ def _icon_html(s):
     if s.get('iconData'):
         return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
     return ''
-# Document-rendering CSS, copied verbatim from front/styles.css so the exported PNG matches the
-# on-screen document exactly. Only the app-shell rules (toolbar, panels, html/body overflow) are
-# omitted, and body is made export-friendly so full-page screenshots aren't clipped.
+
 _DOC_CSS = r"""
 :root {
     --color-white: #fff;
@@ -305,11 +309,20 @@ def build_styled_html(content, styles):
             if seg['kind'] == 'icon':
                 parts += _icon_html(seg['style'])
                 continue
+            # Borders are nested <span>s, so closing one that isn't the innermost open tag requires
+            # closing everything above it first (LIFO), then reopening whichever of those are still
+            # active as new sibling spans — otherwise crossing (non-nested) border ranges would emit
+            # a stray </span> that closes the wrong tag, producing invalid/mismatched markup.
             new_border_ids = {s.get('id', id(s)) for s in seg['borders']}
-            for j in range(len(open_borders) - 1, -1, -1):
-                if open_borders[j].get('id', id(open_borders[j])) not in new_border_ids:
+            close_from = next((j for j, ob in enumerate(open_borders) if ob.get('id', id(ob)) not in new_border_ids), None)
+            if close_from is not None:
+                to_reopen = [ob for ob in open_borders[close_from + 1:] if ob.get('id', id(ob)) in new_border_ids]
+                for _ in range(len(open_borders) - close_from):
                     parts += '</span>'
-                    open_borders.pop(j)
+                open_borders = open_borders[:close_from]
+                for b in to_reopen:
+                    parts += f'<span class="styled-text {b["type"]}" style="border-color:{b["color"]}">'
+                    open_borders.append(b)
             for b in seg['borders']:
                 bid = b.get('id', id(b))
                 if not any(ob.get('id', id(ob)) == bid for ob in open_borders):
@@ -428,8 +441,6 @@ def log_enrichment_action(doc_id):
 SVG_DISALLOWED_TAGS = {'script', 'foreignobject', 'iframe', 'image', 'style', 'animate', 'animatetransform', 'animatemotion', 'set'}
 
 def validate_svg(svg_text):
-    """Reject anything that isn't a clean, self-contained SVG: catches the malformed/truncated
-    markup an LLM occasionally returns (the 'icons break' bug) as well as unsafe content."""
     try:
         root = ET.fromstring(svg_text)
     except ET.ParseError:
@@ -525,7 +536,7 @@ def export_document(doc_id):
     if data.get('content') is not None:
         doc['content'] = data['content']
     save_doc(doc_id, doc)
-    export_paths = _export_paths(doc_id, doc)
+    export_paths = _export_paths(doc_id, doc, _next_export_version(doc_id, doc))
     export_filename, export_path = export_paths['png']
     html_filename, html_path = export_paths['html']
     pdf_filename, pdf_path = export_paths['pdf']
@@ -557,7 +568,10 @@ def download_document(doc_id):
     doc = load_doc(doc_id)
     if not doc:
         return jsonify({"error": "Document not found"}), 404
-    export_filename, export_path = _export_paths(doc_id, doc)['png']
+    latest_version = _next_export_version(doc_id, doc) - 1
+    if latest_version < 1:
+        return jsonify({"error": "Export not found. Please save the document first."}), 404
+    export_filename, export_path = _export_paths(doc_id, doc, latest_version)['png']
     if not os.path.exists(export_path):
         return jsonify({"error": "Export not found. Please save the document first."}), 404
     return send_file(export_path, as_attachment=True, download_name=export_filename)
