@@ -2,6 +2,12 @@ const TRANSLATIONS = {
     en: {
         studio: ' ',
         upload_document: 'Upload Document',
+        paste_text: 'Paste Text',
+        paste_text_label: 'Paste or type your text',
+        paste_text_placeholder: 'Paste your text here. Each line becomes a paragraph.',
+        paste_text_hint: 'Text is split into paragraphs the same way a Word document would be, so it can be styled and enriched identically.',
+        paste_text_submit: 'Create Document',
+        paste_text_empty: 'Please enter some text first',
         history: 'History',
         undo: 'Undo',
         redo: 'Redo',
@@ -101,6 +107,12 @@ const TRANSLATIONS = {
     ko: {
         studio: ' ',
         upload_document: '문서 업로드',
+        paste_text: '텍스트 붙여넣기',
+        paste_text_label: '텍스트를 붙여넣거나 입력하세요',
+        paste_text_placeholder: '여기에 텍스트를 붙여넣으세요. 각 줄이 하나의 문단이 됩니다.',
+        paste_text_hint: 'Word 문서와 동일한 방식으로 문단이 나뉘어, 동일하게 스타일을 적용하고 보강할 수 있습니다.',
+        paste_text_submit: '문서 생성',
+        paste_text_empty: '먼저 텍스트를 입력해 주세요',
         history: '기록',
         undo: '실행 취소',
         redo: '다시 실행',
@@ -594,7 +606,7 @@ class DocumentTypography {
     }
 
     initElements() {
-        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconTabLibrary iconTabAi iconLibraryPanel iconAiPanel iconLibraryGrid iconStyleToggle iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo'.split(' ').forEach(id => this[id] = document.getElementById(id));
+        'fileInput uploadBtn uploadBtnAlt documentViewport documentContainer documentContent emptyState fileInfo selectionHint highlightIcon textcolorIcon fontSizeInput fontSizeMinus fontSizePlus letterSpacingInput letterSpacingMinus letterSpacingPlus letterSpacingBtn letterSpacingPopover lineHeightBtn lineHeightPopover lineHeightInput lineHeightMinus lineHeightPlus undoBtn redoBtn clearBtn saveBtn iconUploadBtn quoteBtn quotePopover codeBtn codePopover listBtn listPopover listTypePanel listNumberedPanel listNumberedBack iconModal iconModalClose iconTabLibrary iconTabAi iconLibraryPanel iconAiPanel iconLibraryGrid iconStyleToggle iconDescription iconModalCancel iconModalSubmit iconModalSubmitText iconModalSpinner stylesList styleCount toastContainer fontFamilyBtn fontFamilyPopover scriptSizeBtn scriptSizePopover headingSizeBtn headingSizePopover ftHeadingSizePopover floatingToolbar ftFontFamilyPopover ftScriptSizePopover ftFontSizeInput ftFontSizeMinus ftFontSizePlus calloutBtn calloutPopover calloutApplyBtn calloutBoardBorder calloutBoardBg ftLetterSpacingPopover ftLetterSpacingInput ftLetterSpacingMinus ftLetterSpacingPlus zoomInBtn zoomOutBtn zoomResetBtn zoomFitWidthBtn zoomFitHeightBtn zoomLevelDisplay ftExistingStyles sharedColorPopover sharedColorBoard langSelectOverlay langBtnEn langBtnKo pasteTextBtn pasteTextBtnAlt pasteTextModal pasteTextModalClose pasteTextModalCancel pasteTextModalSubmit pasteTextInput'.split(' ').forEach(id => this[id] = document.getElementById(id));
         this.toolButtons = document.querySelectorAll('.tool-btn');
         this.scriptOptions = document.querySelectorAll('.script-option');
         this.iconCategoryOpts = document.querySelectorAll('.icon-category-opt');
@@ -604,6 +616,12 @@ class DocumentTypography {
         this.uploadBtn.addEventListener('click', () => this.fileInput.click());
         this.uploadBtnAlt.addEventListener('click', () => this.fileInput.click());
         this.fileInput.addEventListener('change', e => this.handleFileUpload(e));
+        this.pasteTextBtn.addEventListener('click', () => this.openPasteTextModal());
+        this.pasteTextBtnAlt.addEventListener('click', () => this.openPasteTextModal());
+        this.pasteTextModalClose.addEventListener('click', () => this.closePasteTextModal());
+        this.pasteTextModalCancel.addEventListener('click', () => this.closePasteTextModal());
+        this.pasteTextModal.addEventListener('click', e => { if (e.target === this.pasteTextModal) this.closePasteTextModal(); });
+        this.pasteTextModalSubmit.addEventListener('click', () => this.submitPastedText());
         this.documentViewport.addEventListener('dragover', e => { e.preventDefault(); this.documentViewport.classList.add('drag-over'); });
         this.documentViewport.addEventListener('dragleave', e => { e.preventDefault(); this.documentViewport.classList.remove('drag-over'); });
         this.documentViewport.addEventListener('drop', e => this.handleDrop(e));
@@ -756,24 +774,57 @@ class DocumentTypography {
             formData.append('file', file);
             const response = await fetch(`${this.apiBase}/upload`, { method: 'POST', body: formData });
             const data = await response.json();
-            if (data.success) {
-                this.docId = data.doc_id;
-                this.content = data.content;
-                this.styles = [];
-                this.history = [];
-                this.redoStack = [];
-                this.savedSelection = null;
-                this.renderDocument();
-                this.updateStylesList();
-                this.fileInfo.querySelector('.file-name').textContent = data.filename;
-                this.showToast(this.t('upload_success'), 'success');
-            } else {
-                throw new Error(data.error);
-            }
+            if (!data.success) throw new Error(data.error);
+            this.applyUploadResult(data);
         } catch (error) {
             console.error('Upload error:', error);
             this.showToast(this.t('upload_failed') + error.message, 'error');
         }
+    }
+
+    openPasteTextModal() {
+        this.pasteTextInput.value = '';
+        this.pasteTextModal.style.display = 'flex';
+        this.pasteTextInput.focus();
+    }
+
+    closePasteTextModal() {
+        this.pasteTextModal.style.display = 'none';
+    }
+
+    async submitPastedText() {
+        const text = this.pasteTextInput.value;
+        if (!text.trim()) {
+            this.showToast(this.t('paste_text_empty'), 'error');
+            return;
+        }
+        try {
+            const response = await fetch(`${this.apiBase}/upload-text`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            this.applyUploadResult(data);
+            this.closePasteTextModal();
+        } catch (error) {
+            console.error('Paste text error:', error);
+            this.showToast(this.t('upload_failed') + error.message, 'error');
+        }
+    }
+
+    applyUploadResult(data) {
+        this.docId = data.doc_id;
+        this.content = data.content;
+        this.styles = [];
+        this.history = [];
+        this.redoStack = [];
+        this.savedSelection = null;
+        this.renderDocument();
+        this.updateStylesList();
+        this.fileInfo.querySelector('.file-name').textContent = data.filename;
+        this.showToast(this.t('upload_success'), 'success');
     }
 
     renderDocument() {

@@ -72,38 +72,38 @@ _OOXML_EXTRA_NAMESPACES = {
     'wp14': 'http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing',
     'mc': 'http://schemas.openxmlformats.org/markup-compatibility/2006',
 }
-def _repair_missing_namespaces(xml_bytes):
-    xml = xml_bytes.decode('utf-8')
-    root_match = re.search(r'<w:document\b[^>]*>', xml)
-    if not root_match:
-        return xml_bytes
-    root_tag = root_match.group(0)
-    missing = {
-        prefix: uri for prefix, uri in _OOXML_EXTRA_NAMESPACES.items()
-        if f'xmlns:{prefix}=' not in root_tag and re.search(rf'[<\s/]{prefix}:', xml)
-    }
-    if not missing:
-        return xml_bytes
-    injected = ''.join(f' xmlns:{p}="{u}"' for p, u in missing.items())
-    repaired_root = root_tag[:-1] + injected + '>'
-    xml = xml[:root_match.start()] + repaired_root + xml[root_match.end():]
-    return xml.encode('utf-8')
-def _repair_docx(filepath):
-    with zipfile.ZipFile(filepath) as zin:
-        if 'word/document.xml' not in zin.namelist():
-            return None
-        entries = {name: zin.read(name) for name in zin.namelist()}
-    original = entries['word/document.xml']
-    repaired = _repair_missing_namespaces(original)
-    if repaired == original:
-        return None
-    entries['word/document.xml'] = repaired
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zout:
-        for name, data in entries.items():
-            zout.writestr(name, data)
-    buffer.seek(0)
-    return buffer
+# def _repair_missing_namespaces(xml_bytes):
+#     xml = xml_bytes.decode('utf-8')
+#     root_match = re.search(r'<w:document\b[^>]*>', xml)
+#     if not root_match:
+#         return xml_bytes
+#     root_tag = root_match.group(0)
+#     missing = {
+#         prefix: uri for prefix, uri in _OOXML_EXTRA_NAMESPACES.items()
+#         if f'xmlns:{prefix}=' not in root_tag and re.search(rf'[<\s/]{prefix}:', xml)
+#     }
+#     if not missing:
+#         return xml_bytes
+#     injected = ''.join(f' xmlns:{p}="{u}"' for p, u in missing.items())
+#     repaired_root = root_tag[:-1] + injected + '>'
+#     xml = xml[:root_match.start()] + repaired_root + xml[root_match.end():]
+#     return xml.encode('utf-8')
+# def _repair_docx(filepath):
+#     with zipfile.ZipFile(filepath) as zin:
+#         if 'word/document.xml' not in zin.namelist():
+#             return None
+#         entries = {name: zin.read(name) for name in zin.namelist()}
+#     original = entries['word/document.xml']
+#     repaired = _repair_missing_namespaces(original)
+#     if repaired == original:
+#         return None
+#     entries['word/document.xml'] = repaired
+#     buffer = io.BytesIO()
+#     with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zout:
+#         for name, data in entries.items():
+#             zout.writestr(name, data)
+#     buffer.seek(0)
+#     return buffer
 def extract_text_from_docx(filepath):
     try:
         doc = Document(filepath)
@@ -147,9 +147,6 @@ _LOCAL_FONT_FILES = {
     'NanumSquare': ('NanumSquare.woff2', '400'),
     'MaruBuri': ('MaruBuri-Regular.woff2', '400'),
     'ChosunGs': ('ChosunGs.woff2', '400'),
-    # Variable font (weight axis 100-900) so a single file covers regular and bold text,
-    # letting the exporter's headless browser render the default UI font without depending
-    # on a live fetch from Google Fonts (which the deployed server may not have access to).
     'Inter': ('Inter-Variable.woff2', '100 900'),
 }
 def _local_font_faces():
@@ -368,10 +365,7 @@ def build_styled_html(content, styles):
             if seg['kind'] == 'icon':
                 parts += _icon_html(seg['style'])
                 continue
-            # Borders are nested <span>s, so closing one that isn't the innermost open tag requires
-            # closing everything above it first (LIFO), then reopening whichever of those are still
-            # active as new sibling spans — otherwise crossing (non-nested) border ranges would emit
-            # a stray </span> that closes the wrong tag, producing invalid/mismatched markup.
+
             new_border_ids = {s.get('id', id(s)) for s in seg['borders']}
             close_from = next((j for j, ob in enumerate(open_borders) if ob.get('id', id(ob)) not in new_border_ids), None)
             if close_from is not None:
@@ -442,6 +436,19 @@ def build_styled_html(content, styles):
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "message": "Document Typography API is running"})
+def _paragraphs_from_text(text):
+    content = []
+    for i, line in enumerate(text.split('\n')):
+        line = line.strip('\n')
+        if line.strip():
+            content.append({'id': f'p-{i}', 'type': 'paragraph', 'text': line})
+    return content
+def _new_doc_data(doc_id, original_filename, content):
+    return {
+        "doc_id": doc_id, "original_filename": original_filename,
+        "created_at": datetime.now().isoformat(), "updated_at": datetime.now().isoformat(),
+        "content": content, "styles": [], "enrichment_log": []
+    }
 @app.route('/api/upload', methods=['POST'])
 def upload_document():
     if 'file' not in request.files:
@@ -460,13 +467,21 @@ def upload_document():
     except Exception as e:
         os.remove(file_path)
         return jsonify({"error": f"Failed to parse document: {str(e)}"}), 400
-    doc_data = {
-        "doc_id": doc_id, "original_filename": original_filename,
-        "created_at": datetime.now().isoformat(), "updated_at": datetime.now().isoformat(),
-        "content": content, "styles": [], "enrichment_log": []
-    }
+    doc_data = _new_doc_data(doc_id, original_filename, content)
     save_doc(doc_id, doc_data)
     return jsonify({"success": True, "doc_id": doc_id, "filename": original_filename, "content": content, "message": "Document uploaded successfully"})
+@app.route('/api/upload-text', methods=['POST'])
+def upload_text():
+    data = request.get_json(silent=True) or {}
+    text = data.get('text', '')
+    if not text.strip():
+        return jsonify({"error": "No text provided"}), 400
+    original_filename = secure_filename((data.get('filename') or '').strip()) or 'Pasted Text'
+    doc_id = str(uuid.uuid4())
+    content = _paragraphs_from_text(text)
+    doc_data = _new_doc_data(doc_id, original_filename, content)
+    save_doc(doc_id, doc_data)
+    return jsonify({"success": True, "doc_id": doc_id, "filename": original_filename, "content": content, "message": "Document created successfully"})
 @app.route('/api/document/<doc_id>', methods=['GET'])
 def get_document(doc_id):
     doc = load_doc(doc_id)

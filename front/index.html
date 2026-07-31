@@ -51,6 +51,13 @@
                     </svg>
                     <span data-i18n="upload_document">Upload Document</span>
                 </button>
+                <button id="pasteTextBtn" class="btn btn-outline">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1"/>
+                    </svg>
+                    <span data-i18n="paste_text">Paste Text</span>
+                </button>
                 <input type="file" id="fileInput" accept=".docx,.doc" hidden>
             </div>
         </header>
@@ -394,14 +401,23 @@
                         </div>
                         <h2 data-i18n="upload_word_doc">Upload a Word document</h2>
                         <p data-i18n="drag_drop_hint">Drag and drop a .docx file here or click the button below</p>
-                        <button id="uploadBtnAlt" class="btn btn-outline">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            <span data-i18n="upload_document">Upload Document</span>
-                        </button>
+                        <div class="empty-state-actions">
+                            <button id="uploadBtnAlt" class="btn btn-outline">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span data-i18n="upload_document">Upload Document</span>
+                            </button>
+                            <button id="pasteTextBtnAlt" class="btn btn-outline">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                    <rect x="8" y="2" width="8" height="4" rx="1"/>
+                                </svg>
+                                <span data-i18n="paste_text">Paste Text</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="document-container" id="documentContainer" style="display: none;">
                         <div class="document-content" id="documentContent"></div>
@@ -459,6 +475,28 @@
                         <span id="iconModalSubmitText" data-i18n="generate">Generate</span>
                         <span id="iconModalSpinner" class="spinner" style="display:none"></span>
                     </button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="pasteTextModal" style="display:none">
+            <div class="modal-dialog paste-text-modal-dialog">
+                <div class="modal-header">
+                    <h3 data-i18n="paste_text">Paste Text</h3>
+                    <button class="modal-close" id="pasteTextModalClose">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label class="modal-label" for="pasteTextInput" data-i18n="paste_text_label">Paste or type your text</label>
+                    <textarea id="pasteTextInput" class="modal-input modal-textarea" data-i18n-placeholder="paste_text_placeholder" placeholder="Paste your text here. Each line becomes a paragraph."></textarea>
+                    <div class="modal-hint" data-i18n="paste_text_hint">Text is split into paragraphs the same way a Word document would be, so it can be styled and enriched identically.</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn modal-btn-secondary" id="pasteTextModalCancel" data-i18n="cancel">Cancel</button>
+                    <button class="modal-btn modal-btn-primary" id="pasteTextModalSubmit" data-i18n="paste_text_submit">Create Document</button>
                 </div>
             </div>
         </div>
