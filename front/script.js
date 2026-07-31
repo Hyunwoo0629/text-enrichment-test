@@ -845,12 +845,19 @@ class DocumentTypography {
         return div.innerHTML;
     }
 
-    _iconHtml(s) {
-        if (s.svgCode) {
-            const cls = s.isEmoji ? 'inline-icon inline-icon-emoji' : 'inline-icon';
-            return `<span class="${cls}" data-style-id="${s.id}" title="${this.escapeHtml(s.iconName)}">${s.svgCode}</span>`;
-        }
-        return `<img src="${s.iconData}" class="inline-icon" data-style-id="${s.id}" alt="">`;
+    _iconHtml(s, decorationStyles = []) {
+        // Every icon kind (SVG, emoji, AI-generated image) always renders its underline/strikethrough/
+        // overline/wavyunderline manually via the .inline-icon::after rules in styles.css, never via
+        // native text-decoration - even emoji, which IS real text, since native decoration ties the
+        // glyph's own (raised) box to the decoration's position, so it drifts out of sync with the
+        // surrounding text the moment the icon's vertical alignment differs from plain text's. The
+        // manual line is pinned to the text's decoration position directly, regardless of that.
+        const decoClasses = decorationStyles.length ? ['styled-text', ...decorationStyles.map(d => d.type)] : [];
+        const decoInline = decorationStyles.map(d => `--deco-${d.type}-color:${d.color}`);
+        const styleAttr = decoInline.length ? ` style="${decoInline.join(';')}"` : '';
+        const cls = [s.isEmoji ? 'inline-icon inline-icon-emoji' : 'inline-icon', ...decoClasses].join(' ');
+        const inner = s.svgCode ? s.svgCode : `<img src="${s.iconData}" alt="">`;
+        return `<span class="${cls}" data-style-id="${s.id}" title="${this.escapeHtml(s.iconName || '')}"${styleAttr}>${inner}</span>`;
     }
 
     _initStepperWithInput(minusBtn, plusBtn, input, min, max, prop, tool, validate, syncInput) {
@@ -1015,8 +1022,12 @@ class DocumentTypography {
                 continue;
             }
             if (s.type === 'inlineicon') {
-                if (s.paraIndex === startPara && s.startOffset < range.srcStart) adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? s.startOffset : 0 });
-                else if (s.paraIndex === endPara && s.startOffset >= range.srcEnd) adjustedStyles.push({ ...s, paraIndex: rightIdx, startOffset: hasSuffix ? s.startOffset - range.srcEnd : 0, endOffset: hasSuffix ? s.startOffset - range.srcEnd : 0 });
+                if (s.paraIndex === startPara && s.startOffset < range.srcStart) { adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? s.startOffset : 0 }); continue; }
+                if (s.paraIndex === endPara && s.startOffset > range.srcEnd) { adjustedStyles.push({ ...s, paraIndex: rightIdx, startOffset: hasSuffix ? s.startOffset - range.srcEnd : 0, endOffset: hasSuffix ? s.startOffset - range.srcEnd : 0 }); continue; }
+                if (s.startOffset >= range.srcStart && s.startOffset <= range.srcEnd) {
+                    const off = s.startOffset - range.srcStart + range.mergedStart;
+                    adjustedStyles.push({ ...s, paraIndex: blockIdx, startOffset: off, endOffset: off });
+                }
                 continue;
             }
             if (s.paraIndex === startPara && s.endOffset <= range.srcStart) { adjustedStyles.push({ ...s, paraIndex: leftIdx, startOffset: hasPrefix ? s.startOffset : 0, endOffset: hasPrefix ? s.endOffset : 0 }); continue; }
@@ -1304,7 +1315,17 @@ class DocumentTypography {
                 continue;
             }
             if (s.type === 'inlineicon') {
-                const containing = paraEntries.find(r => s.startOffset >= r.srcStart && s.startOffset <= r.srcEnd);
+                // Adjacent entries share a boundary value (prefix.srcEnd === firstList.srcStart, and
+                // lastList.srcEnd === suffix.srcStart), so an icon sitting exactly on one of those
+                // boundaries would otherwise match whichever entry happens to come first in the
+                // array - which is the leftover prefix/suffix, silently dropping the icon out of the
+                // list block. Exclude the shared edge on the prefix/suffix side so the tie resolves
+                // to the 'list' entry instead.
+                const containing = paraEntries.find(r => {
+                    const afterStart = r.kind === 'suffix' ? s.startOffset > r.srcStart : s.startOffset >= r.srcStart;
+                    const beforeEnd = r.kind === 'prefix' ? s.startOffset < r.srcEnd : s.startOffset <= r.srcEnd;
+                    return afterStart && beforeEnd;
+                });
                 if (containing) adjustedStyles.push({ ...s, paraIndex: containing.newParaIndex, startOffset: s.startOffset - containing.srcStart, endOffset: s.startOffset - containing.srcStart });
                 continue;
             }
@@ -1851,6 +1872,11 @@ class DocumentTypography {
 
     getTextOffset(paragraph, node, offset) {
         if (node.nodeType !== Node.TEXT_NODE) ({ node, offset } = this._normalizeRangeBoundary(node, offset));
+        const iconEl = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest('.inline-icon');
+        if (iconEl && paragraph.contains(iconEl)) {
+            const iconStyle = this.styles.find(s => s.id === iconEl.dataset.styleId);
+            if (iconStyle) return iconStyle.startOffset;
+        }
         const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT, {
             acceptNode: n => n.parentElement?.closest('.inline-icon') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
         });
@@ -1888,6 +1914,7 @@ class DocumentTypography {
             }
         }
         const borderTypes = new Set(['border', 'circle']);
+        const decorationTypes = new Set(['underline', 'strikethrough', 'overline', 'wavyunderline']);
         const cursorHtml = '<span class="text-cursor"></span>';
         const cp = this.cursorPosition;
         const allParaIndices = new Set(Object.keys(stylesByPara).map(Number));
@@ -1915,7 +1942,9 @@ class DocumentTypography {
                 const [start, end] = [bounds[i], bounds[i + 1]];
                 if (hasCursor && cursorOffset === start) segments.push({ kind: 'cursor' });
                 iconStyles.filter(s => s.startOffset === start).forEach(s => {
-                    segments.push({ kind: 'icon', style: s });
+                    const iconActive = nonBorderStyles.filter(st => st.startOffset <= start && st.endOffset >= start);
+                    const iconActiveBorders = borderStyles.filter(st => st.startOffset <= start && st.endOffset >= start);
+                    segments.push({ kind: 'icon', style: s, styles: iconActive, borders: iconActiveBorders });
                 });
                 const seg = text.substring(start, end);
                 if (!seg) continue;
@@ -1928,7 +1957,6 @@ class DocumentTypography {
             let openBorders = [];
             for (const seg of segments) {
                 if (seg.kind === 'cursor') { result += cursorHtml; continue; }
-                if (seg.kind === 'icon') { result += this._iconHtml(seg.style); continue; }
                 const newBorderIds = new Set(seg.borders.map(b => b.id));
                 const closeFrom = openBorders.findIndex(ob => !newBorderIds.has(ob.id));
                 if (closeFrom !== -1) {
@@ -1946,10 +1974,19 @@ class DocumentTypography {
                         openBorders.push(b);
                     }
                 }
+                if (seg.kind === 'icon') {
+                    const iconHtml = this._iconHtml(seg.style, seg.styles.filter(st => decorationTypes.has(st.type)));
+                    result += seg.styles.length ? this._wrapStyled(seg.styles, iconHtml) : iconHtml;
+                    continue;
+                }
                 result += seg.styles.length ? this.buildStyledSpan(seg.styles, seg.text) : this.escapeHtml(seg.text);
             }
             for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
-            iconStyles.filter(s => s.startOffset >= text.length).forEach(s => result += this._iconHtml(s));
+            iconStyles.filter(s => s.startOffset >= text.length).forEach(s => {
+                const iconActive = nonBorderStyles.filter(st => st.startOffset <= text.length && st.endOffset >= text.length);
+                const iconHtml = this._iconHtml(s, iconActive.filter(st => decorationTypes.has(st.type)));
+                result += iconActive.length ? this._wrapStyled(iconActive, iconHtml) : iconHtml;
+            });
             para.innerHTML = result;
             if (calloutStyles.length) {
                 const cs = calloutStyles[calloutStyles.length - 1];
@@ -1980,12 +2017,16 @@ class DocumentTypography {
     }
 
     buildStyledSpan(styles, text) {
+        return this._wrapStyled(styles, this.escapeHtml(text));
+    }
+
+    _wrapStyled(styles, innerHtml) {
         const classes = ['styled-text', ...styles.map(s => s.type)];
         const inlineMap = { highlight: 'background-color', textcolor: 'color', border: 'border-color', circle: 'border-color', underline: 'text-decoration-color', wavyunderline: 'text-decoration-color', strikethrough: 'text-decoration-color', overline: 'text-decoration-color', fontsize: 'font-size', letterspacing: 'letter-spacing', dropcap: 'color' };
         const inline = styles.map(s => inlineMap[s.type] ? `${inlineMap[s.type]}:${s.color}` : null).filter(Boolean);
         const ids = styles.map(s => s.id).join(',');
         const styleAttr = inline.length ? ` style="${inline.join(';')}"` : '';
-        return `<span class="${classes.join(' ')}" data-style-id="${ids}"${styleAttr}>${this.escapeHtml(text)}</span>`;
+        return `<span class="${classes.join(' ')}" data-style-id="${ids}"${styleAttr}>${innerHtml}</span>`;
     }
 
     updateStylesList() {

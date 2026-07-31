@@ -160,13 +160,20 @@ def _local_font_faces():
             b64 = base64.b64encode(f.read()).decode()
         faces.append(f"@font-face{{font-family:'{family}';src:url(data:font/woff2;base64,{b64}) format('woff2');font-weight:{weight};font-style:normal}}")
     return ''.join(faces)
-def _icon_html(s):
+def _icon_html(s, decoration_styles=None):
+    decoration_styles = decoration_styles or []
+    deco_classes = ['styled-text'] + [d['type'] for d in decoration_styles] if decoration_styles else []
+    deco_inline = [f'--deco-{d["type"]}-color:{d["color"]}' for d in decoration_styles]
+    style_attr = f' style="{";".join(deco_inline)}"' if deco_inline else ''
+    cls = ['inline-icon inline-icon-emoji' if s.get('isEmoji') else 'inline-icon'] + deco_classes
+    title_attr = f' title="{html_module.escape(s.get("iconName") or "", quote=True)}"'
     if s.get('svgCode'):
-        cls = 'inline-icon inline-icon-emoji' if s.get('isEmoji') else 'inline-icon'
-        return f'<span class="{cls}">{s["svgCode"]}</span>'
-    if s.get('iconData'):
-        return f'<img src="{html_module.escape(s["iconData"], quote=True)}" class="inline-icon" alt="">'
-    return ''
+        inner = s['svgCode']
+    elif s.get('iconData'):
+        inner = f'<img src="{html_module.escape(s["iconData"], quote=True)}" alt="">'
+    else:
+        return ''
+    return f'<span class="{" ".join(cls)}"{title_attr}{style_attr}>{inner}</span>'
 
 _DOC_CSS = r"""
 :root {
@@ -271,9 +278,32 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .document-content p.code-white::before,
 .document-content p.code-gray::before { background: #ffffff; color: #666666; border: 1px solid #d8d8d8; }
 .document-content p.code-black::before { background: #2d2d2d; color: #aaaaaa; border: 1px solid #000000; }
-.inline-icon { display: inline-block; height: 1em; width: auto; vertical-align: middle; margin: 0 2px; }
-.inline-icon svg { height: 1em; width: auto; display: block; }
-.inline-icon-emoji { height: auto; font-size: 1.15em; line-height: 1; vertical-align: -0.2em; }
+.inline-icon {
+    --icon-lift: -0.05em;
+    position: relative; display: inline-block; height: 1em; width: auto; vertical-align: var(--icon-lift); margin: 0 2px;
+}
+.inline-icon svg, .inline-icon img { height: 1em; width: auto; display: block; }
+.inline-icon-emoji { --icon-lift: -0.2em; height: auto; font-size: 1.15em; line-height: 1; vertical-align: var(--icon-lift); }
+.inline-icon.underline, .inline-icon.strikethrough, .inline-icon.overline, .inline-icon.wavyunderline { text-decoration: none; }
+.inline-icon.underline::after,
+.inline-icon.strikethrough::after,
+.inline-icon.overline::after,
+.inline-icon.wavyunderline::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 1.5px; pointer-events: none;
+}
+.inline-icon.underline::after { bottom: calc(-1 * (var(--icon-lift) + 3.5px)); background: var(--deco-underline-color, currentColor); }
+.inline-icon.strikethrough::after { top: calc(50% + var(--icon-lift) + 2.45px); transform: translateY(-50%); background: var(--deco-strikethrough-color, currentColor); }
+.inline-icon.overline::after { top: calc(var(--icon-lift) - 1.3px); background: var(--deco-overline-color, currentColor); }
+.inline-icon.wavyunderline::after {
+    bottom: calc(-1 * (var(--icon-lift) + 3.5px)); height: 4px; background-color: var(--deco-wavyunderline-color, currentColor);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 8px 4px; mask-size: 8px 4px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0,2 Q2,0 4,2 Q6,4 8,2' stroke='black' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0,2 Q2,0 4,2 Q6,4 8,2' stroke='black' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
+}
+.inline-icon-emoji.underline::after { bottom: calc(-1 * (var(--icon-lift) + 1px)); }
+.inline-icon-emoji.strikethrough::after { top: calc(50% + var(--icon-lift) + 1.2px); }
+.inline-icon-emoji.wavyunderline::after { bottom: calc(-1 * (var(--icon-lift) + 4.25px)); }
 .divider-block { display: flex; align-items: center; margin: 16px 0; }
 .div-line { flex: 1; border-top: 1px solid #d0d0d0; }
 .div-sym-svg { flex-shrink: 0; display: block; }
@@ -301,8 +331,16 @@ def _divider_html(d):
     }.get(d.get('dividerType'), line)
     align = f' data-align="{d["alignment"]}"' if d.get('alignment') else ''
     return f'<div class="divider-block divider-{d.get("dividerType")}"{align}>{inner}</div>'
+def _wrap_styled(styles_list, inner_html):
+    if not styles_list:
+        return inner_html
+    classes = ['styled-text'] + [s['type'] for s in styles_list]
+    inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in styles_list if s['type'] in _CSS_PROP]
+    style_attr = f' style="{";".join(inline)}"' if inline else ''
+    return f'<span class="{" ".join(classes)}"{style_attr}>{inner_html}</span>'
 def build_styled_html(content, styles):
     border_types = {'border', 'circle'}
+    decoration_types = {'underline', 'strikethrough', 'overline', 'wavyunderline'}
     block_types = {'inlineicon', 'callout', 'quote', 'list', 'code'}
     styles_by_para = {}
     for s in styles:
@@ -352,7 +390,9 @@ def build_styled_html(content, styles):
             start, end = bounds[j], bounds[j + 1]
             for s in icon_styles:
                 if s['startOffset'] == start:
-                    segments.append({'kind': 'icon', 'style': s})
+                    icon_active = [st for st in non_border_styles if st['startOffset'] <= start <= st['endOffset']]
+                    icon_active_borders = [st for st in border_styles if st['startOffset'] <= start <= st['endOffset']]
+                    segments.append({'kind': 'icon', 'style': s, 'styles': icon_active, 'borders': icon_active_borders})
             seg = text[start:end]
             if not seg:
                 continue
@@ -362,10 +402,6 @@ def build_styled_html(content, styles):
         parts = ''
         open_borders = []
         for seg in segments:
-            if seg['kind'] == 'icon':
-                parts += _icon_html(seg['style'])
-                continue
-
             new_border_ids = {s.get('id', id(s)) for s in seg['borders']}
             close_from = next((j for j, ob in enumerate(open_borders) if ob.get('id', id(ob)) not in new_border_ids), None)
             if close_from is not None:
@@ -381,18 +417,18 @@ def build_styled_html(content, styles):
                 if not any(ob.get('id', id(ob)) == bid for ob in open_borders):
                     parts += f'<span class="styled-text {b["type"]}" style="border-color:{b["color"]}">'
                     open_borders.append(b)
-            if seg['styles']:
-                classes = ['styled-text'] + [s['type'] for s in seg['styles']]
-                inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in seg['styles'] if s['type'] in _CSS_PROP]
-                style_attr = f' style="{";".join(inline)}"' if inline else ''
-                parts += f'<span class="{" ".join(classes)}"{style_attr}>{html_module.escape(seg["text"])}</span>'
-            else:
-                parts += html_module.escape(seg['text'])
+            if seg['kind'] == 'icon':
+                deco_styles = [st for st in seg['styles'] if st['type'] in decoration_types]
+                parts += _wrap_styled(seg['styles'], _icon_html(seg['style'], deco_styles))
+                continue
+            parts += _wrap_styled(seg['styles'], html_module.escape(seg['text']))
         for _ in open_borders:
             parts += '</span>'
         for s in icon_styles:
             if s['startOffset'] >= n:
-                parts += _icon_html(s)
+                icon_active = [st for st in non_border_styles if st['startOffset'] <= n <= st['endOffset']]
+                deco_styles = [st for st in icon_active if st['type'] in decoration_types]
+                parts += _wrap_styled(icon_active, _icon_html(s, deco_styles))
         p_classes = []
         p_inline = []
         p_attrs = ''

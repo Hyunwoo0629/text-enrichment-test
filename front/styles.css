@@ -284,9 +284,33 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .document-content p.code-white::before,
 .document-content p.code-gray::before { background: #ffffff; color: #666666; border: 1px solid #d8d8d8; }
 .document-content p.code-black::before { background: #2d2d2d; color: #aaaaaa; border: 1px solid #000000; }
-.inline-icon { display: inline-block; height: 1em; width: auto; vertical-align: middle; margin: 0 2px; }
-.inline-icon svg { height: 1em; width: auto; display: block; }
-.inline-icon-emoji { height: auto; font-size: 1.15em; line-height: 1; vertical-align: -0.2em; }
+.inline-icon {
+    --icon-lift: -0.2em;
+    position: relative; display: inline-block; height: 1em; width: auto; vertical-align: var(--icon-lift); margin: 0 2px;
+}
+.inline-icon svg, .inline-icon img { height: 1em; width: auto; display: block; }
+.inline-icon-emoji { --icon-lift: -0.05em; height: auto; font-size: 1.15em; line-height: 1; vertical-align: var(--icon-lift); }
+.inline-icon.underline, .inline-icon.strikethrough, .inline-icon.overline, .inline-icon.wavyunderline { text-decoration: none; }
+.inline-icon.underline::after,
+.inline-icon.strikethrough::after,
+.inline-icon.overline::after,
+.inline-icon.wavyunderline::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 1.5px; pointer-events: none;
+}
+.inline-icon.underline::after { bottom: calc(-1 * (var(--icon-lift) + 3.5px)); background: var(--deco-underline-color, currentColor); }
+.inline-icon.strikethrough::after { top: calc(50% + var(--icon-lift) + 2.45px); transform: translateY(-50%); background: var(--deco-strikethrough-color, currentColor); }
+.inline-icon.overline::after { top: calc(var(--icon-lift) - 1.3px); background: var(--deco-overline-color, currentColor); }
+.inline-icon.wavyunderline::after {
+    bottom: calc(-1 * (var(--icon-lift) + 3.5px)); height: 4px; background-color: var(--deco-wavyunderline-color, currentColor);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 8px 4px; mask-size: 8px 4px;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0,2 Q2,0 4,2 Q6,4 8,2' stroke='black' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0,2 Q2,0 4,2 Q6,4 8,2' stroke='black' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");
+}
+
+.inline-icon-emoji.underline::after { bottom: calc(-1 * (var(--icon-lift) + 1px)); }
+.inline-icon-emoji.strikethrough::after { top: calc(50% + var(--icon-lift) + 1.2px); }
+.inline-icon-emoji.wavyunderline::after { bottom: calc(-1 * (var(--icon-lift) + 4.25px)); }
 .document-content.icon-placement-mode { cursor: crosshair; }
 .document-content.icon-placement-mode * { cursor: crosshair; }
 .text-cursor { display: inline-block; width: 1.5px; height: 1.1em; background: #000; vertical-align: text-bottom; margin: 0 -0.75px; animation: blink-cursor 1s step-end infinite; pointer-events: none; }
