@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from docx import Document
 from playwright.sync_api import sync_playwright
 from datetime import datetime
-import os, json, uuid, html as html_module, base64, re, tempfile
+import os, json, uuid, html as html_module, base64, re, tempfile, zipfile, io
 import xml.etree.ElementTree as ET
 import openai
 app = Flask(__name__)
@@ -57,8 +57,63 @@ def save_doc(doc_id, data):
         if os.path.exists(tmp):
             os.remove(tmp)
         raise
+# Namespace prefixes that some non-Word tools (converters, older office suites) emit inside
+# word/document.xml without declaring on the root element. lxml's parser treats an undeclared
+# prefix as a fatal, unrecoverable XML error ("Namespace prefix X on Y is not defined"), so a
+# file that Word itself opens fine can still fail here. Re-declaring any missing ones on the
+# root <w:document> element before parsing repairs this without altering document content.
+_OOXML_EXTRA_NAMESPACES = {
+    'w14': 'http://schemas.microsoft.com/office/word/2010/wordml',
+    'w15': 'http://schemas.microsoft.com/office/word/2012/wordml',
+    'w16': 'http://schemas.microsoft.com/office/word/2018/wordml',
+    'w16cex': 'http://schemas.microsoft.com/office/word/2018/wordml/cex',
+    'w16cid': 'http://schemas.microsoft.com/office/word/2016/wordml/cid',
+    'w16se': 'http://schemas.microsoft.com/office/word/2015/wordml/symex',
+    'wp14': 'http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing',
+    'mc': 'http://schemas.openxmlformats.org/markup-compatibility/2006',
+}
+def _repair_missing_namespaces(xml_bytes):
+    xml = xml_bytes.decode('utf-8')
+    root_match = re.search(r'<w:document\b[^>]*>', xml)
+    if not root_match:
+        return xml_bytes
+    root_tag = root_match.group(0)
+    missing = {
+        prefix: uri for prefix, uri in _OOXML_EXTRA_NAMESPACES.items()
+        if f'xmlns:{prefix}=' not in root_tag and re.search(rf'[<\s/]{prefix}:', xml)
+    }
+    if not missing:
+        return xml_bytes
+    injected = ''.join(f' xmlns:{p}="{u}"' for p, u in missing.items())
+    repaired_root = root_tag[:-1] + injected + '>'
+    xml = xml[:root_match.start()] + repaired_root + xml[root_match.end():]
+    return xml.encode('utf-8')
+def _repair_docx(filepath):
+    with zipfile.ZipFile(filepath) as zin:
+        if 'word/document.xml' not in zin.namelist():
+            return None
+        entries = {name: zin.read(name) for name in zin.namelist()}
+    original = entries['word/document.xml']
+    repaired = _repair_missing_namespaces(original)
+    if repaired == original:
+        return None
+    entries['word/document.xml'] = repaired
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for name, data in entries.items():
+            zout.writestr(name, data)
+    buffer.seek(0)
+    return buffer
 def extract_text_from_docx(filepath):
-    doc = Document(filepath)
+    try:
+        doc = Document(filepath)
+    except Exception as e:
+        if 'is not defined' not in str(e):
+            raise
+        repaired = _repair_docx(filepath)
+        if repaired is None:
+            raise
+        doc = Document(repaired)
     content = []
     for i, p in enumerate(doc.paragraphs):
         text = p.text.strip('\n')
@@ -88,21 +143,25 @@ def _next_export_version(doc_id, doc):
         version += 1
     return version
 _LOCAL_FONT_FILES = {
-    'Nanum Barun Gothic': 'NanumBarunGothic.woff2',
-    'NanumSquare': 'NanumSquare.woff2',
-    'MaruBuri': 'MaruBuri-Regular.woff2',
-    'ChosunGs': 'ChosunGs.woff2',
+    'Nanum Barun Gothic': ('NanumBarunGothic.woff2', '400'),
+    'NanumSquare': ('NanumSquare.woff2', '400'),
+    'MaruBuri': ('MaruBuri-Regular.woff2', '400'),
+    'ChosunGs': ('ChosunGs.woff2', '400'),
+    # Variable font (weight axis 100-900) so a single file covers regular and bold text,
+    # letting the exporter's headless browser render the default UI font without depending
+    # on a live fetch from Google Fonts (which the deployed server may not have access to).
+    'Inter': ('Inter-Variable.woff2', '100 900'),
 }
 def _local_font_faces():
     fonts_dir = os.path.join(FRONTEND_PATH, 'fonts')
     faces = []
-    for family, filename in _LOCAL_FONT_FILES.items():
+    for family, (filename, weight) in _LOCAL_FONT_FILES.items():
         path = os.path.join(fonts_dir, filename)
         if not os.path.exists(path) or os.path.getsize(path) == 0:
             continue
         with open(path, 'rb') as f:
             b64 = base64.b64encode(f.read()).decode()
-        faces.append(f"@font-face{{font-family:'{family}';src:url(data:font/woff2;base64,{b64}) format('woff2');font-weight:400;font-style:normal}}")
+        faces.append(f"@font-face{{font-family:'{family}';src:url(data:font/woff2;base64,{b64}) format('woff2');font-weight:{weight};font-style:normal}}")
     return ''.join(faces)
 def _icon_html(s):
     if s.get('svgCode'):
