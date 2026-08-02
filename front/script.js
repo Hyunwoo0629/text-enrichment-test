@@ -356,6 +356,7 @@ const EMOJI_LIBRARY = [
     { char: '💪', label: 'Muscle', label_ko: '힘' },
     { char: '🤝', label: 'Handshake', label_ko: '악수' },
     { char: '🫶', label: 'Heart Hands', label_ko: '하트 손' },
+    { char: '🫳🏻', label: 'Palm Down Hand', label_ko: '쓰다듬는 손' },
     { char: '👋', label: 'Waving Hand', label_ko: '손 흔들기' },
     { char: '❤️', label: 'Red Heart', label_ko: '빨간 하트' },
     { char: '🧡', label: 'Orange Heart', label_ko: '주황 하트' },
@@ -368,6 +369,7 @@ const EMOJI_LIBRARY = [
     { char: '💔', label: 'Broken Heart', label_ko: '상심한 하트' },
     { char: '💕', label: 'Two Hearts', label_ko: '두 개의 하트' },
     { char: '🔥', label: 'Fire', label_ko: '불꽃' },
+    { char: '💦', label: 'Splashing Sweat', label_ko: '땀방울' },
     { char: '✨', label: 'Sparkles', label_ko: '반짝임' },
     { char: '💯', label: 'Hundred Points', label_ko: '100점' },
     { char: '🚀', label: 'Rocket', label_ko: '로켓' },
@@ -375,6 +377,7 @@ const EMOJI_LIBRARY = [
     { char: '📍', label: 'Location Pin', label_ko: '위치 핀' },
     { char: '💡', label: 'Idea', label_ko: '아이디어' },
     { char: '⚡', label: 'Lightning', label_ko: '번개' },
+    { char: '💥', label: 'Collision', label_ko: '충돌' },
     { char: '🎯', label: 'Target', label_ko: '목표' },
     { char: '🏆', label: 'Trophy', label_ko: '트로피' },
     { char: '🎉', label: 'Party Popper', label_ko: '축하' },
@@ -386,11 +389,13 @@ const EMOJI_LIBRARY = [
     { char: '📊', label: 'Bar Chart', label_ko: '막대 그래프' },
     { char: '👀', label: 'Eyes', label_ko: '눈' },
     { char: '💬', label: 'Speech Balloon', label_ko: '말풍선' },
+    { char: '💭', label: 'Thought Balloon', label_ko: '생각 풍선' },
     { char: '🔔', label: 'Bell', label_ko: '알림' },
     { char: '🔗', label: 'Link', label_ko: '링크' },
     { char: '✅', label: 'Check Mark', label_ko: '체크 표시' },
     { char: '❌', label: 'Cross Mark', label_ko: '엑스 표시' },
     { char: '❓', label: 'Question Mark', label_ko: '물음표' },
+    { char: '❗', label: 'Exclamation Mark', label_ko: '느낌표' },
     { char: '📝', label: 'Memo', label_ko: '메모' },
     { char: '📷', label: 'Camera', label_ko: '카메라' },
     { char: '🎥', label: 'Movie Camera', label_ko: '영화 카메라' },
@@ -401,6 +406,8 @@ const EMOJI_LIBRARY = [
     { char: '🍕', label: 'Pizza', label_ko: '피자' },
     { char: '🍰', label: 'Cake', label_ko: '케이크' },
     { char: '🍺', label: 'Beer', label_ko: '맥주' },
+    { char: '🍵', label: 'Tea', label_ko: '차' },
+    { char: '☕', label: 'Coffee', label_ko: '커피' },
     { char: '✈️', label: 'Airplane', label_ko: '비행기' },
     { char: '🚗', label: 'Car', label_ko: '자동차' },
     { char: '🏠', label: 'House', label_ko: '집' },
@@ -409,12 +416,17 @@ const EMOJI_LIBRARY = [
     { char: '⏰', label: 'Alarm Clock', label_ko: '알람시계' },
     { char: '🔒', label: 'Locked', label_ko: '잠김' },
     { char: '🔑', label: 'Key', label_ko: '열쇠' },
+    { char: '🫧', label: 'Bubbles', label_ko: '물방울' },
     { char: '⭐', label: 'Star', label_ko: '별' },
     { char: '☀️', label: 'Sun', label_ko: '태양' },
     { char: '🌙', label: 'Crescent Moon', label_ko: '초승달' },
     { char: '☁️', label: 'Cloud', label_ko: '구름' },
+    { char: '❄️', label: 'Snowflake', label_ko: '눈꽃' },
     { char: '🌈', label: 'Rainbow', label_ko: '무지개' },
+    { char: '🌀', label: 'Cyclone', label_ko: '태풍' },
     { char: '🍀', label: 'Four Leaf Clover', label_ko: '네잎클로버' },
+    { char: '🌱', label: 'Seeding', label_ko: '새싹' },
+    { char: '🌿', label: 'Herb', label_ko: '허브' },
 ];
 
 function iconLibraryMarkup(icon) {
@@ -1139,7 +1151,7 @@ class DocumentTypography {
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
 
         this._splitSelectionIntoBlock(spans, {
-            joinChar: ' ',
+            joinChar: '\n',
             action: 'quote_split',
             makeStyle: (combined, blockIdx) => ({ id: this._genId(), type: 'quote', quoteStyle, text: combined, color: '', paraIndex: blockIdx, startOffset: 0, endOffset: combined.length, created_at: new Date().toISOString() })
         });
