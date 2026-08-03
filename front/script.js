@@ -370,6 +370,8 @@ const EMOJI_LIBRARY = [
     { char: '💕', label: 'Two Hearts', label_ko: '두 개의 하트' },
     { char: '🔥', label: 'Fire', label_ko: '불꽃' },
     { char: '💦', label: 'Splashing Sweat', label_ko: '땀방울' },
+    { char: '💐', label: 'Bouquet', label_ko: '부케' },
+    { char: '🌺', label: 'Flower', label_ko: '꽃' },
     { char: '✨', label: 'Sparkles', label_ko: '반짝임' },
     { char: '💯', label: 'Hundred Points', label_ko: '100점' },
     { char: '🚀', label: 'Rocket', label_ko: '로켓' },
@@ -405,6 +407,11 @@ const EMOJI_LIBRARY = [
     { char: '☕', label: 'Coffee', label_ko: '커피' },
     { char: '🍕', label: 'Pizza', label_ko: '피자' },
     { char: '🍰', label: 'Cake', label_ko: '케이크' },
+    { char: '🍞', label: 'Bread', label_ko: '식빵' },
+    { char: '🥐', label: 'Croissant', label_ko: '크로와상' },
+    { char: '🥪', label: 'Sandwich', label_ko: '샌드위치' },
+    { char: '🍚', label: 'Cooked Rice', label_ko: '쌀밥' },
+    { char: '🍙', label: 'Rice Ball', label_ko: '주먹밥' },
     { char: '🍺', label: 'Beer', label_ko: '맥주' },
     { char: '🍵', label: 'Tea', label_ko: '차' },
     { char: '☕', label: 'Coffee', label_ko: '커피' },
@@ -991,8 +998,6 @@ class DocumentTypography {
 
         const firstPara = this.content[startPara];
         const lastPara = this.content[endPara];
-        // Strip a boundary '\n' inherited from the original text so this leftover piece
-        // doesn't render as an extra blank line (white-space: pre-line/pre-wrap shows it).
         const prefixText = firstPara.text.slice(0, spans[0].startOffset).replace(/\n$/, '');
         const suffixText = lastPara.text.slice(spans[spans.length - 1].endOffset).replace(/^\n/, '');
         const hasPrefix = prefixText.length > 0;
@@ -1464,7 +1469,7 @@ class DocumentTypography {
 
         if (!spans || spans.length <= 1) {
             // Single-paragraph path
-            const { paraIndex, startOffset, endOffset } = spans ? spans[0] : this.savedSelection;
+            const { paraIndex, startOffset, endOffset, startIconInclusive, endIconInclusive } = spans ? spans[0] : this.savedSelection;
             const sOff = isDropcap ? 0 : startOffset, eOff = isDropcap ? 1 : endOffset;
             const sText = isDropcap ? (this.content[paraIndex]?.text?.charAt(sOff) || '') : text;
             if (keepSelection) {
@@ -1482,7 +1487,7 @@ class DocumentTypography {
                     }
                 }
             }
-            const style = { id: this._genId(), type: tool, text: sText, color, paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
+            const style = { id: this._genId(), type: tool, text: sText, color, paraIndex, startOffset: sOff, endOffset: eOff, startIconInclusive: !!startIconInclusive, endIconInclusive: !!endIconInclusive, created_at: new Date().toISOString() };
             if (tool === 'callout') style.bgColor = this.bgColor;
             this._pushHistory({ action: 'add', style, replaced, replacedFontStyles });
             this.styles.push(style);
@@ -1503,10 +1508,12 @@ class DocumentTypography {
                 }
                 if (anyUpdated) { this._refreshViews(); this.restoreSelectionSpans(spans); return; }
             }
-            const newStyles = activeSpans.map(sp => {
+            const newStyles = activeSpans.map((sp, i) => {
                 const sOff = isDropcap ? 0 : sp.startOffset, eOff = isDropcap ? 1 : sp.endOffset;
                 const spanText = this.content[sp.paraIndex]?.text?.slice(sOff, eOff) ?? '';
-                const style = { id: this._genId(), type: tool, text: spanText, color, paraIndex: sp.paraIndex, startOffset: sOff, endOffset: eOff, created_at: new Date().toISOString() };
+                const startIconInclusive = i === 0 ? !!sp.startIconInclusive : true;
+                const endIconInclusive = i === activeSpans.length - 1 ? !!sp.endIconInclusive : true;
+                const style = { id: this._genId(), type: tool, text: spanText, color, paraIndex: sp.paraIndex, startOffset: sOff, endOffset: eOff, startIconInclusive, endIconInclusive, created_at: new Date().toISOString() };
                 if (tool === 'callout') style.bgColor = this.bgColor;
                 return style;
             });
@@ -1751,7 +1758,9 @@ class DocumentTypography {
             }
         }
 
-        // Source text from content offsets, not selection.toString(), so it's byte-exact with what findOccurrences searches for.
+        spans[0].startIconInclusive = this._boundaryTouchesIcon(startNode, range.startContainer, range.startOffset);
+        spans[spans.length - 1].endIconInclusive = this._boundaryTouchesIcon(endNode || startNode, range.endContainer, range.endOffset);
+
         const exactText = spans.length === 1
             ? (this.content[spans[0].paraIndex]?.text ?? '').slice(spans[0].startOffset, spans[0].endOffset)
             : spans.map(sp => (this.content[sp.paraIndex]?.text ?? '').slice(sp.startOffset, sp.endOffset)).join(' ');
@@ -1882,6 +1891,12 @@ class DocumentTypography {
         return { node, offset };
     }
 
+    _boundaryTouchesIcon(paragraph, node, offset) {
+        if (node.nodeType !== Node.TEXT_NODE) ({ node, offset } = this._normalizeRangeBoundary(node, offset));
+        const iconEl = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest('.inline-icon');
+        return !!(iconEl && paragraph.contains(iconEl));
+    }
+
     getTextOffset(paragraph, node, offset) {
         if (node.nodeType !== Node.TEXT_NODE) ({ node, offset } = this._normalizeRangeBoundary(node, offset));
         const iconEl = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest('.inline-icon');
@@ -1902,6 +1917,13 @@ class DocumentTypography {
 
     getColorForTool(tool) {
         return { textcolor: this.textColor, dropcap: '#000000', highlight: this.bgColor, fontsize: this.fontSize, letterspacing: this.letterSpacing }[tool] || this.borderColor;
+    }
+
+    _styleCoversIcon(st, pos) {
+        if (st.startOffset === st.endOffset) return st.startOffset === pos;
+        if (st.startOffset === pos) return st.startIconInclusive !== false;
+        if (st.endOffset === pos) return st.endIconInclusive !== false;
+        return st.startOffset < pos && st.endOffset > pos;
     }
 
     applyAllStyles() {
@@ -1954,8 +1976,8 @@ class DocumentTypography {
                 const [start, end] = [bounds[i], bounds[i + 1]];
                 if (hasCursor && cursorOffset === start) segments.push({ kind: 'cursor' });
                 iconStyles.filter(s => s.startOffset === start).forEach(s => {
-                    const iconActive = nonBorderStyles.filter(st => st.startOffset <= start && st.endOffset >= start);
-                    const iconActiveBorders = borderStyles.filter(st => st.startOffset <= start && st.endOffset >= start);
+                    const iconActive = nonBorderStyles.filter(st => this._styleCoversIcon(st, start));
+                    const iconActiveBorders = borderStyles.filter(st => this._styleCoversIcon(st, start));
                     segments.push({ kind: 'icon', style: s, styles: iconActive, borders: iconActiveBorders });
                 });
                 const seg = text.substring(start, end);
@@ -1995,7 +2017,7 @@ class DocumentTypography {
             }
             for (let j = openBorders.length - 1; j >= 0; j--) result += '</span>';
             iconStyles.filter(s => s.startOffset >= text.length).forEach(s => {
-                const iconActive = nonBorderStyles.filter(st => st.startOffset <= text.length && st.endOffset >= text.length);
+                const iconActive = nonBorderStyles.filter(st => this._styleCoversIcon(st, text.length));
                 const iconHtml = this._iconHtml(s, iconActive.filter(st => decorationTypes.has(st.type)));
                 result += iconActive.length ? this._wrapStyled(iconActive, iconHtml) : iconHtml;
             });

@@ -338,6 +338,14 @@ def _wrap_styled(styles_list, inner_html):
     inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in styles_list if s['type'] in _CSS_PROP]
     style_attr = f' style="{";".join(inline)}"' if inline else ''
     return f'<span class="{" ".join(classes)}"{style_attr}>{inner_html}</span>'
+def _style_covers_icon(st, pos):
+    if st['startOffset'] == st['endOffset']:
+        return st['startOffset'] == pos
+    if st['startOffset'] == pos:
+        return st.get('startIconInclusive') is not False
+    if st['endOffset'] == pos:
+        return st.get('endIconInclusive') is not False
+    return st['startOffset'] < pos < st['endOffset']
 def build_styled_html(content, styles):
     border_types = {'border', 'circle'}
     decoration_types = {'underline', 'strikethrough', 'overline', 'wavyunderline'}
@@ -390,8 +398,8 @@ def build_styled_html(content, styles):
             start, end = bounds[j], bounds[j + 1]
             for s in icon_styles:
                 if s['startOffset'] == start:
-                    icon_active = [st for st in non_border_styles if st['startOffset'] <= start <= st['endOffset']]
-                    icon_active_borders = [st for st in border_styles if st['startOffset'] <= start <= st['endOffset']]
+                    icon_active = [st for st in non_border_styles if _style_covers_icon(st, start)]
+                    icon_active_borders = [st for st in border_styles if _style_covers_icon(st, start)]
                     segments.append({'kind': 'icon', 'style': s, 'styles': icon_active, 'borders': icon_active_borders})
             seg = text[start:end]
             if not seg:
@@ -426,7 +434,7 @@ def build_styled_html(content, styles):
             parts += '</span>'
         for s in icon_styles:
             if s['startOffset'] >= n:
-                icon_active = [st for st in non_border_styles if st['startOffset'] <= n <= st['endOffset']]
+                icon_active = [st for st in non_border_styles if _style_covers_icon(st, n)]
                 deco_styles = [st for st in icon_active if st['type'] in decoration_types]
                 parts += _wrap_styled(icon_active, _icon_html(s, deco_styles))
         p_classes = []
