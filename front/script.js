@@ -1086,9 +1086,10 @@ class DocumentTypography {
         const allWholeParas = spans.length > 1 && spans.every(sp => sp.startOffset === 0 && sp.endOffset === (this.content[sp.paraIndex]?.text.length ?? -1));
         const wholeParasHaveLists = allWholeParas && spans.every(sp => this.styles.some(s => s.type === 'list' && s.paraIndex === sp.paraIndex && s.startOffset === 0 && s.endOffset === this.content[sp.paraIndex].text.length));
         if (wholeParasHaveLists) {
+            const calloutGroup = this._genId('calloutgrp');
             const newCalloutStyles = spans.map(sp => ({
                 id: this._genId(), type: 'callout', text: this.content[sp.paraIndex].text, color: calloutColor, bgColor: calloutBgColor,
-                paraIndex: sp.paraIndex, startOffset: 0, endOffset: this.content[sp.paraIndex].text.length, created_at: new Date().toISOString()
+                paraIndex: sp.paraIndex, startOffset: 0, endOffset: this.content[sp.paraIndex].text.length, calloutGroup, created_at: new Date().toISOString()
             }));
             newCalloutStyles.forEach(s => this.styles.push(s));
             this._pushHistory({ action: 'batch_add', styles: newCalloutStyles });
@@ -2005,6 +2006,10 @@ class DocumentTypography {
             if (hasCursor && cursorOffset === text.length) segments.push({ kind: 'cursor' });
             let result = '';
             let openBorders = [];
+            const borderSpanStyle = (b, seg) => {
+                const fs = seg.styles.find(st => st.type === 'fontsize');
+                return fs ? `border-color:${b.color};font-size:${fs.color}` : `border-color:${b.color}`;
+            };
             for (const seg of segments) {
                 if (seg.kind === 'cursor') { result += cursorHtml; continue; }
                 const newBorderIds = new Set(seg.borders.map(b => b.id));
@@ -2014,13 +2019,13 @@ class DocumentTypography {
                     for (let j = openBorders.length - 1; j >= closeFrom; j--) result += '</span>';
                     openBorders = openBorders.slice(0, closeFrom);
                     toReopen.forEach(b => {
-                        result += `<span class="styled-text ${b.type}" style="border-color:${b.color}" data-style-id="${b.id}">`;
+                        result += `<span class="styled-text ${b.type}" style="${borderSpanStyle(b, seg)}" data-style-id="${b.id}">`;
                         openBorders.push(b);
                     });
                 }
                 for (const b of seg.borders) {
                     if (!openBorders.some(ob => ob.id === b.id)) {
-                        result += `<span class="styled-text ${b.type}" style="border-color:${b.color}" data-style-id="${b.id}">`;
+                        result += `<span class="styled-text ${b.type}" style="${borderSpanStyle(b, seg)}" data-style-id="${b.id}">`;
                         openBorders.push(b);
                     }
                 }
@@ -2043,6 +2048,7 @@ class DocumentTypography {
                 para.classList.add('callout-block');
                 para.style.borderColor = cs.color;
                 if (cs.bgColor) para.style.backgroundColor = cs.bgColor;
+                para.dataset.calloutGroup = cs.calloutGroup || cs.id;
             }
             if (quoteStyles.length) {
                 const qs = quoteStyles[quoteStyles.length - 1];
@@ -2059,6 +2065,14 @@ class DocumentTypography {
                 para.dataset.codeLang = cds.language;
             }
         }
+
+        this.documentContent.querySelectorAll('p.callout-block').forEach(para => {
+            const next = para.nextElementSibling;
+            if (next && next.matches('p.callout-block') && para.dataset.calloutGroup === next.dataset.calloutGroup) {
+                para.classList.add('callout-merge-bottom');
+                next.classList.add('callout-merge-top');
+            }
+        });
 
         this.styles.filter(s => s.type === 'divider').forEach(d => {
             const para = this.documentContent.querySelector(`p[data-para="${d.paraIndex}"]`);
