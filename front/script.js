@@ -1155,6 +1155,22 @@ class DocumentTypography {
             ? this.savedSelection.spans
             : [{ paraIndex: this.savedSelection.paraIndex, startOffset: this.savedSelection.startOffset, endOffset: this.savedSelection.endOffset }];
 
+        const allWholeParas = spans.length > 1 && spans.every(sp => sp.startOffset === 0 && sp.endOffset === (this.content[sp.paraIndex]?.text.length ?? -1));
+        const wholeParasHaveLists = allWholeParas && spans.every(sp => this.styles.some(s => s.type === 'list' && s.paraIndex === sp.paraIndex && s.startOffset === 0 && s.endOffset === this.content[sp.paraIndex].text.length));
+        if (wholeParasHaveLists) {
+            const newQuoteStyles = spans.map(sp => ({
+                id: this._genId(), type: 'quote', quoteStyle, text: this.content[sp.paraIndex].text, color: '',
+                paraIndex: sp.paraIndex, startOffset: 0, endOffset: this.content[sp.paraIndex].text.length, created_at: new Date().toISOString()
+            }));
+            newQuoteStyles.forEach(s => this.styles.push(s));
+            this._pushHistory({ action: 'batch_add', styles: newQuoteStyles });
+            newQuoteStyles.forEach(s => this.logAction('add', s));
+            this._closeToolPopovers();
+            this._refreshViews();
+            this.restoreSelectionSpans(spans);
+            return;
+        }
+
         this._splitSelectionIntoBlock(spans, {
             joinChar: '\n',
             action: 'quote_split',
