@@ -203,10 +203,10 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text.strikethrough { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .styled-text.link { color: #0066cc; text-decoration: underline; text-decoration-color: #0066cc; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
 .styled-text.highlight { padding: 1px 2px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.styled-text.border { border: 1.5px solid; border-radius: 3px; padding: 0 1px; margin: 0 2px; }
-.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 2px 3px; margin: 0 2px; }
-.styled-text.border .styled-text.highlight { padding: 0 1px; margin: 0 -1px; border-radius: 3px; }
-.styled-text.circle .styled-text.highlight { padding: 2px 1px; margin: -2px -3px; border-radius: 100px; }
+.styled-text.border { border: 1.5px solid; border-radius: 0.2em; padding: 0.08em 0.15em; margin: 0 0.15em; }
+.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 0.15em 0.3em; margin: 0 0.15em; }
+.styled-text.border .styled-text.highlight { padding: 0.08em 0.15em; margin: -0.08em -0.15em; border-radius: 0.2em; }
+.styled-text.circle .styled-text.highlight { padding: 0.15em 0.1em; margin: -0.15em -0.3em; border-radius: 100px; }
 .styled-text.serif { font-family: Georgia, 'Times New Roman', serif; }
 .styled-text.arial { font-family: Arial, sans-serif; }
 .styled-text.courier { font-family: 'Courier New', Courier, monospace; }
@@ -235,12 +235,12 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text.wavyunderline { text-decoration: underline wavy; text-decoration-thickness: 1.5px; text-underline-offset: 1.5px; z-index: 1; }
 .styled-text.dropcap { float: left; font-size: 3.2em; line-height: 0.8; padding-right: 8px; padding-top: 4px; font-weight: 700; }
 .document-content p.callout-block { border: 2px solid; border-radius: 8px; padding: 12px 16px; margin-bottom: 1em; white-space: pre-wrap; }
-.document-content p.callout-block + p.callout-block { margin-top: -2px; border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
-.document-content p.callout-block:has(+ p.callout-block) { margin-bottom: -1px; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.document-content p.callout-block.callout-merge-top { margin-top: -2px; border-top: none; border-top-left-radius: 0; border-top-right-radius: 0; }
+.document-content p.callout-block.callout-merge-bottom { margin-bottom: -1px; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .document-content p.quote-marks { text-align: center; padding: 48px 32px; font-style: italic; position: relative; }
 .document-content p.quote-marks::before { content: '\201C'; position: absolute; top: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
 .document-content p.quote-marks::after  { content: '\201D'; position: absolute; bottom: 2px; left: 0; right: 0; font-size: 42px; line-height: 1; color: #c0c0c0; font-family: Georgia, 'Times New Roman', serif; text-align: center; }
-.document-content p.quote-line { border-left: 3px solid #c0c0c0; padding: 4px 0 4px 18px; margin-left: 8px; font-style: italic; color: #555; }
+.document-content p.quote-line { border-left: 3px solid #c0c0c0; padding: 4px 0 4px 18px; margin-left: 8px; color: #555; }
 .document-content p.list-bullet,
 .document-content p.list-numbered { padding-left: 28px; position: relative; }
 .document-content p.list-bullet::before { content: '\2022'; position: absolute; left: 10px; color: #666; }
@@ -338,6 +338,11 @@ def _wrap_styled(styles_list, inner_html):
     inline = [f'{_CSS_PROP[s["type"]]}:{s["color"]}' for s in styles_list if s['type'] in _CSS_PROP]
     style_attr = f' style="{";".join(inline)}"' if inline else ''
     return f'<span class="{" ".join(classes)}"{style_attr}>{inner_html}</span>'
+def _border_span_style(b, seg_styles):
+    fs = next((st for st in seg_styles if st['type'] == 'fontsize'), None)
+    if fs:
+        return f'border-color:{b["color"]};font-size:{fs["color"]}'
+    return f'border-color:{b["color"]}'
 def _style_covers_icon(st, pos):
     if st['startOffset'] == st['endOffset']:
         return st['startOffset'] == pos
@@ -374,8 +379,8 @@ def build_styled_html(content, styles):
         text = para['text']
         para_styles = styles_by_para.get(i, [])
         if not para_styles:
-            paragraphs.append(f'<p>{html_module.escape(text)}</p>')
-            paragraphs.extend(_divider_html(d) for d in reversed(dividers_by_para.get(i, [])))
+            paragraphs.append({'kind': 'p', 'classes': [], 'style': [], 'attrs': '', 'inner': html_module.escape(text), 'callout_group': None})
+            paragraphs.extend({'kind': 'divider', 'html': _divider_html(d)} for d in reversed(dividers_by_para.get(i, [])))
             continue
         n = len(text)
         icon_styles = [s for s in para_styles if s['type'] == 'inlineicon']
@@ -418,12 +423,12 @@ def build_styled_html(content, styles):
                     parts += '</span>'
                 open_borders = open_borders[:close_from]
                 for b in to_reopen:
-                    parts += f'<span class="styled-text {b["type"]}" style="border-color:{b["color"]}">'
+                    parts += f'<span class="styled-text {b["type"]}" style="{_border_span_style(b, seg["styles"])}">'
                     open_borders.append(b)
             for b in seg['borders']:
                 bid = b.get('id', id(b))
                 if not any(ob.get('id', id(ob)) == bid for ob in open_borders):
-                    parts += f'<span class="styled-text {b["type"]}" style="border-color:{b["color"]}">'
+                    parts += f'<span class="styled-text {b["type"]}" style="{_border_span_style(b, seg["styles"])}">'
                     open_borders.append(b)
             if seg['kind'] == 'icon':
                 deco_styles = [st for st in seg['styles'] if st['type'] in decoration_types]
@@ -440,12 +445,14 @@ def build_styled_html(content, styles):
         p_classes = []
         p_inline = []
         p_attrs = ''
+        callout_group = None
         if callout_styles:
             cs = callout_styles[-1]
             p_classes.append('callout-block')
             p_inline.append(f'border-color:{cs["color"]}')
             if cs.get('bgColor'):
                 p_inline.append(f'background-color:{cs["bgColor"]}')
+            callout_group = cs.get('calloutGroup') or cs.get('id') or f'__solo_{i}'
         if quote_styles:
             p_classes.append(f'quote-{quote_styles[-1]["quoteStyle"]}')
         if list_styles:
@@ -457,10 +464,27 @@ def build_styled_html(content, styles):
             cds = code_styles[-1]
             p_classes.append(f'code-{cds["bgStyle"]}')
             p_attrs += f' data-code-lang="{html_module.escape(cds.get("language", ""), quote=True)}"'
-        class_attr = f' class="{" ".join(p_classes)}"' if p_classes else ''
-        style_attr = f' style="{";".join(p_inline)}"' if p_inline else ''
-        paragraphs.append(f'<p{class_attr}{style_attr}{p_attrs}>{parts}</p>')
-        paragraphs.extend(_divider_html(d) for d in reversed(dividers_by_para.get(i, [])))
+        paragraphs.append({'kind': 'p', 'classes': p_classes, 'style': p_inline, 'attrs': p_attrs, 'inner': parts, 'callout_group': callout_group})
+        paragraphs.extend({'kind': 'divider', 'html': _divider_html(d)} for d in reversed(dividers_by_para.get(i, [])))
+
+    for idx in range(len(paragraphs) - 1):
+        cur, nxt = paragraphs[idx], paragraphs[idx + 1]
+        if cur['kind'] != 'p' or nxt['kind'] != 'p':
+            continue
+        if 'callout-block' not in cur['classes'] or 'callout-block' not in nxt['classes']:
+            continue
+        if cur['callout_group'] is not None and cur['callout_group'] == nxt['callout_group']:
+            cur['classes'].append('callout-merge-bottom')
+            nxt['classes'].append('callout-merge-top')
+
+    def _render_paragraph(item):
+        if item['kind'] == 'divider':
+            return item['html']
+        class_attr = f' class="{" ".join(item["classes"])}"' if item['classes'] else ''
+        style_attr = f' style="{";".join(item["style"])}"' if item['style'] else ''
+        return f'<p{class_attr}{style_attr}{item["attrs"]}>{item["inner"]}</p>'
+
+    body_html = ''.join(_render_paragraph(item) for item in paragraphs)
     return f'''<!DOCTYPE html>
 <html>
 <head>
@@ -474,7 +498,7 @@ def build_styled_html(content, styles):
 </style>
 </head>
 <body>
-<div class="document-container"><div class="document-content">{''.join(paragraphs)}</div></div>
+<div class="document-container"><div class="document-content">{body_html}</div></div>
 </body>
 </html>'''
 @app.route('/api/health', methods=['GET'])

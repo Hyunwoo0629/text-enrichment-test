@@ -434,6 +434,7 @@ const EMOJI_LIBRARY = [
     { char: '🍀', label: 'Four Leaf Clover', label_ko: '네잎클로버' },
     { char: '🌱', label: 'Seeding', label_ko: '새싹' },
     { char: '🌿', label: 'Herb', label_ko: '허브' },
+    { char: '🌳', label: 'Tree', label_ko: '나무' },
 ];
 
 function iconLibraryMarkup(icon) {
