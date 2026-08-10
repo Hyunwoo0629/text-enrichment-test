@@ -209,8 +209,8 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .styled-text.strikethrough { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .styled-text.link { color: #0066cc; text-decoration: underline; text-decoration-color: #0066cc; text-decoration-thickness: 1.5px; text-underline-offset: 2px; }
 .styled-text.highlight { padding: 1px 2px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.styled-text.border { border: 1.5px solid; border-radius: 0.2em; padding: 0.08em 0.15em; margin: 0 0.15em; }
-.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 0.15em 0.3em; margin: 0 0.15em; }
+.styled-text.border { border: 1.5px solid; border-radius: 0.2em; padding: 0.08em 0.15em; margin: 0 0.15em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.styled-text.circle { border: 1.5px solid; border-radius: 100px; padding: 0.15em 0.3em; margin: 0 0.15em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .styled-text.border .styled-text.highlight { padding: 0.08em 0.15em; margin: -0.08em -0.15em; border-radius: 0.2em; }
 .styled-text.circle .styled-text.highlight { padding: 0.15em 0.1em; margin: -0.15em -0.3em; border-radius: 100px; }
 .styled-text.serif { font-family: Georgia, 'Times New Roman', serif; }
@@ -250,7 +250,7 @@ body { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: 
 .document-content p.list-bullet,
 .document-content p.list-numbered { padding-left: 28px; position: relative; }
 .document-content p.list-bullet::before { content: '•'; position: absolute; left: 10px; color: #666; }
-.document-content p.list-numbered::before { content: attr(data-list-num) '.'; position: absolute; left: 6px; color: #666; font-size: 0.9em; }
+.document-content p.list-numbered::before { content: attr(data-list-num) '.'; position: absolute; left: 6px; color: #666; font-size: calc(var(--list-num-size, 1em) * 0.9); }
 .document-content p.code-white,
 .document-content p.code-gray,
 .document-content p.code-black {

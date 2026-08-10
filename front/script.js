@@ -866,12 +866,6 @@ class DocumentTypography {
     }
 
     _iconHtml(s, decorationStyles = []) {
-        // Every icon kind (SVG, emoji, AI-generated image) always renders its underline/strikethrough/
-        // overline/wavyunderline manually via the .inline-icon::after rules in styles.css, never via
-        // native text-decoration - even emoji, which IS real text, since native decoration ties the
-        // glyph's own (raised) box to the decoration's position, so it drifts out of sync with the
-        // surrounding text the moment the icon's vertical alignment differs from plain text's. The
-        // manual line is pinned to the text's decoration position directly, regardless of that.
         const decoClasses = decorationStyles.length ? ['styled-text', ...decorationStyles.map(d => d.type)] : [];
         const decoInline = decorationStyles.map(d => `--deco-${d.type}-color:${d.color}`);
         const styleAttr = decoInline.length ? ` style="${decoInline.join(';')}"` : '';
@@ -1350,12 +1344,6 @@ class DocumentTypography {
                 continue;
             }
             if (s.type === 'inlineicon') {
-                // Adjacent entries share a boundary value (prefix.srcEnd === firstList.srcStart, and
-                // lastList.srcEnd === suffix.srcStart), so an icon sitting exactly on one of those
-                // boundaries would otherwise match whichever entry happens to come first in the
-                // array - which is the leftover prefix/suffix, silently dropping the icon out of the
-                // list block. Exclude the shared edge on the prefix/suffix side so the tie resolves
-                // to the 'list' entry instead.
                 const containing = paraEntries.find(r => {
                     const afterStart = r.kind === 'suffix' ? s.startOffset > r.srcStart : s.startOffset >= r.srcStart;
                     const beforeEnd = r.kind === 'prefix' ? s.startOffset < r.srcEnd : s.startOffset <= r.srcEnd;
@@ -1486,7 +1474,6 @@ class DocumentTypography {
         const color = this.getColorForTool(tool);
 
         if (!spans || spans.length <= 1) {
-            // Single-paragraph path
             const { paraIndex, startOffset, endOffset, startIconInclusive, endIconInclusive } = spans ? spans[0] : this.savedSelection;
             const sOff = isDropcap ? 0 : startOffset, eOff = isDropcap ? 1 : endOffset;
             const sText = isDropcap ? (this.content[paraIndex]?.text?.charAt(sOff) || '') : text;
@@ -1515,7 +1502,6 @@ class DocumentTypography {
             this._updateFloatingToolbarStyles();
             if (!keepSelection) { this.promptApplyToAll(style); }
         } else {
-            // Multi-paragraph path
             const activeSpans = isDropcap ? [spans[0]] : spans;
             if (keepSelection) {
                 let anyUpdated = false;
@@ -2058,7 +2044,13 @@ class DocumentTypography {
             if (listStyles.length) {
                 const ls = listStyles[listStyles.length - 1];
                 para.classList.add(`list-${ls.listStyle}`);
-                if (ls.listStyle === 'numbered') para.dataset.listNum = numberedListValues.get(paraIndex);
+                if (ls.listStyle === 'numbered') {
+                    para.dataset.listNum = numberedListValues.get(paraIndex);
+                    const firstContentSeg = segments.find(sg => sg.kind === 'text' || sg.kind === 'icon');
+                    const fsStyle = firstContentSeg?.styles?.find(st => st.type === 'fontsize');
+                    if (fsStyle) para.style.setProperty('--list-num-size', fsStyle.color);
+                    else para.style.removeProperty('--list-num-size');
+                }
             }
             if (codeStyles.length) {
                 const cds = codeStyles[codeStyles.length - 1];
